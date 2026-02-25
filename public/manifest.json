@@ -5,8 +5,15 @@
   "display": "standalone",
   "background_color": "#020617",
   "theme_color": "#22c55e",
-  "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
-}
+"icons": [
+  {
+    "src": "/569A3183-9AFB-49BE-93C7-82B7A471185C.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  },
+  {
+    "src": "/9C364805-858A-4DA6-9E18-1766E20.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  }
+]
