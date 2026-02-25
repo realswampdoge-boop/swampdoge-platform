@@ -46,7 +46,20 @@ border-radius:10px;
 <p>Hold $SWAMP to Unlock</p>
 <button>Connect Wallet (Next Step)</button>
 </div>
+<button id="connectWallet">Connect Phantom Wallet</button>
+<p id="walletAddress"></p>
+<p id="tokenStatus"></p>
 
+<!-- VIP content (hidden until token check passes) -->
+<div id="vipContent" style="display:none;">
+  <h3>VIP Picks ✅</h3>
+  <div id="vipPicks"></div>
+</div>
+
+<div id="vipLocked">
+  <h3>VIP Picks 🔒</h3>
+  <p>Hold $SWAMP to unlock.</p>
+</div>
 <div class="card">
 <h2>Leaderboard</h2>
 <p>Coming Soon</p>
