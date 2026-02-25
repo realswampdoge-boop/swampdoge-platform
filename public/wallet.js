@@ -6,7 +6,7 @@ const RPC_URLS = [
   "https://api.mainnet-beta.solana.com",
   "https://rpc.ankr.com/solana"
 ];
-
+const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 // ====== UI ======
 const connectBtn = document.getElementById("connectWallet");
 const walletText = document.getElementById("walletAddress");
@@ -25,6 +25,35 @@ function showVip(isUnlocked) {
 }
 
 // ====== SOLANA HELPERS ======
+async function checkSwampBalance(publicKey) {
+  try {
+    const owner = new solanaWeb3.PublicKey(publicKey);
+
+    const response = await rpcFetch({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "getTokenAccountsByOwner",
+      params: [
+        owner.toBase58(),
+        { mint: SWAMP_MINT },
+        { encoding: "jsonParsed" }
+      ]
+    });
+
+    const accounts = response.result.value;
+
+    if (accounts.length > 0) {
+      setStatus("VIP UNLOCKED 🔓");
+      showVip(true);
+    } else {
+      setStatus("Hold $SWAMP to unlock.");
+      showVip(false);
+    }
+  } catch (e) {
+    console.log(e);
+    setStatus("Error checking wallet.");
+  }
+}
 async function rpcFetch(body) {
   let lastErr;
   for (const url of RPC_URLS) {
