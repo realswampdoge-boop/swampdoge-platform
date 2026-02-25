@@ -1,8 +1,7 @@
 // ====== CONFIG ======
-const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"; // your $SWAMP mint
-const MIN_SWAMP_TO_UNLOCK = 1; // change later if you want (ex: 1000)
+const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"; // $SWAMP mint
+const MIN_SWAMP_TO_UNLOCK = 1; // change later (ex: 1000)
 
-// public RPC (can be rate-limited sometimes; we’ll add a fallback)
 const RPC_URLS = [
   "https://api.mainnet-beta.solana.com",
   "https://rpc.ankr.com/solana"
@@ -45,16 +44,11 @@ async function rpcFetch(body) {
 }
 
 async function getTokenBalanceByMint(ownerPubkey, mint) {
-  // getParsedTokenAccountsByOwner is easiest (no decimals math needed)
   const json = await rpcFetch({
     jsonrpc: "2.0",
     id: 1,
     method: "getParsedTokenAccountsByOwner",
-    params: [
-      ownerPubkey,
-      { mint },
-      { encoding: "jsonParsed" }
-    ]
+    params: [ownerPubkey, { mint }, { encoding: "jsonParsed" }]
   });
 
   const accounts = json?.result?.value || [];
@@ -65,7 +59,6 @@ async function getTokenBalanceByMint(ownerPubkey, mint) {
     const amount = info?.tokenAmount?.uiAmount;
     if (typeof amount === "number") total += amount;
   }
-
   return total;
 }
 
@@ -84,19 +77,17 @@ async function connectWallet() {
     const resp = await provider.connect();
     const pubkey = resp.publicKey.toString();
 
-    walletText.innerText = "Connected: " + pubkey;
+    if (walletText) walletText.innerText = "Connected: " + pubkey;
 
     setStatus("Checking $SWAMP balance…");
-    const swampBal = await getTokenBalanceByMint(pubkey, SWAMP_MINT);
+    const bal = await getTokenBalanceByMint(pubkey, SWAMP_MINT);
 
-    if (swampBal >= MIN_SWAMP_TO_UNLOCK) {
-      setStatus(`✅ VIP Unlocked — $SWAMP balance: ${swampBal}`);
+    if (bal >= MIN_SWAMP_TO_UNLOCK) {
+      setStatus(`✅ VIP Unlocked — $SWAMP: ${bal}`);
       showVip(true);
-
-      // optional: trigger VIP picks render if picks.js is loaded
       if (window.renderVipPicks) window.renderVipPicks();
     } else {
-      setStatus(`🔒 Need ${MIN_SWAMP_TO_UNLOCK} $SWAMP — you have: ${swampBal}`);
+      setStatus(`🔒 Need ${MIN_SWAMP_TO_UNLOCK} $SWAMP — you have: ${bal}`);
       showVip(false);
     }
   } catch (err) {
@@ -107,6 +98,4 @@ async function connectWallet() {
 }
 
 if (connectBtn) connectBtn.addEventListener("click", connectWallet);
-
-// default locked on load
 showVip(false);
