@@ -95,12 +95,40 @@ async function getTokenBalanceByMint(ownerPubkey, mint) {
 async function connectWallet() {
   try {
     const provider = window.phantom?.solana;
+function getSolanaProvider() {
+  // Phantom, Solflare, Backpack, etc commonly inject window.solana
+  if (window.solana && window.solana.isPhantom) return window.solana;
+  if (window.solana) return window.solana;
 
-    if (!provider || !provider.isPhantom) {
-      alert("Phantom Wallet not found. Install Phantom and try again.");
-      window.open("https://phantom.app/", "_blank");
+  // Some wallets use window.phantom.solana
+  if (window.phantom?.solana) return window.phantom.solana;
+
+  return null;
+}
+
+async function connectWallet() {
+  try {
+    const provider = getSolanaProvider();
+    if (!provider) {
+      alert("No Solana wallet found. Open this site inside Phantom/Solflare/Backpack in-app browser.");
       return;
     }
+
+    setStatus("Connecting wallet...");
+    const resp = await provider.connect();
+    const pubkey = resp.publicKey.toString();
+
+    if (walletText) walletText.innerText = pubkey;
+    setStatus("Wallet connected ✅");
+
+    // If you call your balance check here, keep it:
+    // await checkVip(pubkey);
+
+  } catch (err) {
+    console.error(err);
+    setStatus("Error connecting wallet. Try again.");
+  }
+}
 
     setStatus("Connecting wallet…");
     const resp = await provider.connect();
