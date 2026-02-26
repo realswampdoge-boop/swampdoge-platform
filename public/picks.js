@@ -1,5 +1,8 @@
 // picks.js
-
+const swampBalEl = document.getElementById("swampBal");
+function setSwampBal(x) {
+  if (swampBalEl) swampBalEl.textContent = String(x ?? 0);
+}
 const vipLocked = document.getElementById("vipLocked");
 const vipContent = document.getElementById("vipContent");
 
@@ -66,8 +69,10 @@ async function refreshVipForWallet(walletAddress) {
     // Default locked while checking
     showVip(false);
 
-    const bal = await getTokenBalance(walletAddress, SWAMP_MINT);
-
+  const bal = await getTokenBalance(walletAddress, SWAMP_MINT);
+    
+setSwampBal(bal);
+    
     const unlocked = bal >= MIN_SWAMP;
     showVip(unlocked);
 
