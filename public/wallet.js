@@ -1,4 +1,5 @@
-// SwampDoge Wallet v2 (Mobile Safe)
+const TOKEN_MINT =
+"GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
 const statusEl = document.getElementById("statusText");
 const walletEl = document.getElementById("walletText");
@@ -11,52 +12,76 @@ function setWallet(addr){
   if(walletEl) walletEl.innerText = addr || "Not connected";
 }
 
-function openPhantom(){
-  const url = encodeURIComponent(window.location.href);
-  window.location.href =
-    "https://phantom.app/ul/browse/" + url;
-}
-
 async function connectWallet(){
+
   const provider = window.solana;
 
-  // iPhone Safari fix
   if(!provider || !provider.isPhantom){
-    setStatus("Opening Phantom...");
-    openPhantom();
+    alert("Install Phantom Wallet");
+    window.open("https://phantom.app/");
     return;
   }
 
   try{
     setStatus("Connecting...");
     const resp = await provider.connect();
-    setWallet(resp.publicKey.toString());
-    setStatus("Connected ✅");
-  }catch(e){
-    console.error(e);
+    const pubkey = resp.publicKey.toString();
+
+    setWallet(pubkey);
+    setStatus("Checking $SWAMP balance...");
+
+    await checkSwamp(pubkey);
+
+  }catch(err){
+    console.log(err);
     setStatus("Connection failed");
   }
 }
 
-async function disconnectWallet(){
-  const provider = window.solana;
-  if(provider?.isPhantom){
-    await provider.disconnect();
+async function checkSwamp(wallet){
+
+  const rpc = "https://api.mainnet-beta.solana.com";
+
+  const body = {
+    jsonrpc:"2.0",
+    id:1,
+    method:"getTokenAccountsByOwner",
+    params:[
+      wallet,
+      { mint:TOKEN_MINT },
+      { encoding:"jsonParsed" }
+    ]
+  };
+
+  const res = await fetch(rpc,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+
+  const data = await res.json();
+
+  if(
+    data.result.value.length > 0 &&
+    data.result.value[0].account.data.parsed.info.tokenAmount.uiAmount > 0
+  ){
+      unlockVIP();
+  } else {
+      lockVIP();
   }
-  setWallet("");
-  setStatus("Disconnected");
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function unlockVIP(){
+  setStatus("✅ VIP Unlocked");
+  const vip=document.getElementById("vipContent");
+  const locked=document.getElementById("vipLocked");
+  if(vip) vip.style.display="block";
+  if(locked) locked.style.display="none";
+}
 
-  const connectBtn =
-    document.getElementById("btnConnect");
+function lockVIP(){
+  setStatus("🔒 Hold $SWAMP to unlock");
+}
 
-  const disconnectBtn =
-    document.getElementById("btnDisconnect");
-
-  connectBtn?.addEventListener("click", connectWallet);
-  disconnectBtn?.addEventListener("click", disconnectWallet);
-
-  setStatus("Ready");
-});
+document.getElementById("btnConnect")
+?.addEventListener("click",connectWallet);
