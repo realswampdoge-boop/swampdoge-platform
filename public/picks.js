@@ -22,36 +22,58 @@ const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 const RPC = "https://api.mainnet-beta.solana.com";
 
 // --- Helpers ---
-async function getTokenBalance(walletAddress, mintAddress) {
+const RPC = "https://api.mainnet-beta.solana.com";
+
+const TOKEN_PROGRAM =
+"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+
+const TOKEN_2022_PROGRAM =
+"TokenzQdYkK9N5nY6p6YXZ2zYxYvBy06SnVAkVnnBY";
+
+const debugEl = document.getElementById("debugText");
+
+function setDebug(msg){
+  if(debugEl) debugEl.textContent = msg;
+}
+
+async function fetchAccounts(walletAddress, programId){
 
   const body = {
-    jsonrpc: "2.0",
-    id: 1,
-    method: "getTokenAccountsByOwner",
-    params: [
+    jsonrpc:"2.0",
+    id:1,
+    method:"getTokenAccountsByOwner",
+    params:[
       walletAddress,
-      {
-        programId: "TokenzQdYkK9N5nY6p6YXZ2zYxYvBy06SnVAkVnnBY" // TOKEN-2022
-      },
-      { encoding: "jsonParsed" }
+      { programId },
+      { encoding:"jsonParsed" }
     ]
   };
 
-  const res = await fetch("https://api.mainnet-beta.solana.com", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
+  const res = await fetch(RPC,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json"},
+    body:JSON.stringify(body)
   });
 
   const json = await res.json();
-  const accounts = json?.result?.value || [];
+  return json?.result?.value || [];
+}
+
+async function getTokenBalance(walletAddress, mintAddress){
+
+  const [spl,t22] = await Promise.all([
+    fetchAccounts(walletAddress,TOKEN_PROGRAM),
+    fetchAccounts(walletAddress,TOKEN_2022_PROGRAM)
+  ]);
+
+  setDebug(`SPL:${spl.length} T22:${t22.length}`);
 
   let total = 0;
 
-  for (const acc of accounts) {
-    const info = acc.account.data.parsed.info;
+  for(const acc of [...spl,...t22]){
+    const info = acc?.account?.data?.parsed?.info;
 
-    if (info.mint === mintAddress) {
+    if(info?.mint === mintAddress){
       total += info.tokenAmount.uiAmount || 0;
     }
   }
