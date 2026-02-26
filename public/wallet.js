@@ -1,99 +1,68 @@
-// public/wallet.js
-(() => {
-  const $ = (id) => document.getElementById(id);
+// wallet.js
 
-  function setStatus(msg, ok = false) {
-    const el = $("statusText");
-    if (el) el.textContent = msg;
-    const card = document.querySelector(".card");
-    if (card) {
-      card.classList.toggle("ok", ok);
-      card.classList.toggle("bad", !ok);
-    }
-    console.log("[wallet]", msg);
-  }
+const statusText = document.getElementById("statusText");
+const walletText = document.getElementById("walletText");
+const btnConnect = document.getElementById("btnConnect");
+const btnDisconnect = document.getElementById("btnDisconnect");
 
-  function setWallet(addr = "") {
-    const el = $("walletText");
-    if (el) el.textContent = addr || "Not connected";
-  }
+function setStatus(msg) {
+  if (statusText) statusText.textContent = msg;
+}
 
-  function getProvider() {
-    const any = window.solana;
-    if (any && any.isPhantom) return any;
-    return null;
-  }
+function setWallet(addr) {
+  if (walletText) walletText.textContent = addr || "Not connected";
+}
 
-  function openInPhantom() {
-    // Opens current site inside Phantom’s in-app browser (required on iPhone Safari/Chrome)
-    const url = window.location.href;
-    const deepLink = "https://phantom.app/ul/browse/" + encodeURIComponent(url);
-    window.location.href = deepLink;
-  }
+async function connectWallet() {
+  try {
+    // If Phantom provider exists (desktop OR Phantom in-app browser)
+    if (window.solana && window.solana.isPhantom) {
+      setStatus("Connecting...");
+      const resp = await window.solana.connect();
+      const addr = resp.publicKey.toString();
 
-  async function connect() {
-    try {
-      setStatus("Connecting…");
-      const provider = getProvider();
+      setStatus("Connected ✅");
+      setWallet(addr);
 
-      if (!provider) {
-        setStatus("Phantom not detected. Opening in Phantom…");
-        openInPhantom();
-        return;
-      }
+      // Optional: tell picks.js (if it listens for this)
+      window.__SWAMPDOGE_WALLET__ = addr;
+      window.dispatchEvent(new CustomEvent("swampdoge:wallet", { detail: { addr } }));
 
-      const resp = await provider.connect({ onlyIfTrusted: false });
-      const pubkey = resp?.publicKey?.toString?.() || provider.publicKey?.toString?.();
-      if (!pubkey) throw new Error("No publicKey returned");
-
-      setWallet(pubkey);
-      setStatus("Connected ✅", true);
-    } catch (e) {
-      console.error(e);
-      setStatus("Connection failed ❌ (check console)", false);
-    }
-  }
-
-  async function disconnect() {
-    try {
-      const provider = getProvider();
-      if (provider?.disconnect) await provider.disconnect();
-      setWallet("");
-      setStatus("Disconnected", true);
-    } catch (e) {
-      console.error(e);
-      setStatus("Disconnect failed ❌", false);
-    }
-  }
-
-  function bind() {
-    const btnConnect = $("btnConnect");
-    const btnDisconnect = $("btnDisconnect");
-
-    if (!btnConnect || !btnDisconnect) {
-      setStatus("Buttons not found (check IDs in index.html)", false);
       return;
     }
 
-    // Make iPhone taps 100% register
-    btnConnect.style.pointerEvents = "auto";
-    btnDisconnect.style.pointerEvents = "auto";
+    // iPhone Safari fallback: open site inside Phantom browser
+    const appUrl = window.location.href;
+    const deepLink = "https://phantom.app/ul/browse/" + encodeURIComponent(appUrl);
 
-    btnConnect.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); connect(); }, { passive: false });
-    btnDisconnect.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); disconnect(); }, { passive: false });
-
-    // Extra insurance for iOS
-    btnConnect.addEventListener("touchstart", (e) => { e.preventDefault(); connect(); }, { passive: false });
-    btnDisconnect.addEventListener("touchstart", (e) => { e.preventDefault(); disconnect(); }, { passive: false });
-
-    setWallet("");
-    setStatus("Ready", true);
+    setStatus("Opening Phantom...");
+    window.location.href = deepLink;
+  } catch (e) {
+    console.log(e);
+    setStatus("Connect failed");
   }
+}
 
-  // Run after DOM is ready
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bind);
-  } else {
-    bind();
+async function disconnectWallet() {
+  try {
+    if (window.solana && window.solana.isPhantom) {
+      await window.solana.disconnect();
+    }
+  } catch (e) {
+    console.log(e);
+  } finally {
+    setStatus("Ready");
+    setWallet("Not connected");
+
+    window.__SWAMPDOGE_WALLET__ = null;
+    window.dispatchEvent(new CustomEvent("swampdoge:wallet", { detail: { addr: null } }));
   }
-})();
+}
+
+// Hook up buttons
+btnConnect?.addEventListener("click", connectWallet);
+btnDisconnect?.addEventListener("click", disconnectWallet);
+
+// Default UI
+setStatus("Ready");
+setWallet("Not connected");
