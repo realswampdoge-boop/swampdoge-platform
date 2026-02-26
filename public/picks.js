@@ -1,42 +1,20 @@
-async function loadPicks() {
-  const res = await fetch("/picks.json", { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to load picks.json");
-  return await res.json();
-}
+document.addEventListener("DOMContentLoaded", async () => {
+  const freeEl = document.getElementById("freePicksList");
+  const vipEl  = document.getElementById("vipPicksList");
 
-function stars(n) {
-  return "⭐".repeat(Math.max(0, Math.min(5, n || 0)));
-}
+  if (!freeEl || !vipEl) {
+    console.log("Missing freePicksList / vipPicksList elements in HTML");
+    return;
+  }
 
-function renderList(items) {
-  return (items || [])
-    .map(
-      x => `<div class="card" style="margin-top:10px;">
-        <div><b>${x.league}</b>: ${x.pick}</div>
-        <div>${stars(x.rating)}</div>
-      </div>`
-    )
-    .join("");
-}
-
-async function renderFreePicks() {
   try {
-    const data = await loadPicks();
-    const el = document.getElementById("todaysPicks");
-    if (el) el.innerHTML = renderList(data.free);
+    const res = await fetch("./picks.json", { cache: "no-store" });
+    const data = await res.json();
+
+    freeEl.innerHTML = (data.free || []).map(p => `<li>${p.league}: ${p.pick}</li>`).join("");
+    vipEl.innerHTML  = (data.vip  || []).map(p => `<li>${p.league}: ${p.pick}</li>`).join("");
   } catch (e) {
     console.error(e);
+    freeEl.innerHTML = "<li>Could not load picks.json</li>";
   }
-}
-
-window.renderVipPicks = async function () {
-  try {
-    const data = await loadPicks();
-    const el = document.getElementById("vipPicks");
-    if (el) el.innerHTML = renderList(data.vip);
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-document.addEventListener("DOMContentLoaded", renderFreePicks);
+});
