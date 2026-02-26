@@ -1,70 +1,31 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SwampDoge</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SwampDoge</title>
+    <style>
+      body { background:#071523; color:#fff; font-family:system-ui; padding:24px; }
+      .card { background:#0b1f33; padding:18px; border-radius:16px; max-width:520px; margin:0 auto; }
+      button { width:100%; padding:14px; border-radius:12px; border:none; background:#1c2a52; color:#fff; font-size:18px; margin-top:12px; }
+      .small { opacity:.8; margin-top:10px; word-break:break-all; }
+      .ok { color:#7CFF9E; }
+      .bad { color:#FF8A8A; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>SwampDoge</h1>
+      <p>Wallet Test (v1)</p>
 
-<style>
-body{
-background:#070b14;
-color:white;
-font-family:sans-serif;
-text-align:center;
-padding:20px;
-}
+      <button id="btnConnect">Connect Phantom</button>
+      <button id="btnDisconnect">Disconnect</button>
 
-.card{
-background:#0b1220;
-padding:20px;
-margin-top:20px;
-border-radius:15px;
-}
+      <div class="small">Status: <span id="status">Ready</span></div>
+      <div class="small">Wallet: <span id="addr">Not connected</span></div>
+    </div>
 
-button{
-padding:12px;
-background:#1c2a52;
-color:white;
-border:none;
-border-radius:10px;
-}
-</style>
-</head>
-
-<body>
-
-<h1>🐊 SwampDoge</h1>
-<p>Utility Coin + Sports Prediction Platform</p>
-
-<div class="card">
-<h2>Today's Picks</h2>
-<p>NBA: Lakers ML ⭐⭐⭐⭐</p>
-<p>NHL: Rangers Over 6 ⭐⭐⭐</p>
-</div>
-<div id="todaysPicks"></div>
-<div class="card">
-<h2>VIP Picks 🔒</h2>
-<p>Hold $SWAMP to Unlock</p>
- <button id="connectBtn">Connect Wallet (Next Step)</button>
-<button id="phantomBtn">Connect Phantom Wallet</button>
-
-<div id="walletText"></div>
-<div id="tokenStatus"></div> 
-
-<!-- VIP content (hidden until token check passes) -->
-<div id="vipContent" style="display:none;">
-  <h3>VIP Picks ✅</h3>
-  <div id="vipPicks"></div>
-</div>
-
-<div id="vipLocked">
-  <h3>VIP Picks 🔒</h3>
-  <p>Hold $SWAMP to unlock.</p>
-</div>
-<div class="card">
-<h2>Leaderboard</h2>
-<p>Coming Soon</p>
-</div>
-<script src="/wallet.js" defer></script>
-<script src="/picks.js"></script>
-</body>
+    <!-- IMPORTANT: this must be here -->
+    <script src="/wallet.js"></script>
+  </body>
 </html>
