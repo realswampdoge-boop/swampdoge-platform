@@ -1,3 +1,7 @@
+const SWAMP_MINT =
+"GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
+
+const MIN_SWAMP_TO_UNLOCK = 1000000;
 const TOKEN_MINT =
 "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
@@ -85,3 +89,46 @@ function lockVIP(){
 
 document.getElementById("btnConnect")
 ?.addEventListener("click",connectWallet);
+async function checkSwampBalance(wallet) {
+  try {
+    setStatus("Checking $SWAMP balance...");
+
+    const connection =
+      new solanaWeb3.Connection(
+        "https://api.mainnet-beta.solana.com"
+      );
+
+    const tokenAccounts =
+      await connection.getParsedTokenAccountsByOwner(
+        new solanaWeb3.PublicKey(wallet),
+        { programId: new solanaWeb3.PublicKey(
+          "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        )}
+      );
+
+    let balance = 0;
+
+    tokenAccounts.value.forEach(acc => {
+      const info = acc.account.data.parsed.info;
+      if (info.mint === SWAMP_MINT) {
+        balance = info.tokenAmount.uiAmount;
+      }
+    });
+
+    if (balance >= MIN_SWAMP_TO_UNLOCK) {
+      setStatus("VIP Unlocked ✅");
+      document.querySelector("#vipPicksList")
+        .style.display = "block";
+    } else {
+      setStatus(
+        `Need ${MIN_SWAMP_TO_UNLOCK} $SWAMP`
+      );
+      document.querySelector("#vipPicksList")
+        .style.display = "none";
+    }
+
+  } catch (err) {
+    console.error(err);
+    setStatus("Balance check failed");
+  }
+}
