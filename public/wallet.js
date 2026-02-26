@@ -1,4 +1,31 @@
-// ====== CONFIG ======
+// ====== CONFIG =====
+window.addEventListener("DOMContentLoaded", () => {
+  const connectBtn = document.getElementById("connectBtn");
+  const phantomBtn = document.getElementById("phantomBtn");
+
+  if (!connectBtn || !phantomBtn) {
+    alert("Buttons not found in HTML (missing IDs).");
+    return;
+  }
+
+  // Make both buttons do the same thing
+  connectBtn.onclick = connectPhantom;
+  phantomBtn.onclick = connectPhantom;
+});
+
+function connectPhantom() {
+  const isPhantomBrowser =
+    window?.phantom?.solana?.isPhantom || navigator.userAgent.includes("Phantom");
+
+  // If you’re not inside Phantom’s in-app browser, deep-link into it
+  if (!window?.phantom?.solana?.isPhantom) {
+    const url = encodeURIComponent(window.location.href);
+    window.location.href = `https://phantom.app/ul/browse/${url}`;
+    return;
+  }
+
+  window.phantom.solana.connect();
+}
 const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"; // $SWAMP mint
 const MIN_SWAMP_TO_UNLOCK = 1; // change later (ex: 1000)
 
