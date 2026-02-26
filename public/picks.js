@@ -20,19 +20,21 @@ const RPC = "https://api.mainnet-beta.solana.com";
 
 // --- Helpers ---
 async function getTokenBalance(walletAddress, mintAddress) {
-  // Find token accounts owned by wallet for this mint
+
   const body = {
     jsonrpc: "2.0",
     id: 1,
     method: "getTokenAccountsByOwner",
     params: [
       walletAddress,
-      { mint: mintAddress },
+      {
+        programId: "TokenzQdYkK9N5nY6p6YXZ2zYxYvBy06SnVAkVnnBY" // TOKEN-2022
+      },
       { encoding: "jsonParsed" }
     ]
   };
 
-  const res = await fetch(RPC, {
+  const res = await fetch("https://api.mainnet-beta.solana.com", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
@@ -44,9 +46,11 @@ async function getTokenBalance(walletAddress, mintAddress) {
   let total = 0;
 
   for (const acc of accounts) {
-    const amountUi =
-      acc?.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0;
-    total += amountUi;
+    const info = acc.account.data.parsed.info;
+
+    if (info.mint === mintAddress) {
+      total += info.tokenAmount.uiAmount || 0;
+    }
   }
 
   return total;
