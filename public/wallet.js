@@ -30,7 +30,15 @@ async function connectWallet(){
     setStatus("Connecting...");
     const resp = await provider.connect();
     const pubkey = resp.publicKey.toString();
+const balance = await getTokenBalance(pubkey);
 
+if (balance >= MIN_SWAMP_TO_UNLOCK) {
+  setStatus("✅ VIP Unlocked");
+  showVip(true);
+} else {
+  setStatus("🔒 Need 1,000,000 $SWAMP");
+  showVip(false);
+}
     setWallet(pubkey);
     setStatus("Checking $SWAMP balance...");
 
@@ -131,4 +139,24 @@ async function checkSwampBalance(wallet) {
     console.error(err);
     setStatus("Balance check failed");
   }
+}
+async function getTokenBalance(wallet) {
+  const body = {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "getTokenAccountsByOwner",
+    params: [
+      wallet,
+      { mint: SWAMP_MINT },
+      { encoding: "jsonParsed" }
+    ]
+  };
+
+  const res = await rpcFetch(body);
+
+  if (!res?.result?.value?.length) return 0;
+
+  return parseFloat(
+    res.result.value[0].account.data.parsed.info.tokenAmount.uiAmount
+  );
 }
