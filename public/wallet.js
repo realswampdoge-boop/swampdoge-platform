@@ -80,4 +80,19 @@ async function getTokenBalance(wallet) {
     res.result.value[0].account.data.parsed.info.tokenAmount.uiAmount
   );
 }
-  
+  function disconnectWallet() {
+  try {
+    if (window.solana && window.solana.disconnect) {
+      window.solana.disconnect();
+    }
+
+    const walletText = document.getElementById("walletText");
+    const statusText = document.getElementById("statusText");
+
+    if (walletText) walletText.innerText = "Not connected";
+    if (statusText) statusText.innerText = "Disconnected";
+
+  } catch (err) {
+    console.error(err);
+  }
+}
