@@ -1,4 +1,4 @@
-// picks.js
+//document.addEventListener("DOMContentLoaded", () => { picks.js
 const swampBalEl = document.getElementById("swampBal");
 function setSwampBal(x) {
   if (swampBalEl) swampBalEl.textContent = String(x ?? 0);
