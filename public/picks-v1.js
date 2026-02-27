@@ -1,3 +1,4 @@
+window.__PICKS_V1_LOADED__ = true;
 console.log("✅ picks-v1.js LOADED");
 window.addEventListener("DOMContentLoaded", () => {
   const debugEl = document.getElementById("debug");
