@@ -5,7 +5,7 @@
 // ================= CONFIG =================
 
 // VIP requirement
-const MIN_SWAMPDOGE = 1000000;
+const MIN_SWAMPDOGE = 0;
 
 // SwampDoge token mint (DO NOT CHANGE)
 const SWAMPDOGE_MINT =
