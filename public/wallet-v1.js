@@ -24,7 +24,14 @@ async function connectWallet() {
 
       setStatus("Connected ✅");
       setWallet(addr);
+// 🔥 FORCE VIP BALANCE CHECK
+window.__SWAMPDOGE_WALLET__ = addr;
 
+window.dispatchEvent(
+  new CustomEvent("swampdoge:wallet", {
+    detail: { addr }
+  })
+);
       // Optional: tell picks.js (if it listens for this)
       window.__SWAMPDOGE_WALLET__ = addr;
       window.__SWAMPDOGE_WALLET__ = addr;
