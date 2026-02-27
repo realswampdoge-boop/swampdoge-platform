@@ -10,14 +10,126 @@ window.addEventListener("DOMContentLoaded", () => {
 // ================= CONFIG =================
 
 // VIP requirement
+
+// ================= FINAL SWAMPDOGE BALANCE (browser-safe) =================
+
+// VIP requirement (set back to 1000000 when ready)
 const MIN_SWAMPDOGE = 0;
 
-// SwampDoge token mint (DO NOT CHANGE)
-const SWAMPDOGE_MINT =
-  "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
+// SwampDoge mint (DO NOT CHANGE)
+const SWAMPDOGE_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
-const RPC =
-  "https://mainnet.helius-rpc.com/?api-key=a612e91d-167a-4900-990c-72e358b1c647";
+// CORS-friendly endpoints (tries each until one works)
+const RPC_ENDPOINTS = [
+  "https://rpc.ankr.com/solana",
+  "https://solana-api.projectserum.com",
+  // Only use Helius AFTER you add Allowed Domains in Helius dashboard
+  // "https://mainnet.helius-rpc.com/?api-key=YOUR_KEY",
+];
+
+function withTimeout(ms, promise) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  return Promise.race([
+    promise(ctrl.signal).finally(() => clearTimeout(t)),
+  ]);
+}
+
+async function rpcCall(method, params) {
+  let lastErr = null;
+
+  for (const url of RPC_ENDPOINTS) {
+    try {
+      const result = await withTimeout(8000, (signal) =>
+        fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal,
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 1,
+            method,
+            params,
+          }),
+        })
+      ).then(async (res) => {
+        const json = await res.json();
+        if (json?.error) throw new Error(json.error?.message || "RPC error");
+        return json.result;
+      });
+
+      return result;
+    } catch (e) {
+      lastErr = e;
+      // try next endpoint
+    }
+  }
+
+  throw lastErr || new Error("All RPC endpoints failed");
+}
+
+// Returns UI amount (already adjusted for decimals)
+async function getSwampdogeBalance(wallet) {
+  const result = await rpcCall("getTokenAccountsByOwner", [
+    wallet,
+    { mint: SWAMPDOGE_MINT },
+    { encoding: "jsonParsed" },
+  ]);
+
+  const accounts = result?.value || [];
+  let total = 0;
+
+  for (const acc of accounts) {
+    const uiAmt =
+      acc?.account?.data?.parsed?.info?.tokenAmount?.uiAmount ??
+      0;
+    total += Number(uiAmt || 0);
+  }
+
+  return total;
+}
+
+// ================= VIP CHECK =================
+async function refreshVipForWallet(wallet) {
+  try {
+    if (!wallet) {
+      setSwampBal("0");
+      setDebug("No wallet");
+      showVip(false);
+      return;
+    }
+
+    setSwampBal("...");
+    setDebug("Checking SwampDoge...");
+
+    const balance = await getSwampdogeBalance(wallet);
+
+    setSwampBal(String(balance));
+
+    const unlocked = balance >= MIN_SWAMPDOGE;
+    showVip(unlocked);
+
+    setDebug(unlocked ? "VIP UNLOCKED ✅" : "VIP LOCKED 🔒");
+  } catch (e) {
+    console.log("Balance check error:", e);
+    setSwampBal("0");
+    showVip(false);
+    setDebug("Balance check error ❌");
+  }
+}
+
+// Wallet event from wallet-v1.js
+window.addEventListener("swampdoge:wallet", (e) => {
+  const addr = e?.detail?.addr || null;
+  refreshVipForWallet(addr);
+});
+
+// Run once after load (in case already connected)
+setTimeout(() => {
+  const addr = window.__SWAMPDOGE_WALLET__ || null;
+  refreshVipForWallet(addr);
+}, 800);
+
 
 
 // ================= UI =================
