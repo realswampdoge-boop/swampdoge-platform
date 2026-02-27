@@ -11,7 +11,6 @@ const MIN_SWAMPDOGE = 0;
 const SWAMPDOGE_MINT =
   "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
-// 🔥 YOUR HELIUS RPC
 const RPC =
   "https://mainnet.helius-rpc.com/?api-key=a612e91d-167a-4900-990c-72e358b1c647";
 
@@ -101,7 +100,7 @@ async function refreshVipForWallet(wallet) {
 
     setDebug("Checking SwampDoge...");
 
-    // ⭐ NEW CODE GOES HERE ⭐
+    
     const balance = await getSwampdogeBalance(wallet);
 
     setSwampBal(balance);
