@@ -43,41 +43,63 @@ async function rpc(method, params) {
 
 // --- SWAMP BALANCE (supports SPL Token + Token-2022) ---
 
-const TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+// Program IDs
+const TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+const TOKEN_2022_PROGRAM = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
 
-async function getTokenBalance(walletAddress) {
+// Helper: safe number
+function toNum(x) {
+  const n = Number(x);
+  return Number.isFinite(n) ? n : 0;
+}
+
+async function getTokenBalance(ownerAddress) {
+  // Returns total SWAMP across BOTH token programs (Token + Token-2022)
+  // Works even if the mint is Token-2022.
+
+  // 1) Try Token Program using mint filter (fast path)
+  let total = 0;
+
   try {
-    setDebug("Checking SWAMP...");
+    const r1 = await rpc("getTokenAccountsByOwner", [
+      ownerAddress,
+      { mint: SWAMP_MINT },
+      { encoding: "jsonParsed" }
+    ]);
 
-    const connection = new solanaWeb3.Connection(
-      "https://api.mainnet-beta.solana.com",
-      "confirmed"
-    );
-
-    const owner = new solanaWeb3.PublicKey(walletAddress);
-    const mintStr = String(SWAMP_MINT);
-
-    // Helper: fetch all token accounts for a given token program, then filter by mint
-    async function fetchFromProgram(programId) {
-      const resp = await connection.getParsedTokenAccountsByOwner(owner, {
-        programId: new solanaWeb3.PublicKey(programId),
-      });
-
-      let total = 0;
-
-      for (const item of resp.value || []) {
-        const info = item?.account?.data?.parsed?.info;
-        const thisMint = info?.mint;
-        if (thisMint !== mintStr) continue;
-
-        const uiAmt = info?.tokenAmount?.uiAmount;
-        total += Number(uiAmt || 0);
-      }
-
-      return total;
+    const accs1 = r1?.value || [];
+    for (const a of accs1) {
+      const ui = a?.account?.data?.parsed?.info?.tokenAmount?.uiAmount;
+      total += toNum(ui);
     }
+  } catch (e) {
+    // ignore; we'll still try Token-2022
+  }
 
+  // 2) Token-2022 program: must query by programId, then filter by mint ourselves
+  try {
+    const r2 = await rpc("getTokenAccountsByOwner", [
+      ownerAddress,
+      { programId: TOKEN_2022_PROGRAM },
+      { encoding: "jsonParsed" }
+    ]);
+
+    const accs2 = r2?.value || [];
+    for (const a of accs2) {
+      const info = a?.account?.data?.parsed?.info;
+      const mint = info?.mint;
+      if (mint === SWAMP_MINT) {
+        const ui = info?.tokenAmount?.uiAmount;
+        total += toNum(ui);
+      }
+    }
+  } catch (e) {
+    // if this fails, show debug
+    throw e;
+  }
+
+  return total;
+}
     // Check both programs and add them up
     const bal1 = await fetchFromProgram(TOKEN_PROGRAM_ID);
     const bal2 = await fetchFromProgram(TOKEN_2022_PROGRAM_ID);
