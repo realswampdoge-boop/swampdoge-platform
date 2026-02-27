@@ -62,28 +62,41 @@ async function rpc(method, params) {
 
 // ================= BALANCE FETCH =================
 
+// ================= FINAL SWAMPDOGE BALANCE =================
+
+// ================= FINAL SWAMPDOGE BALANCE =================
 async function getTokenBalance(wallet) {
+  try {
+    const res = await fetch(RPC, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getTokenAccountsByOwner",
+        params: [
+          wallet,
+          { mint: SWAMPDOGE_MINT },
+          { encoding: "jsonParsed" }
+        ]
+      })
+    });
 
-  const result = await rpc("getTokenAccountsByOwner", [
-    wallet,
-    { mint: SWAMPDOGE_MINT },
-    { encoding: "jsonParsed" },
-  ]);
+    const json = await res.json();
+    const accounts = json?.result?.value || [];
 
-  const accounts = result?.value || [];
+    let total = 0;
+    for (const acc of accounts) {
+      const amt = acc?.account?.data?.parsed?.info?.tokenAmount?.uiAmount;
+      total += Number(amt || 0);
+    }
 
-  let total = 0;
-
-  for (const acc of accounts) {
-    const amount =
-      acc.account.data.parsed.info.tokenAmount.uiAmount;
-
-    total += Number(amount || 0);
+    return total;
+  } catch (e) {
+    console.log("Balance error:", e);
+    return 0;
   }
-
-  return total;
 }
-
 
 // ================= MAIN VIP CHECK =================
 
