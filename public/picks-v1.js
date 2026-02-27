@@ -135,3 +135,10 @@ setTimeout(() => {
   const addr = window.__SWAMPDOGE_WALLET__ || null;
   refreshVipForWallet(addr);
 }, 500);
+// FORCE BALANCE CHECK AFTER LOAD
+setTimeout(() => {
+  const addr = window.__SWAMPDOGE_WALLET__;
+  if (addr) {
+    refreshVipForWallet(addr);
+  }
+}, 1000);
