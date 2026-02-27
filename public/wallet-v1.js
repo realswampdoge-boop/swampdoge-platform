@@ -64,5 +64,43 @@ btnConnect?.addEventListener("click", connectWallet);
 btnDisconnect?.addEventListener("click", disconnectWallet);
 
 // Default UI
+// Default UI
 setStatus("Ready");
 setWallet("Not connected");
+
+
+// ===== SWAMP TOKEN BALANCE =====
+async function getTokenBalance(walletAddress) {
+  try {
+    const connection = new solanaWeb3.Connection(RPC);
+
+    const owner = new solanaWeb3.PublicKey(walletAddress);
+
+    const tokens =
+      await connection.getParsedTokenAccountsByOwner(owner, {
+        programId: new solanaWeb3.PublicKey(
+          "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        ),
+      });
+
+    let balance = 0;
+
+    tokens.value.forEach((t) => {
+      const info = t.account.data.parsed.info;
+
+      if (info.mint === SWAMP_MINT) {
+        balance += info.tokenAmount.uiAmount || 0;
+      }
+    });
+
+    document.getElementById("debugText").textContent =
+      "TOKEN SCAN COMPLETE ✅";
+
+    return balance;
+  } catch (e) {
+    console.log(e);
+    document.getElementById("debugText").textContent =
+      "TOKEN ERROR ❌";
+    return 0;
+  }
+}
