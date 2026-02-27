@@ -12,7 +12,7 @@ const TOKEN_PROGRAM =
 
 const TOKEN_2022_PROGRAM =
   "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
-const MIN_SWAMP = 1_000_000;
+const MIN_SWAMP = 0;
 // Your token mint (the pump address you shared)
 const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
