@@ -34,7 +34,7 @@ window.dispatchEvent(
 );
       // Optional: tell picks.js (if it listens for this)
       window.__SWAMPDOGE_WALLET__ = addr;
-      window.__SWAMPDOGE_WALLET__ = addr;
+    
 
 
 
