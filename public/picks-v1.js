@@ -91,6 +91,7 @@ async function getTokenBalance(wallet) {
 async function refreshVipForWallet(wallet) {
 
   try {
+
     if (!wallet) {
       setDebug("No wallet");
       showVip(false);
@@ -100,7 +101,8 @@ async function refreshVipForWallet(wallet) {
 
     setDebug("Checking SwampDoge...");
 
-    const balance = await getTokenBalance(wallet);
+    // ⭐ NEW CODE GOES HERE ⭐
+    const balance = await getSwampdogeBalance(wallet);
 
     setSwampBal(balance);
 
@@ -131,10 +133,6 @@ window.addEventListener("swampdoge:wallet", (e) => {
 });
 
 // run once if already connected
-setTimeout(() => {
-  const addr = window.__SWAMPDOGE_WALLET__ || null;
-  refreshVipForWallet(addr);
-}, 500);
 // FORCE BALANCE CHECK AFTER LOAD
 setTimeout(() => {
   const addr = window.__SWAMPDOGE_WALLET__;
