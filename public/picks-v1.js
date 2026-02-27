@@ -1,3 +1,8 @@
+window.addEventListener("error", (e) => {
+  const d = document.getElementById("debugText");
+  if (d) d.textContent = "JS ERROR: " + e.message;
+});
+document.addEventListener("DOMContentLoaded", async () => {
 //document.addEventListener("DOMContentLoaded", () => { picks.js
 const swampBalEl = document.getElementById("swampBal");
 function setSwampBal(x) {
