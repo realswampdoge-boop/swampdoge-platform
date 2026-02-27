@@ -21,10 +21,10 @@ const SWAMPDOGE_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
 // CORS-friendly endpoints (tries each until one works)
 const RPC_ENDPOINTS = [
+  "https://mainnet.helius-rpc.com/?api-key=a612e91d-167a-4900-990c-72e358b1c647",
   "https://rpc.ankr.com/solana",
   "https://solana-api.projectserum.com",
   // Only use Helius AFTER you add Allowed Domains in Helius dashboard
-  // "https://mainnet.helius-rpc.com/?api-key=YOUR_KEY",
 ];
 
 function withTimeout(ms, promise) {
