@@ -1,21 +1,24 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const d = document.getElementById("debugText");
-  const b = document.getElementById("swampBal");
-  if (d) d.textContent = "PICKS-V1 LOADED ✅";
-  if (b) b.textContent = "PICKS CHECKING...";
-});
-window.addEventListener("error", (e) => {
-  const d = document.getElementById("debugText");
-  if (d) d.textContent = "JS ERROR: " + e.message;
-});
-document.addEventListener("DOMContentLoaded", async () => {
-//document.addEventListener("DOMContentLoaded", () => { picks.js
+// picks-v1.js
 const swampBalEl = document.getElementById("swampBal");
-function setSwampBal(x) {
-  if (swampBalEl) swampBalEl.textContent = String(x ?? 0);
-}
+const debugEl = document.getElementById("debugText");
+
 const vipLocked = document.getElementById("vipLocked");
 const vipContent = document.getElementById("vipContent");
+
+// ----- CONFIG -----
+const MIN_SWAMP = 1_000_000;
+// Your token mint (the pump address you shared)
+const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
+
+// Public RPC (works without keys, can be rate-limited)
+const RPC = "https://api.mainnet-beta.solana.com";
+
+function setSwampBal(x) {
+  if (swampBalEl) swampBalEl.textContent = String(x);
+}
+function setDebug(msg) {
+  if (debugEl) debugEl.textContent = String(msg);
+}
 
 function showVip(isUnlocked) {
   if (!vipLocked || !vipContent) return;
@@ -23,107 +26,34 @@ function showVip(isUnlocked) {
   vipContent.style.display = isUnlocked ? "block" : "none";
 }
 
-// --- CONFIG ---
-const MIN_SWAMP = 1_000_000;
-
-// Your SWAMP token mint (you told me earlier)
-const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
-
-// A public Solana RPC endpoint (works for basic reads)
-const RPC = "https://api.mainnet-beta.solana.com";
-
-// --- Helpers ---
-const RPC = "https://api.mainnet-beta.solana.com";
-
-const TOKEN_PROGRAM =
-"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-
-const TOKEN_2022_PROGRAM =
-"TokenzQdYkK9N5nY6p6YXZ2zYxYvBy06SnVAkVnnBY";
-
-const debugEl = document.getElementById("debugText");
-
-function setDebug(msg){
-  if(debugEl) debugEl.textContent = msg;
-}
-
-async function fetchAccounts(walletAddress, programId){
-
-  const body = {
-    jsonrpc:"2.0",
-    id:1,
-    method:"getTokenAccountsByOwner",
-    params:[
-      walletAddress,
-      { programId },
-      { encoding:"jsonParsed" }
-    ]
-  };
-
-  const res = await fetch(RPC,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json"},
-    body:JSON.stringify(body)
+// RPC helper
+async function rpc(method, params) {
+  const res = await fetch(RPC, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
   });
-
   const json = await res.json();
-  return json?.result?.value || [];
+  if (json?.error) throw new Error(json.error?.message || "RPC error");
+  return json.result;
 }
 
-async function getTokenBalance(walletAddress, mintAddress){
-
-  const [spl,t22] = await Promise.all([
-    fetchAccounts(walletAddress,TOKEN_PROGRAM),
-    fetchAccounts(walletAddress,TOKEN_2022_PROGRAM)
+// ✅ No solanaWeb3 needed
+async function getTokenBalance(walletAddress) {
+  const result = await rpc("getTokenAccountsByOwner", [
+    walletAddress,
+    { mint: SWAMP_MINT },
+    { encoding: "jsonParsed" },
   ]);
 
-  setDebug(`SPL:${spl.length} T22:${t22.length}`);
-
+  const accounts = result?.value || [];
   let total = 0;
 
-  for(const acc of [...spl,...t22]){
-    const info = acc?.account?.data?.parsed?.info;
-
-    if(info?.mint === mintAddress){
-      total += info.tokenAmount.uiAmount || 0;
-    }
+  for (const acc of accounts) {
+    const uiAmt = acc?.account?.data?.parsed?.info?.tokenAmount?.uiAmount;
+    total += Number(uiAmt || 0);
   }
-
   return total;
-}
-
-async function refreshVipForWallet(walletAddress) {
-  try {
-    if (!walletAddress) {
-      showVip(false);
-      return;
-    }
-
-    // Default locked while checking
-    showVip(false);
-
-  const bal = await getTokenBalance(walletAddress, SWAMP_MINT);
-    
-setSwampBal(bal);
-    
-    const unlocked = bal >= MIN_SWAMP;
-    showVip(unlocked);
-
-    // Optional: show balance somewhere if you want later
-    console.log("SWAMP balance:", bal, "unlocked:", unlocked);
-  } catch (e) {
-    console.log(e);
-    showVip(false);
-  }
-}
-function setSwampBal(x) {
-  const el = document.getElementById("swampBal");
-  if (el) el.textContent = String(x);
-}
-
-function setDebug(msg) {
-  const el = document.getElementById("debugText");
-  if (el) el.textContent = msg;
 }
 
 async function refreshVipForWallet(addr) {
@@ -131,12 +61,11 @@ async function refreshVipForWallet(addr) {
     if (!addr) {
       setSwampBal("0");
       setDebug("No wallet");
+      showVip(false);
       return;
     }
 
-    setDebug("Checking SWAMP…");
-
-    // wallet-v1.js provides getTokenBalance()
+    setDebug("Checking SWAMP...");
     const bal = await getTokenBalance(addr);
 
     setSwampBal(bal);
@@ -148,17 +77,22 @@ async function refreshVipForWallet(addr) {
   } catch (e) {
     console.log(e);
     setDebug("Balance check error ❌");
+    showVip(false);
   }
 }
 
-// Listen for wallet connect/disconnect
+// Run whenever wallet changes
 window.addEventListener("swampdoge:wallet", (e) => {
   const addr = e?.detail?.addr || null;
   refreshVipForWallet(addr);
 });
 
-// Run once shortly after page load
+// Initial state
+setSwampBal("0");
+setDebug("picks-v1.js running ✅");
+showVip(false);
+
+// If wallet already set by wallet-v1.js
 setTimeout(() => {
-  const addr = window.__SWAMPDOGE_WALLET__ || null;
-  refreshVipForWallet(addr);
-}, 250);
+  refreshVipForWallet(window.__SWAMPDOGE_WALLET__ || null);
+}, 300);
