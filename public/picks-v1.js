@@ -16,7 +16,7 @@ const SWAMPDOGE_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 const RPC_ENDPOINTS = [
   "https://rpc.ankr.com/solana",
   "https://solana-api.projectserum.com",
-  https://mainnet.helius-rpc.com/?api-key=a612e91d-167a-4900-990c-72e358b1c647,
+  "https://mainnet.helius-rpc.com/?api-key=a612e91d-167a-4900-990c-72e358b1c647",
 ];
 
 // Token program IDs
