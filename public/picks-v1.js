@@ -16,8 +16,8 @@ const SWAMPDOGE_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
 // Put your BEST RPC first. You can keep the public fallbacks.
 const RPC_ENDPOINTS = [
-  // ✅ a612e91d-167a-4900-990c-72e358b1c647
-  // "https://mainnet.helius-rpc.com/?api-key=a612e91d-167a-4900-990c-72e358b1c647",
+  / ✅ a612e91d-167a-4900-990c-72e358b1c647
+  "https://mainnet.helius-rpc.com/?api-key=a612e91d-167a-4900-990c-72e358b1c647",
 
   // Public fallbacks:
   "https://rpc.ankr.com/solana",
