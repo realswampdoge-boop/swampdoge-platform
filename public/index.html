@@ -55,7 +55,17 @@
 
     <!-- IMPORTANT: this must be here -->
 <script src="/wallet-v1.js?v=30" defer></script>
-<script src="/picks-v1.js?v=30" defer></script>
 
+<script>
+  const s = document.createElement("script");
+  s.src = "/picks-v1.js?v=40";
+  s.onload = () => {
+    document.getElementById("debugText").textContent = "picks-v1.js LOADED ✅";
+  };
+  s.onerror = () => {
+    document.getElementById("debugText").textContent = "picks-v1.js FAILED ❌";
+  };
+  document.body.appendChild(s);
+</script>
 </body>
 </html>
