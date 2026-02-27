@@ -151,25 +151,14 @@ async function refreshVipForWallet(addr) {
   }
 }
 
-// When wallet connects/disconnects
+// Listen for wallet connect/disconnect
 window.addEventListener("swampdoge:wallet", (e) => {
   const addr = e?.detail?.addr || null;
   refreshVipForWallet(addr);
 });
 
-// Also run once if wallet already set
-if (window.__SWAMPDOGE_WALLET__) {
-  refreshVipForWallet(window.__SWAMPDOGE_WALLET__);
-}
-// Listen for wallet events from wallet.js
-window.addEventListener("swampdoge:wallet", (e) => {
-  const addr = e?.detail?.addr || null;
-  refreshVipForWallet(addr);
-});
-
-// Also run on load if wallet.js stored it
+// Run once shortly after page load
 setTimeout(() => {
   const addr = window.__SWAMPDOGE_WALLET__ || null;
   refreshVipForWallet(addr);
 }, 250);
-});
