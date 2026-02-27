@@ -36,11 +36,7 @@ window.dispatchEvent(
       window.__SWAMPDOGE_WALLET__ = addr;
       window.__SWAMPDOGE_WALLET__ = addr;
 
-window.dispatchEvent(
-  new CustomEvent("swampdoge:wallet", {
-    detail: { addr }
-  })
-);
+
 
       return;
     }
