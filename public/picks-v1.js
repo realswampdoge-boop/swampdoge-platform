@@ -41,40 +41,56 @@ async function rpc(method, params) {
 // ✅ No solanaWeb3 needed
 // ⭐ FINAL SWAMP BALANCE CHECK (Pump.fun compatible)
 
+// --- SWAMP BALANCE (supports SPL Token + Token-2022) ---
+
+const TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+
 async function getTokenBalance(walletAddress) {
   try {
-    setDebug("Checking SWAMP balance...");
+    setDebug("Checking SWAMP...");
 
     const connection = new solanaWeb3.Connection(
-      "https://api.mainnet-beta.solana.com"
+      "https://api.mainnet-beta.solana.com",
+      "confirmed"
     );
 
     const owner = new solanaWeb3.PublicKey(walletAddress);
-    const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
+    const mintStr = String(SWAMP_MINT);
 
-    const accounts =
-      await connection.getParsedTokenAccountsByOwner(owner, {
-        mint,
+    // Helper: fetch all token accounts for a given token program, then filter by mint
+    async function fetchFromProgram(programId) {
+      const resp = await connection.getParsedTokenAccountsByOwner(owner, {
+        programId: new solanaWeb3.PublicKey(programId),
       });
 
-    if (!accounts.value.length) {
-      setDebug("No SWAMP account");
-      return 0;
+      let total = 0;
+
+      for (const item of resp.value || []) {
+        const info = item?.account?.data?.parsed?.info;
+        const thisMint = info?.mint;
+        if (thisMint !== mintStr) continue;
+
+        const uiAmt = info?.tokenAmount?.uiAmount;
+        total += Number(uiAmt || 0);
+      }
+
+      return total;
     }
 
-    const balance =
-      accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+    // Check both programs and add them up
+    const bal1 = await fetchFromProgram(TOKEN_PROGRAM_ID);
+    const bal2 = await fetchFromProgram(TOKEN_2022_PROGRAM_ID);
+    const total = bal1 + bal2;
 
-    setDebug("SWAMP detected ✅");
-
-    return balance || 0;
+    setDebug(`SWAMP found: ${total}`);
+    return total;
   } catch (e) {
     console.log(e);
     setDebug("Balance check error ❌");
     return 0;
   }
 }
-
 async function refreshVipForWallet(addr) {
   try {
     if (!addr) {
