@@ -117,3 +117,4 @@ setTimeout(() => {
   const addr = window.__SWAMPDOGE_WALLET__ || null;
   refreshVipForWallet(addr);
 }, 250);
+});
