@@ -26,7 +26,13 @@ async function connectWallet() {
 
       // Optional: tell picks.js (if it listens for this)
       window.__SWAMPDOGE_WALLET__ = addr;
-      window.dispatchEvent(new CustomEvent("swampdoge:wallet", { detail: { addr } }));
+      window.__SWAMPDOGE_WALLET__ = addr;
+
+window.dispatchEvent(
+  new CustomEvent("swampdoge:wallet", {
+    detail: { addr }
+  })
+);
 
       return;
     }
