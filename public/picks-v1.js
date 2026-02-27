@@ -39,21 +39,40 @@ async function rpc(method, params) {
 }
 
 // ✅ No solanaWeb3 needed
+// ⭐ FINAL SWAMP BALANCE CHECK (Pump.fun compatible)
+
 async function getTokenBalance(walletAddress) {
-  const result = await rpc("getTokenAccountsByOwner", [
-    walletAddress,
-    { mint: SWAMP_MINT },
-    { encoding: "jsonParsed" },
-  ]);
+  try {
+    setDebug("Checking SWAMP balance...");
 
-  const accounts = result?.value || [];
-  let total = 0;
+    const connection = new solanaWeb3.Connection(
+      "https://api.mainnet-beta.solana.com"
+    );
 
-  for (const acc of accounts) {
-    const uiAmt = acc?.account?.data?.parsed?.info?.tokenAmount?.uiAmount;
-    total += Number(uiAmt || 0);
+    const owner = new solanaWeb3.PublicKey(walletAddress);
+    const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
+
+    const accounts =
+      await connection.getParsedTokenAccountsByOwner(owner, {
+        mint,
+      });
+
+    if (!accounts.value.length) {
+      setDebug("No SWAMP account");
+      return 0;
+    }
+
+    const balance =
+      accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+
+    setDebug("SWAMP detected ✅");
+
+    return balance || 0;
+  } catch (e) {
+    console.log(e);
+    setDebug("Balance check error ❌");
+    return 0;
   }
-  return total;
 }
 
 async function refreshVipForWallet(addr) {
