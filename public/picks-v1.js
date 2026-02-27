@@ -5,7 +5,7 @@
 
 // Set how many tokens needed to unlock VIP.
 // If you want VIP always unlocked for testing, set to 0.
-const MIN_SWAMPDOGE = 1_000_000;
+const MIN_SWAMPDOGE = 0;
 
 // Your Swampdoge token mint (DO NOT CHANGE)
 const SWAMPDOGE_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
