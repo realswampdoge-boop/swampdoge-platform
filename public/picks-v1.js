@@ -6,6 +6,12 @@ const vipLocked = document.getElementById("vipLocked");
 const vipContent = document.getElementById("vipContent");
 
 // ----- CONFIG -----
+// Token programs
+const TOKEN_PROGRAM =
+  "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+
+const TOKEN_2022_PROGRAM =
+  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
 const MIN_SWAMP = 1_000_000;
 // Your token mint (the pump address you shared)
 const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
