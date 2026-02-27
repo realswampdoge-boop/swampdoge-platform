@@ -1,3 +1,4 @@
+window.__WALLET_V1_LOADED__ = true;
 // wallet.js
 
 const statusText = document.getElementById("statusText");
