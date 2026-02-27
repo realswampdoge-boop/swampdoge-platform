@@ -116,7 +116,51 @@ setSwampBal(bal);
     showVip(false);
   }
 }
+function setSwampBal(x) {
+  const el = document.getElementById("swampBal");
+  if (el) el.textContent = String(x);
+}
 
+function setDebug(msg) {
+  const el = document.getElementById("debugText");
+  if (el) el.textContent = msg;
+}
+
+async function refreshVipForWallet(addr) {
+  try {
+    if (!addr) {
+      setSwampBal("0");
+      setDebug("No wallet");
+      return;
+    }
+
+    setDebug("Checking SWAMP…");
+
+    // wallet-v1.js provides getTokenBalance()
+    const bal = await getTokenBalance(addr);
+
+    setSwampBal(bal);
+
+    const unlocked = bal >= MIN_SWAMP;
+    showVip(unlocked);
+
+    setDebug(unlocked ? "VIP UNLOCKED ✅" : "VIP LOCKED 🔒");
+  } catch (e) {
+    console.log(e);
+    setDebug("Balance check error ❌");
+  }
+}
+
+// When wallet connects/disconnects
+window.addEventListener("swampdoge:wallet", (e) => {
+  const addr = e?.detail?.addr || null;
+  refreshVipForWallet(addr);
+});
+
+// Also run once if wallet already set
+if (window.__SWAMPDOGE_WALLET__) {
+  refreshVipForWallet(window.__SWAMPDOGE_WALLET__);
+}
 // Listen for wallet events from wallet.js
 window.addEventListener("swampdoge:wallet", (e) => {
   const addr = e?.detail?.addr || null;
