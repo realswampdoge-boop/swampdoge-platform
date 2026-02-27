@@ -1,3 +1,9 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const d = document.getElementById("debugText");
+  const b = document.getElementById("swampBal");
+  if (d) d.textContent = "PICKS-V1 LOADED ✅";
+  if (b) b.textContent = "PICKS CHECKING...";
+});
 window.addEventListener("error", (e) => {
   const d = document.getElementById("debugText");
   if (d) d.textContent = "JS ERROR: " + e.message;
