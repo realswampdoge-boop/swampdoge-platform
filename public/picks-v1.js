@@ -65,7 +65,7 @@ async function rpc(method, params) {
 // ================= FINAL SWAMPDOGE BALANCE =================
 
 // ================= FINAL SWAMPDOGE BALANCE =================
-async function getTokenBalance(wallet) {
+async function getSwampdogeBalance(wallet) {
   try {
     const res = await fetch(RPC, {
       method: "POST",
