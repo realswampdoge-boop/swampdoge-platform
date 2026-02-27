@@ -1,4 +1,8 @@
-/*************************************************
+console.log("✅ picks-v1.js LOADED");
+window.addEventListener("DOMContentLoaded", () => {
+  const debugEl = document.getElementById("debug");
+  if (debugEl) debugEl.textContent = "picks-v1.js LOADED ✅";
+});/*************************************************
  *  SWAMPDOGE FINAL BALANCE SYSTEM
  *************************************************/
 
