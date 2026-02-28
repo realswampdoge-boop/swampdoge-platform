@@ -150,7 +150,7 @@ setTimeout(() => {
     window.loadVipPicks();
   }
 }, 200);
-  if (window.loadVipPicks) window.loadVipPicks();
+  
 }
 
 function lockVIP() {
