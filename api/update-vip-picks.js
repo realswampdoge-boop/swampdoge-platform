@@ -10,7 +10,8 @@ export default async function handler(req, res) {
         ? JSON.parse(req.body)
         : req.body;
 
-    const { password, picks } = body || {};
+const password = body?.password ?? body?.pin ?? "";
+const picks = body?.picks ?? body?.text ?? "";
 
   if (String(password).trim() !== "1234") {
       return res.status(401).json({ message: "Unauthorized" });
