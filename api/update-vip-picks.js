@@ -7,35 +7,36 @@ export default async function handler(req, res) {
     const body =
       typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
 
-    // Accept pin OR password from the app
-    const pin = body.pin ?? body.password ?? "";
-    const text = body.text ?? body.picks ?? "";
+    // Accept pin/password from the Admin Panel input
+    const providedPin = String(body.pin ?? body.password ?? "").trim();
+    const ADMIN_PIN = String(process.env.ADMIN_PIN || process.env.ADMIN_PASSWORD || "1234").trim();
 
-    // Use Vercel env pin (fallback 1234)
-    const ADMIN_PIN = process.env.ADMIN_PIN || "1234";
-    if (String(pin).trim() !== String(ADMIN_PIN).trim()) {
-      return res.status(401).json({ message: "Unauthorized" });
+    if (!providedPin || providedPin !== ADMIN_PIN) {
+      return res.status(401).json({ message: "Unauthorized (wrong PIN)" });
     }
 
-    // Each line becomes a pick
-    const picks = String(text)
+    // Accept textarea content from multiple possible keys
+    const rawText = body.text ?? body.picksText ?? body.picks ?? "";
+    const picksArray = String(rawText)
       .split("\n")
       .map(s => s.trim())
       .filter(Boolean);
 
-    // GitHub env vars (you already set most of these)
+    // GitHub env vars (you already have these in Vercel)
     const token = process.env.GITHUB_TOKEN;
     const owner = process.env.GITHUB_OWNER;
     const repo = process.env.GITHUB_REPO;
-    const path = process.env.GITHUB_FILE_PATH || "public/vip-picks.json";
 
-    if (!token || !owner || !repo || !path) {
+    // Always write to this file
+    const path = "public/vip-picks.json";
+
+    if (!token || !owner || !repo) {
       return res.status(500).json({ message: "Missing GitHub env vars" });
     }
 
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
 
-    // Get current SHA (needed to update a file)
+    // Get current SHA (needed to update)
     const getResp = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -44,45 +45,36 @@ export default async function handler(req, res) {
     });
 
     const current = await getResp.json();
-    const sha = current?.sha; // if file exists
+    const sha = current?.sha;
 
     const newJson = {
       updated: new Date().toISOString().slice(0, 10),
-      picks,
+      picks: picksArray,
     };
 
     const content = Buffer.from(JSON.stringify(newJson, null, 2)).toString("base64");
 
     const putResp = await fetch(url, {
-  method: "PUT",
-  headers: {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-    Accept: "application/vnd.github+json",
-  },
-  body: JSON.stringify({
-    message: "Update VIP picks",
-    content,
-    sha,
-  }),
-});
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: "Update VIP picks",
+        content,
+        sha,
+      }),
+    });
 
-const result = await putResp.json();
+    const result = await putResp.json();
 
-if (!putResp.ok) {
-  console.log("GITHUB ERROR:", result);
-  return res.status(500).json({
-    message: "GitHub update failed",
-    error: result,
-  });
-}
-
-    const putJson = await putResp.json();
     if (!putResp.ok) {
-      return res.status(500).json({ message: "GitHub write failed", error: putJson });
+      return res.status(500).json({ message: "GitHub write failed", error: result });
     }
 
-    return res.status(200).json({ success: true, message: "Published ✅", picks });
+    return res.status(200).json({ success: true, message: "Published ✅", picks: picksArray });
   } catch (err) {
     return res.status(500).json({ message: "Server error", error: String(err) });
   }
