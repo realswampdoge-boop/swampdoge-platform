@@ -186,28 +186,39 @@ window.addEventListener("DOMContentLoaded", () => {
     if (addr) refreshVipForWallet(addr);
   }, 1200);
 });
-
-// =============================
-// 🐊 VIP PICKS AUTO-LOADER
-// =============================
+// 🐊 VIP PICKS AUTO-LOADER (with on-screen debug)
 async function loadVipPicks() {
+  const dbg = document.getElementById("debugText");
+
   try {
+    if (dbg) dbg.textContent = "Loading VIP picks JSON...";
+
     const res = await fetch("/vip-picks.json?v=" + Date.now());
+    if (!res.ok) throw new Error("VIP JSON HTTP " + res.status);
+
     const data = await res.json();
 
     const ul = document.getElementById("vipPicksList");
-    if (!ul) return;
+    if (!ul) throw new Error("Missing element: #vipPicksList");
 
     ul.innerHTML = "";
+
     (data.picks || []).forEach((p) => {
       const li = document.createElement("li");
       li.textContent = p;
       ul.appendChild(li);
     });
+
+    if (dbg) dbg.textContent = "VIP picks loaded ✅ (" + (data.picks || []).length + ")";
   } catch (e) {
     console.log("VIP picks load failed", e);
+    if (dbg) dbg.textContent = "VIP picks ERROR: " + (e?.message || e);
   }
 }
 
-// make it callable from wallet-v1.js
 window.loadVipPicks = loadVipPicks;
+
+// Force one load on page load (safe even if VIP is locked)
+setTimeout(() => {
+  if (window.loadVipPicks) window.loadVipPicks();
+}, 800);
