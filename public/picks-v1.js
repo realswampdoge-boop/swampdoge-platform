@@ -141,11 +141,22 @@ async function refreshVipForWallet(wallet) {
     setDebug("Checking SwampDoge...");
     setSwampBal("...");
 
-    const balance = await getSwampdogeBalance(wallet);
+    const balance = 420000;
 
     setSwampBal(balance);
 
-    const unlocked = Number(balance) >= Number(MIN_SWAMPDOGE);
+    const VIP_REQUIREMENT = 1000000;
+const unlocked = Number(balance) >= VIP_REQUIREMENT;
+     const progress = Math.min(
+  100,
+  (Number(balance) / VIP_REQUIREMENT) * 100
+);
+
+setDebug(
+  unlocked
+    ? "VIP UNLOCKED ✅"
+    : "VIP Progress: " + progress.toFixed(1) + "%"
+);
     showVip(unlocked);
 
     setDebug(unlocked ? "VIP UNLOCKED ✅" : "VIP LOCKED 🔒");
