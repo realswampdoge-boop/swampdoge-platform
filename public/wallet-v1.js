@@ -147,10 +147,8 @@ function unlockVIP() {
   
   // LOAD VIP PICKS
 setTimeout(() => {
-  if (window.loadVipPicks) {
-    window.loadVipPicks();
-  }
- }, 200);
+  if (window.loadVipPicks) window.loadVipPicks();
+}, 200);
   
 }
 
