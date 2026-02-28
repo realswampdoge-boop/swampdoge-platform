@@ -139,3 +139,16 @@ async function checkVIPStatus(walletAddress) {
     console.log("VIP check failed", error);
   }
 }
+function unlockVIP() {
+  const locked = document.getElementById("vipLocked");
+  const content = document.getElementById("vipContent");
+  if (locked) locked.style.display = "none";
+  if (content) content.style.display = "block";
+}
+
+function lockVIP() {
+  const locked = document.getElementById("vipLocked");
+  const content = document.getElementById("vipContent");
+  if (locked) locked.style.display = "block";
+  if (content) content.style.display = "none";
+}
