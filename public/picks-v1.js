@@ -222,3 +222,64 @@ window.loadVipPicks = loadVipPicks;
 setTimeout(() => {
   if (window.loadVipPicks) window.loadVipPicks();
 }, 800);
+
+// =============================
+// 🛠️ ADMIN PANEL UI
+// =============================
+(function initAdminPanel() {
+  const btnToggle = document.getElementById("btnAdminToggle");
+  const panel = document.getElementById("adminPanel");
+  const pinInput = document.getElementById("adminPin");
+  const picksBox = document.getElementById("adminPicks");
+  const btnPublish = document.getElementById("btnPublish");
+  const status = document.getElementById("adminStatus");
+
+  if (!btnToggle || !panel || !picksBox || !btnPublish || !status) return;
+
+  // Toggle panel
+  btnToggle.addEventListener("click", () => {
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+    status.textContent = "";
+  });
+
+  // Prefill with current picks (from DOM list)
+  btnToggle.addEventListener("click", () => {
+    const ul = document.getElementById("vipPicksList");
+    if (!ul) return;
+    const current = Array.from(ul.querySelectorAll("li")).map(li => li.textContent || "");
+    if (current.length) picksBox.value = current.join("\n");
+  });
+
+  // Publish
+  btnPublish.addEventListener("click", async () => {
+    const pin = (pinInput.value || "").trim();
+    const picks = (picksBox.value || "")
+      .split("\n")
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    if (!pin) return (status.textContent = "Enter Admin PIN.");
+    if (!picks.length) return (status.textContent = "Add at least 1 pick.");
+
+    status.textContent = "Publishing...";
+
+    try {
+      const res = await fetch("/api/update-vip-picks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, picks })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+
+      status.textContent = "Published ✅ Reloading picks...";
+      // Refresh picks from JSON after publish
+      setTimeout(() => {
+        if (window.loadVipPicks) window.loadVipPicks();
+      }, 500);
+    } catch (e) {
+      status.textContent = "Publish failed: " + (e?.message || e);
+    }
+  });
+})();
