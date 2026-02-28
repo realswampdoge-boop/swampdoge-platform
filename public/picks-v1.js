@@ -192,7 +192,7 @@ window.addEventListener("DOMContentLoaded", () => {
 // =============================
 async function loadVipPicks() {
   try {
-    const res = await fetch("./vip-picks.json?v=" + Date.now());
+    const res = await fetch("/vip-picks.json?v=" + Date.now());
     const data = await res.json();
 
     const ul = document.getElementById("vipPicksList");
