@@ -107,6 +107,7 @@ async function getTokenBalance(walletAddress) {
     document.getElementById("debugText").textContent =
       "TOKEN SCAN COMPLETE ✅";
 window.__SWAMPDOGE_BALANCE__ = balance;
+    checkVIPStatus(window.__SWAMPDOGE_WALLET__ || "");
 return balance;
     
   } catch (e) {
