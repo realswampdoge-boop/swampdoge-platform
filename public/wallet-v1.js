@@ -144,6 +144,12 @@ function unlockVIP() {
   const content = document.getElementById("vipContent");
   if (locked) locked.style.display = "none";
   if (content) content.style.display = "block";
+  // LOAD VIP PICKS
+setTimeout(() => {
+  if (window.loadVipPicks) {
+    window.loadVipPicks();
+  }
+}, 200);
   if (window.loadVipPicks) window.loadVipPicks();
 }
 
