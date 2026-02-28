@@ -4,5 +4,11 @@
       "source": "/vip-picks.json",
       "destination": "/api/vip-picks"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron-daily",
+      "schedule": "0 14 * * *"
+    }
   ]
 }
