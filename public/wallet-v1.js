@@ -124,7 +124,7 @@ async function checkVIPStatus(walletAddress) {
   try {
 
     // TEMP FAKE BALANCE (we add real blockchain check next)
-    const swampBalance = 1500000;
+    const swampBalance = window.__SWAMPDOGE_BALANCE__ || 0;
 
     if (swampBalance >= 1000000) {
       isVIP = true;
