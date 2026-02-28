@@ -144,7 +144,16 @@ function unlockVIP() {
   const content = document.getElementById("vipContent");
   if (locked) locked.style.display = "none";
   if (content) content.style.display = "block";
-  
+  // 🔒 ADMIN WALLET CHECK
+const adminBtn = document.getElementById("adminBtn");
+
+if (adminBtn) {
+  if (walletAddress === ADMIN_WALLET) {
+    adminBtn.style.display = "block";
+  } else {
+    adminBtn.style.display = "none";
+  }
+}
   // LOAD VIP PICKS
 setTimeout(() => {
   if (window.loadVipPicks) window.loadVipPicks();
