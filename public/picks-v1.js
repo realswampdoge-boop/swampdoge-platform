@@ -159,7 +159,6 @@ setDebug(
 );
     showVip(unlocked);
 
-    setDebug(unlocked ? "VIP UNLOCKED ✅" : "VIP LOCKED 🔒");
   } catch (e) {
     console.log(e);
     setDebug("Balance check error ❌");
