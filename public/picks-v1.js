@@ -146,11 +146,6 @@ async function refreshVipForWallet(wallet) {
     setSwampBal(balance);
 
     const VIP_REQUIREMENT = 1000000;
-const unlocked = Number 200000>= VIP_REQUIREMENT;
-     const progress = Math.min(
-  100,
-  (Number(balance) / VIP_REQUIREMENT) * 100
-);
 
 setDebug(
   unlocked
