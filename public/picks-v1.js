@@ -209,7 +209,12 @@ async function loadVipPicks() {
 
     (data.picks || []).forEach((p) => {
       const li = document.createElement("li");
-      li.textContent = p;
+    p.split(",").forEach(text => {
+  const item = document.createElement("li");
+  item.textContent = text.trim();
+  ul.appendChild(item);
+});
+return;
       ul.appendChild(li);
     });
 
