@@ -209,3 +209,27 @@ async function loadVipPicks() {
 }
 
 window.loadVipPicks = loadVipPicks;
+// =============================
+// 🐊 VIP PICKS AUTO-LOADER
+// =============================
+async function loadVipPicks() {
+  try {
+    const res = await fetch("./vip-picks.json?v=" + Date.now());
+    const data = await res.json();
+
+    const ul = document.getElementById("vipPicksList");
+    if (!ul) return;
+
+    ul.innerHTML = "";
+    (data.picks || []).forEach((p) => {
+      const li = document.createElement("li");
+      li.textContent = p;
+      ul.appendChild(li);
+    });
+  } catch (e) {
+    console.log("VIP picks load failed", e);
+  }
+}
+
+// make it callable from wallet-v1.js
+window.loadVipPicks = loadVipPicks;
