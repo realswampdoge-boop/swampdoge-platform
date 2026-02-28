@@ -144,6 +144,7 @@ function unlockVIP() {
   const content = document.getElementById("vipContent");
   if (locked) locked.style.display = "none";
   if (content) content.style.display = "block";
+  if (window.loadVipPicks) window.loadVipPicks();
 }
 
 function lockVIP() {
