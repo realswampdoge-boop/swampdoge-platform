@@ -26,7 +26,8 @@ async function connectWallet() {
       setWallet(addr);
 // 🔥 FORCE VIP BALANCE CHECK
 window.__SWAMPDOGE_WALLET__ = addr;
-
+      
+checkVIPStatus(addr);
 window.dispatchEvent(
   new CustomEvent("swampdoge:wallet", {
     detail: { addr }
@@ -112,5 +113,27 @@ async function getTokenBalance(walletAddress) {
     document.getElementById("debugText").textContent =
       "TOKEN ERROR ❌";
     return 0;
+  }
+}
+// 🐊 SWAMPDOGE VIP SYSTEM
+
+let isVIP = false;
+
+async function checkVIPStatus(walletAddress) {
+
+  try {
+
+    // TEMP FAKE BALANCE (we add real blockchain check next)
+    const swampBalance = 1500000;
+
+    if (swampBalance >= 1000000) {
+      isVIP = true;
+      unlockVIP();
+    } else {
+      lockVIP();
+    }
+
+  } catch (error) {
+    console.log("VIP check failed", error);
   }
 }
