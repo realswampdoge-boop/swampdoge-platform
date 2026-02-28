@@ -1,3 +1,4 @@
+// api/publishVip.js
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Only POST allowed" });
@@ -7,28 +8,31 @@ export default async function handler(req, res) {
     const body =
       typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
 
-    // accept pin or password
+    // Accept password OR pin from the client
     const provided = String(body.password ?? body.pin ?? "").trim();
-    const ADMIN_PIN = String(process.env.ADMIN_PIN || process.env.ADMIN_PASSWORD || "swampadmin").trim();
+
+    // Your admin secret (from Vercel env). Fallback keeps it working if env missing.
+    const ADMIN_PIN = String(process.env.ADMIN_PIN || "swampadmin").trim();
 
     if (!provided || provided !== ADMIN_PIN) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // accept textarea content from multiple keys
-    const rawText = String(body.text ?? body.picksText ?? body.picks ?? "");
+    // Raw textarea text can come in as body.picks (string) or body.text
+    const rawText = String(body.picks ?? body.text ?? "");
 
-    // ALWAYS convert to array (split by newlines)
+    // ✅ Convert multiline textarea into an ARRAY (each line = 1 pick)
     const picksArray = rawText
       .split(/\r?\n/)
-      .map((s) => s.trim())
+      .map((p) => p.trim())
       .filter(Boolean);
 
-    // GitHub vars
+    // GitHub env vars
     const token = process.env.GITHUB_TOKEN;
     const owner = process.env.GITHUB_OWNER;
     const repo = process.env.GITHUB_REPO;
 
+    // ✅ Always write to this exact file
     const path = "public/vip-picks.json";
 
     if (!token || !owner || !repo) {
@@ -37,7 +41,7 @@ export default async function handler(req, res) {
 
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
 
-    // Get SHA
+    // Get current SHA (required for updates)
     const getResp = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -55,7 +59,7 @@ export default async function handler(req, res) {
 
     const content = Buffer.from(JSON.stringify(payload, null, 2)).toString("base64");
 
-    // Write file
+    // Update the file
     const putResp = await fetch(url, {
       method: "PUT",
       headers: {
@@ -77,7 +81,12 @@ export default async function handler(req, res) {
     }
 
     res.setHeader("Cache-Control", "no-store");
-    return res.status(200).json({ success: true, message: "Published ✅", picks: picksArray });
+    return res.status(200).json({
+      success: true,
+      message: "Published ✅",
+      picks: picksArray,
+      count: picksArray.length,
+    });
   } catch (err) {
     return res.status(500).json({ message: "Server error", error: String(err) });
   }
