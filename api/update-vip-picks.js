@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
     const { password, picks } = body || {};
 
-    if (password !== "swampadmin") {
+  if (String(password).trim() !== "1234") {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
