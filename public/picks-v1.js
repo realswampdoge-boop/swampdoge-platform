@@ -146,7 +146,18 @@ async function refreshVipForWallet(wallet) {
     setSwampBal(balance);
 
     const VIP_REQUIREMENT = 1000000;
+const unlocked = Number(balance) >= VIP_REQUIREMENT;
 
+const progress = Math.min(
+  100,
+  (Number(balance) / VIP_REQUIREMENT) * 100
+);
+     const bar = document.getElementById("vipProgressBar");
+const txt = document.getElementById("vipProgressText");
+
+if (bar) bar.style.width = progress + "%";
+if (txt) txt.textContent =
+  "VIP Progress: " + progress.toFixed(1) + "%";
 setDebug(
   unlocked
     ? "VIP UNLOCKED ✅"
