@@ -207,16 +207,15 @@ async function loadVipPicks() {
 
     ul.innerHTML = "";
 
-    (data.picks || []).forEach((p) => {
-      const li = document.createElement("li");
-    p.split(",").forEach(text => {
-  const item = document.createElement("li");
-  item.textContent = text.trim();
-  ul.appendChild(item);
+(data.picks || []).forEach((p) => {
+
+  p.split(",").forEach(text => {
+    const li = document.createElement("li");
+    li.textContent = text.trim();
+    ul.appendChild(li);
+  });
+
 });
-return;
-      ul.appendChild(li);
-    });
 
     if (dbg) dbg.textContent = "VIP picks loaded ✅ (" + (data.picks || []).length + ")";
   } catch (e) {
