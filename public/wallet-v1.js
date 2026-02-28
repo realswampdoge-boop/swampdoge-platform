@@ -106,8 +106,9 @@ async function getTokenBalance(walletAddress) {
 
     document.getElementById("debugText").textContent =
       "TOKEN SCAN COMPLETE ✅";
-
-    return balance;
+window.__SWAMPDOGE_BALANCE__ = balance;
+return balance;
+    
   } catch (e) {
     console.log(e);
     document.getElementById("debugText").textContent =
