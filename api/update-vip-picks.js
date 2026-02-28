@@ -7,27 +7,28 @@ export default async function handler(req, res) {
     const body =
       typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
 
-    // Accept pin/password from the Admin Panel input
-    const providedPin = String(body.pin ?? body.password ?? "").trim();
-    const ADMIN_PIN = String(process.env.ADMIN_PIN || process.env.ADMIN_PASSWORD || "1234").trim();
+    // accept pin or password
+    const provided = String(body.password ?? body.pin ?? "").trim();
+    const ADMIN_PIN = String(process.env.ADMIN_PIN || process.env.ADMIN_PASSWORD || "swampadmin").trim();
 
-    if (!providedPin || providedPin !== ADMIN_PIN) {
-      return res.status(401).json({ message: "Unauthorized (wrong PIN)" });
+    if (!provided || provided !== ADMIN_PIN) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Accept textarea content from multiple possible keys
-    const rawText = body.text ?? body.picksText ?? body.picks ?? "";
-    const picksArray = String(rawText)
-      .split("\n")
-      .map(s => s.trim())
+    // accept textarea content from multiple keys
+    const rawText = String(body.text ?? body.picksText ?? body.picks ?? "");
+
+    // ALWAYS convert to array (split by newlines)
+    const picksArray = rawText
+      .split(/\r?\n/)
+      .map((s) => s.trim())
       .filter(Boolean);
 
-    // GitHub env vars (you already have these in Vercel)
+    // GitHub vars
     const token = process.env.GITHUB_TOKEN;
     const owner = process.env.GITHUB_OWNER;
     const repo = process.env.GITHUB_REPO;
 
-    // Always write to this file
     const path = "public/vip-picks.json";
 
     if (!token || !owner || !repo) {
@@ -36,7 +37,7 @@ export default async function handler(req, res) {
 
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
 
-    // Get current SHA (needed to update)
+    // Get SHA
     const getResp = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -47,13 +48,14 @@ export default async function handler(req, res) {
     const current = await getResp.json();
     const sha = current?.sha;
 
-    const newJson = {
+    const payload = {
       updated: new Date().toISOString().slice(0, 10),
       picks: picksArray,
     };
 
-    const content = Buffer.from(JSON.stringify(newJson, null, 2)).toString("base64");
+    const content = Buffer.from(JSON.stringify(payload, null, 2)).toString("base64");
 
+    // Write file
     const putResp = await fetch(url, {
       method: "PUT",
       headers: {
@@ -74,6 +76,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ message: "GitHub write failed", error: result });
     }
 
+    res.setHeader("Cache-Control", "no-store");
     return res.status(200).json({ success: true, message: "Published ✅", picks: picksArray });
   } catch (err) {
     return res.status(500).json({ message: "Server error", error: String(err) });
