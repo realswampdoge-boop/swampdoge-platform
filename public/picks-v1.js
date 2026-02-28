@@ -6,6 +6,10 @@ window.__PICKS_V1_LOADED__ = true;
 
 console.log("✅ picks-v1.js LOADED");
 
+// 🔒 SwampDoge Admin Lock
+const ADMIN_WALLET = "AumagmtFTNer1QYcCmpG3AyqbLKMD9ByDg4okB3wtiBy";
+const ADMIN_PIN = "7777"; // change this if you want a different PIN
+
 // ===================== CONFIG =====================
 
 // VIP requirement (set back to 1000000 when ready)
