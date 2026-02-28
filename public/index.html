@@ -46,11 +46,22 @@
 <h2>🔥 Free Picks</h2>
 <div id="freePicks"></div>
 <ul id="freePicksList"></ul>
-<h2>🔒 VIP Picks</h2>
- <ul id="vipPicksList"></ul>
-<div id="vipLocked">Hold $SWAMP to unlock VIP picks.</div>
-<div id="vipContent" style="display:none;"></div>
+<!-- VIP SECTION -->
+<div id="vipSection">
 
+  <!-- what people see when locked -->
+  <div id="vipLocked">
+    🔒 VIP Picks
+    <div style="opacity:0.75; margin-top:6px;">Hold $SWAMP to unlock VIP picks</div>
+  </div>
+
+  <!-- what people see when unlocked -->
+  <div id="vipContent" style="display:none;">
+    🔓 VIP Picks Unlocked 🐊
+    <ul id="vipPicksList"></ul>
+  </div>
+
+</div>
     
 
     <!-- IMPORTANT: this must be here -->
