@@ -54,18 +54,28 @@ export default async function handler(req, res) {
     const content = Buffer.from(JSON.stringify(newJson, null, 2)).toString("base64");
 
     const putResp = await fetch(url, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: "Update VIP picks",
-        content,
-        sha,
-      }),
-    });
+  method: "PUT",
+  headers: {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Accept: "application/vnd.github+json",
+  },
+  body: JSON.stringify({
+    message: "Update VIP picks",
+    content,
+    sha,
+  }),
+});
+
+const result = await putResp.json();
+
+if (!putResp.ok) {
+  console.log("GITHUB ERROR:", result);
+  return res.status(500).json({
+    message: "GitHub update failed",
+    error: result,
+  });
+}
 
     const putJson = await putResp.json();
     if (!putResp.ok) {
