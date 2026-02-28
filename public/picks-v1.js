@@ -186,3 +186,26 @@ window.addEventListener("DOMContentLoaded", () => {
     if (addr) refreshVipForWallet(addr);
   }, 1200);
 });
+// 🐊 LOAD VIP PICKS FROM JSON
+async function loadVipPicks() {
+  try {
+    const res = await fetch("./vip-picks.json?v=" + Date.now());
+    const data = await res.json();
+
+    const list = document.getElementById("vipPicksList");
+    if (!list) return;
+
+    list.innerHTML = "";
+
+    data.picks.forEach(pick => {
+      const li = document.createElement("li");
+      li.textContent = pick;
+      list.appendChild(li);
+    });
+
+  } catch (err) {
+    console.log("VIP picks load error", err);
+  }
+}
+
+window.loadVipPicks = loadVipPicks;
