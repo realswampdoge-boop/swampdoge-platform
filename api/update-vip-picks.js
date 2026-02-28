@@ -6,15 +6,29 @@ export default async function handler(req, res) {
   try {
     const { pin, picks } = req.body || {};
 
-    if (!pin || !Array.isArray(picks)) {
-      return res.status(400).json({ error: "Missing pin or picks" });
-    }
+  // ===============================
+// ✅ SWAMPDOGE ADMIN SECURITY
+// ===============================
 
-    // Check admin PIN (stored in Vercel env)
-    if (!process.env.ADMIN_PIN || pin !== process.env.ADMIN_PIN) {
-      return res.status(401).json({ error: "Wrong PIN" });
-    }
+// Read values from request
+const { pin, picks } = req.body || {};
 
+// Validate request
+if (!pin || !Array.isArray(picks)) {
+  return res.status(400).json({
+    error: "Missing pin or picks"
+  });
+}
+
+// Admin PIN (from Vercel env or fallback)
+const ADMIN_PIN = (process.env.ADMIN_PIN || "7777").trim();
+
+// Compare PIN
+if (String(pin).trim() !== ADMIN_PIN) {
+  return res.status(401).json({
+    error: "Wrong PIN"
+  });
+}
     // GitHub settings from env
     const token = process.env.GITHUB_TOKEN;
     const owner = process.env.GITHUB_OWNER;
