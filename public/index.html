@@ -62,7 +62,32 @@
   </div>
 
 </div>
-    
+ <hr />
+
+<!-- 🛠️ ADMIN PANEL (hidden by default) -->
+<div id="adminPanel" style="display:none;">
+  <h3>🛠️ Admin Panel</h3>
+
+  <div class="small" style="opacity:0.8; margin-bottom:8px;">
+    Update VIP picks here and tap Publish.
+  </div>
+
+  <input id="adminPin" type="password" placeholder="Admin PIN" style="width:100%; padding:10px; border-radius:10px; margin-bottom:10px;" />
+
+  <textarea id="adminPicks" rows="6" placeholder="One pick per line"
+    style="width:100%; padding:10px; border-radius:10px; margin-bottom:10px;"></textarea>
+
+  <button id="btnPublish" style="width:100%; padding:12px; border-radius:14px; font-weight:600;">
+    Publish VIP Picks 🚀
+  </button>
+
+  <div class="small" id="adminStatus" style="margin-top:10px; opacity:0.9;"></div>
+</div>
+
+<!-- small admin toggle (you can hide this later) -->
+<button id="btnAdminToggle" style="margin-top:10px; width:100%; padding:10px; border-radius:14px; opacity:0.7;">
+  Admin
+</button>   
 
     <!-- IMPORTANT: this must be here -->
 <!-- IMPORTANT: load wallet first, then picks -->
