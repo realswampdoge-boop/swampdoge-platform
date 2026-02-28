@@ -129,46 +129,69 @@ async function getSwampdogeBalance(wallet) {
 
 // ===================== MAIN VIP CHECK =====================
 
+// ===================== MAIN VIP CHECK (REPLACE WHOLE FUNCTION) =====================
 async function refreshVipForWallet(wallet) {
   try {
     if (!wallet) {
       setDebug("No wallet");
       showVip(false);
       setSwampBal("0");
+
+      // Reset progress UI when no wallet
+      const bar = document.getElementById("vipProgressBar");
+      const txt = document.getElementById("vipProgressText");
+      if (bar) bar.style.width = "0%";
+      if (txt) txt.textContent = "VIP Progress: 0.0%";
+
       return;
     }
 
     setDebug("Checking SwampDoge...");
     setSwampBal("...");
 
-    const balance = 200000
+    // ✅ REAL BALANCE (normal mode)
+    let balance = await getSwampdogeBalance(wallet);
+
+    // 🧪 TEST MODE (optional)
+    // Uncomment ONE of these to test progress bar quickly, then re-comment after:
+    // balance = 200000;    // 20%
+    // balance = 500000;    // 50%
+    // balance = 900000;    // 90%
+    // balance = 1000000;   // 100% (unlocked)
 
     setSwampBal(balance);
 
     const VIP_REQUIREMENT = 1000000;
-const unlocked = Number(balance) >= VIP_REQUIREMENT;
 
-const progress = Math.min(
-  100,
-  (Number(balance) / VIP_REQUIREMENT) * 100
-);
-     const bar = document.getElementById("vipProgressBar");
-const txt = document.getElementById("vipProgressText");
+    const unlocked = Number(balance) >= VIP_REQUIREMENT;
 
-if (bar) bar.style.width = progress + "%";
-if (txt) txt.textContent =
-  "VIP Progress: " + progress.toFixed(1) + "%";
-setDebug(
-  unlocked
-    ? "VIP UNLOCKED ✅"
-    : "VIP Progress: " + progress.toFixed(1) + "%"
-);
+    const progress = Math.min(
+      100,
+      (Number(balance) / VIP_REQUIREMENT) * 100
+    );
+
+    // ✅ Update progress bar + label (works whether locked or unlocked)
+    const bar = document.getElementById("vipProgressBar");
+    const txt = document.getElementById("vipProgressText");
+
+    if (bar) bar.style.width = progress.toFixed(1) + "%";
+    if (txt) txt.textContent = "VIP Progress: " + progress.toFixed(1) + "%";
+
+    // ✅ Show/Hide VIP section
     showVip(unlocked);
 
+    // ✅ Debug message
+    setDebug(unlocked ? "VIP UNLOCKED ✅" : "VIP Progress: " + progress.toFixed(1) + "%");
   } catch (e) {
     console.log(e);
     setDebug("Balance check error ❌");
     showVip(false);
+
+    // On error, also reset progress UI
+    const bar = document.getElementById("vipProgressBar");
+    const txt = document.getElementById("vipProgressText");
+    if (bar) bar.style.width = "0%";
+    if (txt) txt.textContent = "VIP Progress: 0.0%";
   }
 }
 
