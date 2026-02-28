@@ -141,7 +141,7 @@ async function refreshVipForWallet(wallet) {
     setDebug("Checking SwampDoge...");
     setSwampBal("...");
 
-    const balance = 420000;
+    const balance = await getSwampdogeBalance(wallet);
 
     setSwampBal(balance);
 
