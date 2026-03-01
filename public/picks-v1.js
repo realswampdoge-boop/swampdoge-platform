@@ -213,7 +213,29 @@ window.addEventListener("DOMContentLoaded", () => {
     const addr = window.__SWAMPDOGE_WALLET__ || null;
     if (addr) refreshVipForWallet(addr);
   }, 500);
+// ================= AUTO REFRESH =================
+if (!window.__SWAMPDOGE_PICKS_POLLING__) {
+  window.__SWAMPDOGE_PICKS_POLLING__ = true;
 
+  const REFRESH_MS = 25000;
+
+  setInterval(() => {
+    const addr = window.__SWAMPDOGE_WALLET__;
+    if (addr) {
+      refreshVipForWallet(addr);
+    }
+
+    if (typeof loadVipPicks === "function") {
+      loadVipPicks();
+    }
+
+    if (typeof loadFreePicks === "function") {
+      loadFreePicks();
+    }
+
+    console.log("Auto refresh running ✅");
+  }, REFRESH_MS);
+}
   // FORCE BALANCE CHECK AFTER LOAD
   setTimeout(() => {
     const addr = window.__SWAMPDOGE_WALLET__ || null;
