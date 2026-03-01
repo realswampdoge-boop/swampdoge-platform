@@ -1,3 +1,9 @@
+console.log("✅ swampdoge-all.js LOADED");
+window.__SWAMPDOGE_ALL_LOADED__ = true;
+setTimeout(() => {
+  const d = document.getElementById("debugText");
+  if (d) d.textContent = "JS LOADED ✅";
+}, 300);
 /* swampdoge-all.js
    All-in-one: wallet + picks + VIP + admin + AI picks
 
