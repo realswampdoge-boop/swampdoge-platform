@@ -225,10 +225,10 @@ setDebug(`BAL ✅ ${bal}`);
 
     // 3) picks
     await loadVipPicks();
-     await loadAiPicks();
+   await loadAiPicks();
   }
 
-  // ====== AI PICKS ======
+  
   // ======= AI PICKS =======
 async function loadAiPicks() {
   try {
