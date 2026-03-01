@@ -388,6 +388,42 @@ Over 220.5"></textarea>
     });
 
     window.addEventListener("DOMContentLoaded", boot);
+ // ===============================
+// FIX: Hook AI + VIP autoload
+// ===============================
+
+// grab the DOM elements (these IDs must exist in your HTML)
+let aiPicksMeta = document.getElementById("aiPicksMeta");
+let aiPicksList = document.getElementById("aiPicksList");
+let vipPicksList = document.getElementById("vipPicksList"); // <- MUST exist
+
+// If your HTML section was removed, this will at least tell you immediately
+if (!aiPicksMeta || !aiPicksList) {
+  console.log("Missing AI picks elements:", { aiPicksMeta, aiPicksList });
+}
+if (!vipPicksList) {
+  console.log("Missing VIP picks element:", { vipPicksList });
+}
+
+// safe render wrapper
+async function refreshAllPicks() {
+  try {
+    if (typeof renderAiPicks === "function") await renderAiPicks();
+    if (typeof loadVipPicks === "function") await loadVipPicks();
+  } catch (e) {
+    console.log("refreshAllPicks error", e);
+  }
+}
+
+// run on page load
+window.addEventListener("DOMContentLoaded", () => {
+  refreshAllPicks();
+
+  // auto refresh every 60 seconds (change if you want)
+  setInterval(() => {
+    refreshAllPicks();
+  }, 60000);
+});
   </script>
 </body>
 </html>
