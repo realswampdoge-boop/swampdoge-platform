@@ -439,8 +439,7 @@ aiPicksMeta = document.getElement
     }
 
     // Load picks immediately (AI + VIP list)
-    // Load picks immediately (AI + VIP list)
-refreshAllPicks();
+    
 
     // If already connected (Phantom can auto-inject)
     setTimeout(async () => {
