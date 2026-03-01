@@ -120,42 +120,53 @@ return balance;
   }
 }
 // 🐊 SWAMPDOGE VIP SYSTEM
-
 let isVIP = false;
 
-async function checkVIPStatus(walletAddress) {
+// IMPORTANT: put your real mint here (SPL token mint address)
+const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"; // <-- confirm this is the mint
 
-  try {
-
-    const connection = new solanaWeb3.Connection(
-  "https://api.mainnet-beta.solana.com"
-);
-}
 async function getSwampBalance(walletAddress) {
   try {
-    const tokenAccounts =
-      await connection.getParsedTokenAccountsByOwner(
-        new solanaWeb3.PublicKey(walletAddress),
-        { mint: new solanaWeb3.PublicKey(SWAMP_MINT) }
-      );
+    const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com");
+
+    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+      new solanaWeb3.PublicKey(walletAddress),
+      { mint: new solanaWeb3.PublicKey(SWAMP_MINT) }
+    );
 
     let balance = 0;
 
-    tokenAccounts.value.forEach(acc => {
-      balance +=
-        acc.account.data.parsed.info.tokenAmount.uiAmount || 0;
+    tokenAccounts.value.forEach((acc) => {
+      const amt = Number(acc.account.data.parsed.info.tokenAmount.uiAmount || 0);
+      balance += amt;
     });
 
     window.__SWAMPDOGE_BALANCE__ = balance;
-
     return balance;
-
   } catch (e) {
-    console.log("Balance error", e);
+    console.log(e);
+    const el = document.getElementById("debugText");
+    if (el) el.textContent = "TOKEN ERROR ❌";
     return 0;
   }
 }
 
+async function checkVIPStatus(walletAddress) {
+  try {
+    const swampBalance = await getSwampBalance(walletAddress);
+
+    // 1,000,000 to unlock (change if you want)
+    if (swampBalance >= 1000000) {
+      isVIP = true;
+      unlockVIP();
+    } else {
+      isVIP = false;
+      lockVIP();
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
     if (swampBalance >= 1000000) {
       isVIP = true;
       unlockVIP();
