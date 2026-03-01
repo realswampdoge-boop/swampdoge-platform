@@ -1,84 +1,191 @@
+// api/update-vip-picks.js
+// Updates vip-picks.json in GitHub using a secure admin key.
+// Works on Vercel serverless functions (Node runtime).
+
+function json(res, status, data) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.end(JSON.stringify(data));
+}
+
+function safeEqual(a = "", b = "") {
+  // constant-time-ish compare to avoid timing leaks
+  if (a.length !== b.length) return false;
+  let out = 0;
+  for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return out === 0;
+}
+
+function parsePicks(input) {
+  // Accept:
+  // - multi-line (one pick per line)
+  // - or comma-separated
+  // - or a mix of both
+  const raw = String(input || "");
+  const lines = raw.split(/\r?\n/);
+
+  const picks = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // If they paste comma-separated, split it too
+    const parts = trimmed.split(",").map((s) => s.trim()).filter(Boolean);
+    if (parts.length === 0) continue;
+
+    for (const p of parts) {
+      // avoid super tiny junk
+      if (p.length >= 2) picks.push(p);
+    }
+  }
+
+  // de-dupe while keeping order
+  const seen = new Set();
+  return picks.filter((p) => (seen.has(p) ? false : (seen.add(p), true)));
+}
+
+async function ghFetch(url, options) {
+  const res = await fetch(url, options);
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch (_) {}
+  return { res, data, text };
+}
+
 export default async function handler(req, res) {
+  // CORS/preflight (safe)
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") return json(res, 200, { ok: true });
+
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Only POST allowed" });
+    return json(res, 405, { ok: false, message: "Use POST" });
   }
 
-  try {
-    const body =
-      typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
+  // ---- REQUIRED ENV VARS ----
+  const ADMIN_KEY = process.env.ADMIN_KEY || "";
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
+  const GITHUB_OWNER = process.env.GITHUB_OWNER || "";
+  const GITHUB_REPO = process.env.GITHUB_REPO || "";
+  const GITHUB_BRANCH = process.env.GITHUB_BRANCH || "main";
 
-    // accept pin or password
-    const provided = String(body.password ?? body.pin ?? "").trim();
-    const ADMIN_PIN = String(process.env.ADMIN_PIN || process.env.ADMIN_PASSWORD || "swampadmin").trim();
+  // The file you want to update in the repo.
+  // Change this if your vip-picks.json is in a different place.
+  const VIP_PICKS_PATH = process.env.VIP_PICKS_PATH || "vip-picks.json";
 
-    if (!provided || provided !== ADMIN_PIN) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    // accept textarea content from multiple keys
-    const rawText = String(body.text ?? body.picksText ?? body.picks ?? "");
-
-    // ALWAYS convert to array (split by newlines)
-    const picksArray = rawText
-      .split(/\r?\n/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    // GitHub vars
-    const token = process.env.GITHUB_TOKEN;
-    const owner = process.env.GITHUB_OWNER;
-    const repo = process.env.GITHUB_REPO;
-
-    const path = "public/vip-picks.json";
-
-    if (!token || !owner || !repo) {
-      return res.status(500).json({ message: "Missing GitHub env vars" });
-    }
-
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-
-    // Get SHA
-    const getResp = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-      },
+  if (!ADMIN_KEY || !GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) {
+    return json(res, 500, {
+      ok: false,
+      message:
+        "Server not configured. Missing one of: ADMIN_KEY, GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO"
     });
-
-    const current = await getResp.json();
-    const sha = current?.sha;
-
-    const payload = {
-      updated: new Date().toISOString().slice(0, 10),
-      picks: picksArray,
-    };
-
-    const content = Buffer.from(JSON.stringify(payload, null, 2)).toString("base64");
-
-    // Write file
-    const putResp = await fetch(url, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: "Update VIP picks",
-        content,
-        sha,
-      }),
-    });
-
-    const result = await putResp.json();
-
-    if (!putResp.ok) {
-      return res.status(500).json({ message: "GitHub write failed", error: result });
-    }
-
-    res.setHeader("Cache-Control", "no-store");
-    return res.status(200).json({ success: true, message: "Published ✅", picks: picksArray });
-  } catch (err) {
-    return res.status(500).json({ message: "Server error", error: String(err) });
   }
+
+  // Parse body (Vercel usually gives req.body already as object)
+  let body = req.body;
+  if (typeof body === "string") {
+    try { body = JSON.parse(body); } catch (_) { body = { raw: body }; }
+  }
+  body = body || {};
+
+  // Admin key can be sent as:
+  // - body.adminKey
+  // - Authorization: Bearer <key>
+  const authHeader = req.headers.authorization || "";
+  const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  const providedKey = String(body.adminKey || bearer || "");
+
+  if (!safeEqual(providedKey, ADMIN_KEY)) {
+    return json(res, 401, { ok: false, message: "Unauthorized" });
+  }
+
+  // Action: "reset" or "update"
+  const action = String(body.action || "update").toLowerCase();
+
+  let picks = [];
+  if (action === "reset") {
+    picks = [
+      "🟢 VIP Picks reset for today",
+      "Add today’s picks in the Admin Panel 👇"
+    ];
+  } else {
+    picks = parsePicks(body.picksText);
+    if (picks.length === 0) {
+      return json(res, 400, { ok: false, message: "No picks provided" });
+    }
+  }
+
+  const payload = {
+    updated: new Date().toISOString().slice(0, 10),
+    picks
+  };
+
+  const apiBase = "https://api.github.com";
+  const contentsUrl = `${apiBase}/repos/${encodeURIComponent(
+    GITHUB_OWNER
+  )}/${encodeURIComponent(GITHUB_REPO)}/contents/${VIP_PICKS_PATH}?ref=${encodeURIComponent(
+    GITHUB_BRANCH
+  )}`;
+
+  // 1) Get current SHA (if file exists)
+  const get = await ghFetch(contentsUrl, {
+    method: "GET",
+    headers: {
+      Authorization: `token ${GITHUB_TOKEN}`,
+      Accept: "application/vnd.github+json"
+    }
+  });
+
+  let sha = null;
+  if (get.res.status === 200 && get.data && get.data.sha) {
+    sha = get.data.sha;
+  } else if (get.res.status !== 404) {
+    return json(res, 500, {
+      ok: false,
+      message: `GitHub GET failed: ${get.res.status}`,
+      details: get.data || get.text
+    });
+  }
+
+  // 2) PUT new content
+  const contentB64 = Buffer.from(JSON.stringify(payload, null, 2)).toString(
+    "base64"
+  );
+
+  const putBody = {
+    message: action === "reset" ? "Reset VIP picks" : "Update VIP picks",
+    content: contentB64,
+    branch: GITHUB_BRANCH
+  };
+  if (sha) putBody.sha = sha;
+
+  const put = await ghFetch(`${apiBase}/repos/${encodeURIComponent(
+    GITHUB_OWNER
+  )}/${encodeURIComponent(GITHUB_REPO)}/contents/${VIP_PICKS_PATH}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `token ${GITHUB_TOKEN}`,
+      Accept: "application/vnd.github+json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(putBody)
+  });
+
+  if (!put.res.ok) {
+    return json(res, 500, {
+      ok: false,
+      message: `GitHub PUT failed: ${put.res.status}`,
+      details: put.data || put.text
+    });
+  }
+
+  return json(res, 200, {
+    ok: true,
+    message: action === "reset" ? "vip-picks.json reset ✅" : "vip-picks.json updated ✅",
+    updated: payload.updated,
+    count: payload.picks.length
+  });
 }
