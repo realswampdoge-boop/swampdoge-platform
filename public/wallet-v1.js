@@ -1,4 +1,6 @@
 const SWAMP_MINT =
+  const RPC_URL = "https://rpc.ankr.com/solana";
+const connection = new solanaWeb3.Connection(RPC_URL, "confirmed");
 "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 // ✅ GLOBAL SOLANA CONNECTION
 const connection = new solanaWeb3.Connection(
