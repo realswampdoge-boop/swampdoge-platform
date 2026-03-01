@@ -130,7 +130,7 @@ async function checkVIPStatus(walletAddress) {
     const connection = new solanaWeb3.Connection(
   "https://api.mainnet-beta.solana.com"
 );
-
+}
 async function getSwampBalance(walletAddress) {
   try {
     const tokenAccounts =
