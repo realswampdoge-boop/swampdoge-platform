@@ -59,10 +59,12 @@ async function connectWalletSmart() {
   if (window.solana && window.solana.isPhantom) {
     return connectWallet();
   }
-window.connectWalletSmart = connectWalletSmart;
+
   // iPhone Safari: open Phantom via deep link
   return connectWalletMobile();
 }
+   window.connectWalletSmart = connectWalletSmart;
+window.connectWalletMobile = connectWalletMobile;
   function setDebug(msg) {
     if (debugEl) debugEl.textContent = msg;
   }
