@@ -187,7 +187,52 @@ async function refreshVipForWallet(wallet) {
 }
 
 // ===================== BOOTSTRAP =====================
+async function loadAiPicks() {
+  const metaEl = document.getElementById("aiPicksMeta");
+  const listEl = document.getElementById("aiPicksList");
 
+  if (!metaEl || !listEl) return;
+
+  try {
+    metaEl.textContent = "Loading AI picks…";
+    listEl.innerHTML = "";
+
+    // Cache-bust so it always pulls the newest publish
+    const res = await fetch(`/ai-picks.json?v=${Date.now()}`, { cache: "no-store" });
+
+    if (!res.ok) throw new Error(`AI picks fetch failed: ${res.status}`);
+
+    const data = await res.json();
+
+    const generatedAt = data.generatedAt ? new Date(data.generatedAt) : null;
+    const sport = data.sport ? String(data.sport).toUpperCase() : "SPORTS";
+    const picks = Array.isArray(data.picks) ? data.picks : [];
+
+    if (!picks.length) {
+      metaEl.textContent = `No AI picks found yet. (Sport: ${sport})`;
+      return;
+    }
+
+    metaEl.textContent =
+      `Updated: ${generatedAt ? generatedAt.toLocaleString() : "just now"} • Sport: ${sport}`;
+
+    // Render picks
+    for (const p of picks) {
+      const title = p.title || "Pick";
+      const reason = p.reason ? ` — ${p.reason}` : "";
+      const conf =
+        typeof p.confidence === "number" ? ` (${Math.round(p.confidence * 100)}%)` : "";
+
+      const li = document.createElement("li");
+      li.textContent = `${title}${conf}${reason}`;
+      listEl.appendChild(li);
+    }
+  } catch (e) {
+    console.log(e);
+    metaEl.textContent = "AI picks unavailable right now ❌";
+    listEl.innerHTML = "";
+  }
+}
 window.addEventListener("DOMContentLoaded", () => {
   // Grab elements (update these IDs if your HTML uses different ones)
   swampBalEl = document.getElementById("swampBal") || document.getElementById("swampBalance");
