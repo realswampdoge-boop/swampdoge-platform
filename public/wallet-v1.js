@@ -83,39 +83,52 @@ setWallet("Not connected");
 
 
 // ===== SWAMP TOKEN BALANCE =====
-async function getTokenBalance(walletAddress) {
+async function getSwampBalance(walletAddress) {
   try {
-    const connection = new solanaWeb3.Connection(RPC);
-
     const owner = new solanaWeb3.PublicKey(walletAddress);
+    const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
 
-    const tokens =
-      await connection.getParsedTokenAccountsByOwner(owner, {
-        programId: new solanaWeb3.PublicKey(
-          "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        ),
-      });
+    // Token Program IDs (classic + Token-2022)
+    const TOKEN_PROGRAM = new solanaWeb3.PublicKey(
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    );
+    const TOKEN_2022_PROGRAM = new solanaWeb3.PublicKey(
+      "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    );
 
-    let balance = 0;
+    async function fetchBalanceForProgram(programId) {
+      const resp = await connection.getParsedTokenAccountsByOwner(
+        owner,
+        { programId }
+      );
 
-    tokens.value.forEach((t) => {
-      const info = t.account.data.parsed.info;
+      let total = 0;
 
-      if (info.mint === SWAMP_MINT) {
-        balance += info.tokenAmount.uiAmount || 0;
+      for (const item of resp.value) {
+        const info = item.account.data.parsed.info;
+        if (info.mint !== mint.toBase58()) continue;
+
+        const amt = info.tokenAmount;
+        const decimals = Number(amt.decimals || 0);
+        const raw = Number(amt.amount || 0);
+        total += raw / Math.pow(10, decimals);
       }
-    });
 
-    document.getElementById("debugText").textContent =
-      "TOKEN SCAN COMPLETE ✅";
-window.__SWAMPDOGE_BALANCE__ = balance;
-    checkVIPStatus(window.__SWAMPDOGE_WALLET__ || "");
-return balance;
-    
+      return total;
+    }
+
+    const bal1 = await fetchBalanceForProgram(TOKEN_PROGRAM);
+    const bal2 = await fetchBalanceForProgram(TOKEN_2022_PROGRAM);
+
+    const total = bal1 + bal2;
+
+    // store + return
+    window.__SWAMPDOGE_BALANCE__ = total;
+    return total;
   } catch (e) {
     console.log(e);
-    document.getElementById("debugText").textContent =
-      "TOKEN ERROR ❌";
+    const el = document.getElementById("debugText");
+    if (el) el.textContent = "TOKEN ERROR ❌";
     return 0;
   }
 }
