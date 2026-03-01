@@ -1,36 +1,29 @@
 export default async function handler(req, res) {
   try {
-    const owner = process.env.GITHUB_OWNER;
-    const repo = process.env.GITHUB_REPO;
-    const path = process.env.GITHUB_FILE_PATH || "public/vip-picks.json";
-    const token = process.env.GITHUB_TOKEN;
+    const origin =
+      (req.headers["x-forwarded-proto"] || "https") + "://" + req.headers.host;
 
-    if (!owner || !repo || !token) {
-      return res.status(500).json({ ok: false, error: "Missing GitHub env vars" });
-    }
-
-    const apiBase = "https://api.github.com";
-    const url = `${apiBase}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}`;
-
-    const gh = await fetch(url, {
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: "application/vnd.github+json"
-      }
+    // Read the latest deployed JSON from /public
+    const r = await fetch(origin + "/vip-picks.json", {
+      cache: "no-store",
+      headers: { "cache-control": "no-store" },
     });
 
-    const data = await gh.json();
-    if (!gh.ok) {
-      return res.status(gh.status).json({ ok: false, error: "GitHub read failed", details: data });
+    if (!r.ok) {
+      res.setHeader("Cache-Control", "no-store");
+      return res.status(r.status).json({ error: "vip-picks.json not found" });
     }
 
-    const content = Buffer.from(data.content || "", "base64").toString("utf8");
-    const json = JSON.parse(content);
+    const data = await r.json();
 
-    res.setHeader("Cache-Control", "no-store");
-    return res.status(200).json(json);
+    // Prevent edge/browser caching
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, max-age=0"
+    );
+    return res.status(200).json(data);
   } catch (e) {
-    console.log(e);
-    return res.status(500).json({ ok: false, error: "Server error" });
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(500).json({ error: String(e) });
   }
 }
