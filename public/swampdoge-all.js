@@ -126,7 +126,7 @@ async function connectWalletSmart() {
 
       setStatus("Connected ✅");
       setWallet(addr);
-
+      await refreshVipForWallet(addr);
       // notify other code if needed
       window.dispatchEvent(new CustomEvent("swampdoge:wallet", { detail: { addr } }));
 
