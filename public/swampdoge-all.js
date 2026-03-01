@@ -485,3 +485,20 @@ window.connectWalletSmart = connectWalletSmart;
 window.connectWalletMobile = connectWalletMobile;
 
 
+// ===== SWAMPDOGE STARTUP =====
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    console.log("SwampDoge booting...");
+
+    // Load picks immediately
+    await loadVipPicks();
+    await loadAiPicks();
+
+    // Auto refresh
+    setInterval(loadVipPicks, 30000);
+    setInterval(loadAiPicks, 30000);
+
+  } catch (e) {
+    console.log("BOOT ERROR", e);
+  }
+});
