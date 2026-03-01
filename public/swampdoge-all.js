@@ -225,7 +225,8 @@ setDebug(`BAL ✅ ${bal}`);
 
     // 3) picks
     await loadVipPicks();
-   await loadAiPicks();
+    await loadAiPicks();
+    setTimeout(loadAiPicks, 800);
   }
 
   
