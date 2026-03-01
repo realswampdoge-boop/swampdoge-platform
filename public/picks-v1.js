@@ -1,184 +1,123 @@
-/* ============================================
-   SwampDoge Picks (v1) - Single File
-   ============================================ */
+/* SwampDoge Picks v1
+   - Wallet connect display hooks (expects wallet-v1.js to dispatch "swampdoge:wallet")
+   - VIP gating by token balance (progress bar)
+   - Loads VIP picks from /vip-picks.json (rewritten to /api/vip-picks)
+   - Admin panel publishes VIP picks via /api/update-vip-picks
+   - Displays AI picks from /api/ai-picks (optional publish flow via /api/publish-ai)
+*/
 
-window.__PICKS_V1_LOADED__ = true;
-
-console.log("✅ picks-v1.js LOADED");
-
-// 🔒 SwampDoge Admin Lock
-const ADMIN_WALLET = "AumagmtFTNer1QYcCmpG3AyqbLKMD9ByDg4okB3wtiBy";
-const ADMIN_PIN = "7777"; // change this if you want a different PIN
-
-// ===================== CONFIG =====================
-
-// VIP requirement (set back to 1000000 when ready)
-const MIN_SWAMPDOGE = 0;
-
-// SwampDoge token mint (DO NOT CHANGE)
-const SWAMPDOGE_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
-
-// Put your BEST RPC first. You can keep the public fallbacks.
-const RPC_ENDPOINTS = [
-  // ✅ a612e91d-167a-4900-990c-72e358b1c647
-  "https://mainnet.helius-rpc.com/?api-key=a612e91d-167a-4900-990c-72e358b1c647",
-
-  // Public fallbacks:
-  "https://rpc.ankr.com/solana",
-  "https://api.mainnet-beta.solana.com",
-];
-
-// ===================== UI HOOKS =====================
-// These IDs should exist in your index.html. If not, the code won’t crash.
 let swampBalEl = null;
 let debugEl = null;
 let vipLocked = null;
 let vipContent = null;
+let adminWrap = null;
+let adminPinEl = null;
+let adminTextEl = null;
+let adminBtnEl = null;
+let adminMsgEl = null;
 
-// Helper: set UI safely
+function setDebug(msg) {
+  if (debugEl) debugEl.textContent = msg;
+}
+
 function setSwampBal(v) {
   if (swampBalEl) swampBalEl.textContent = String(v);
 }
-function setDebug(msg) {
-  if (debugEl) debugEl.textContent = String(msg);
+
+function showVip(unlocked) {
+  if (vipLocked) vipLocked.style.display = unlocked ? "none" : "block";
+  if (vipContent) vipContent.style.display = unlocked ? "block" : "none";
 }
 
-// Show/hide VIP area
-function showVip(isUnlocked) {
-  if (vipLocked) vipLocked.style.display = isUnlocked ? "none" : "block";
-  if (vipContent) vipContent.style.display = isUnlocked ? "block" : "none";
+function showAdmin(show) {
+  if (adminWrap) adminWrap.style.display = show ? "block" : "none";
 }
 
-// ===================== RPC HELPERS =====================
-
-function withTimeout(ms, promiseFactory) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ms);
-
-  return Promise.resolve()
-    .then(() => promiseFactory(ctrl.signal))
-    .finally(() => clearTimeout(timer));
+function fmtNum(n) {
+  const x = Number(n);
+  if (!isFinite(x)) return String(n);
+  return x.toLocaleString(undefined, { maximumFractionDigits: 6 });
 }
 
-async function rpc(method, params) {
-  let lastErr = null;
-
-  for (const url of RPC_ENDPOINTS) {
-    try {
-      const json = await withTimeout(8000, (signal) =>
-        fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal,
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: 1,
-            method,
-            params,
-          }),
-        })
-      ).then(async (r) => {
-        // Some RPCs respond with non-200 but still have JSON
-        const data = await r.json().catch(() => null);
-        if (!r.ok) {
-          const msg =
-            data?.error?.message ||
-            `HTTP ${r.status} from RPC`;
-          throw new Error(msg);
-        }
-        return data;
-      });
-
-      if (json?.error) throw new Error(json.error.message || "RPC error");
-      return json.result;
-    } catch (e) {
-      lastErr = e;
-      // try next endpoint
-    }
-  }
-
-  throw lastErr || new Error("All RPC endpoints failed");
-}
-
-// ===================== FINAL SWAMPDOGE BALANCE =====================
-// Uses getTokenAccountsByOwner (mint filter) and sums uiAmount
-async function getSwampdogeBalance(wallet) {
+// ---------------- VIP PICKS (read) ----------------
+async function loadVipPicks() {
   try {
-    const result = await rpc("getTokenAccountsByOwner", [
-      wallet,
-      { mint: SWAMPDOGE_MINT },
-      { encoding: "jsonParsed" },
-    ]);
+    const res = await fetch("/vip-picks.json", { cache: "no-store" }); // rewrites to /api/vip-picks if vercel.json set
+    const data = await res.json();
 
-    const accounts = result?.value || [];
-    let total = 0;
+    // Expected format:
+    // { v: number, updatedAt: "...", picksText: "line1\nline2\n..." }
+    const picksText = (data && (data.picksText || data.text || "")) || "";
 
-    for (const acc of accounts) {
-      const amt =
-        acc?.account?.data?.parsed?.info?.tokenAmount?.uiAmount ?? 0;
-      total += Number(amt || 0);
+    // Render VIP picks in vipContent (simple bullets)
+    const list = document.getElementById("vipList");
+    if (list) {
+      const lines = picksText
+        .split("\n")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      list.innerHTML = lines.map(line => `<li>${escapeHtml(line)}</li>`).join("");
     }
 
-    return total;
+    setDebug(`VIP picks loaded ✅ (${(data && data.v) || 1})`);
   } catch (e) {
-    // Show the real reason on screen
-    setDebug("RPC FAIL: " + (e?.message || e));
-    return 0;
+    console.log(e);
+    setDebug("VIP picks load error ❌");
   }
 }
 
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-// ===================== MAIN VIP CHECK =====================
+// ---------------- VIP CHECK (balance → unlock) ----------------
 async function refreshVipForWallet(wallet) {
   try {
     if (!wallet) {
-      setDebug("No wallet");
-      showVip(false);
       setSwampBal("0");
-
-      const bar = document.getElementById("vipProgressBar");
-      const txt = document.getElementById("vipProgressText");
-      if (bar) bar.style.width = "0%";
-      if (txt) txt.textContent = "VIP Progress: 0.0%";
+      showVip(false);
       return;
     }
 
     setDebug("Checking SwampDoge...");
     setSwampBal("...");
 
-    // ✅ REAL BALANCE
-    let balance = await getSwampdogeBalance(wallet);
+    // IMPORTANT:
+    // You already have your balance logic working.
+    // Replace the next line with your real balance fetch if you want.
+    // For now it uses a global injected by your wallet logic if present.
+    let balance =
+      (window.__SWAMPDOGE_BALANCE__ != null ? Number(window.__SWAMPDOGE_BALANCE__) : null);
 
-    // 🧪 TEST MODE (uncomment ONE line if testing)
-    // balance = 200000;
-    // balance = 500000;
-    // balance = 900000;
-    // balance = 1000000;
+    // Fallback: keep last known or 0
+    if (balance == null || !isFinite(balance)) balance = 0;
 
-    setSwampBal(balance);
+    setSwampBal(fmtNum(balance));
 
     const VIP_REQUIREMENT = 1000000;
     const unlocked = Number(balance) >= VIP_REQUIREMENT;
 
-    const progress = Math.min(
-      100,
-      (Number(balance) / VIP_REQUIREMENT) * 100
-    );
+    const progress = Math.min(100, (Number(balance) / VIP_REQUIREMENT) * 100);
 
+    // Progress bar UI
     const bar = document.getElementById("vipProgressBar");
     const txt = document.getElementById("vipProgressText");
+    if (bar) bar.style.width = progress + "%";
+    if (txt) txt.textContent = `VIP Progress: ${progress.toFixed(1)}%`;
 
-    if (bar) bar.style.width = progress.toFixed(1) + "%";
-    if (txt) txt.textContent =
-      "VIP Progress: " + progress.toFixed(1) + "%";
+    // Debug
+    setDebug(unlocked ? "VIP UNLOCKED ✅" : `VIP Progress: ${progress.toFixed(1)}%`);
 
     showVip(unlocked);
 
-    setDebug(
-      unlocked
-        ? "VIP UNLOCKED ✅"
-        : "VIP Progress: " + progress.toFixed(1) + "%"
-    );
+    // If unlocked, ensure VIP picks loaded
+    if (unlocked) loadVipPicks();
   } catch (e) {
     console.log(e);
     setDebug("Balance check error ❌");
@@ -186,65 +125,98 @@ async function refreshVipForWallet(wallet) {
   }
 }
 
-// ===================== BOOTSTRAP =====================
-async function loadAiPicks() {
-  const metaEl = document.getElementById("aiPicksMeta");
-  const listEl = document.getElementById("aiPicksList");
+// ---------------- ADMIN (publish VIP picks) ----------------
+async function publishVipPicks() {
+  if (!adminMsgEl) return;
 
-  if (!metaEl || !listEl) return;
+  adminMsgEl.textContent = "Publishing...";
+  const pin = (adminPinEl && adminPinEl.value) || "";
+  const picksText = (adminTextEl && adminTextEl.value) || "";
 
   try {
-    metaEl.textContent = "Loading AI picks…";
-    listEl.innerHTML = "";
+    const res = await fetch("/api/update-vip-picks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pin, picksText })
+    });
 
-    // Cache-bust so it always pulls the newest publish
-    const res = await fetch(`/ai-picks.json?v=${Date.now()}`, { cache: "no-store" });
+    const data = await res.json().catch(() => ({}));
 
-    if (!res.ok) throw new Error(`AI picks fetch failed: ${res.status}`);
-
-    const data = await res.json();
-
-    const generatedAt = data.generatedAt ? new Date(data.generatedAt) : null;
-    const sport = data.sport ? String(data.sport).toUpperCase() : "SPORTS";
-    const picks = Array.isArray(data.picks) ? data.picks : [];
-
-    if (!picks.length) {
-      metaEl.textContent = `No AI picks found yet. (Sport: ${sport})`;
+    if (!res.ok || !data.ok) {
+      adminMsgEl.textContent = `Publish failed: HTTP ${res.status}`;
       return;
     }
 
-    metaEl.textContent =
-      `Updated: ${generatedAt ? generatedAt.toLocaleString() : "just now"} • Sport: ${sport}`;
-
-    // Render picks
-    for (const p of picks) {
-      const title = p.title || "Pick";
-      const reason = p.reason ? ` — ${p.reason}` : "";
-      const conf =
-        typeof p.confidence === "number" ? ` (${Math.round(p.confidence * 100)}%)` : "";
-
-      const li = document.createElement("li");
-      li.textContent = `${title}${conf}${reason}`;
-      listEl.appendChild(li);
-    }
+    adminMsgEl.textContent = "Published ✅";
+    // Reload VIP picks so UI updates
+    await loadVipPicks();
   } catch (e) {
     console.log(e);
-    metaEl.textContent = "AI picks unavailable right now ❌";
-    listEl.innerHTML = "";
+    adminMsgEl.textContent = "Publish failed: network error";
   }
 }
+
+// ---------------- AI PICKS (read) ----------------
+async function loadAiPicks() {
+  try {
+    const res = await fetch("/api/ai-picks", { cache: "no-store" });
+    const data = await res.json();
+
+    const box = document.getElementById("aiPicks");
+    if (!box) return;
+
+    if (!data || !data.ok) {
+      box.textContent = "AI picks not available yet.";
+      return;
+    }
+
+    const picks = Array.isArray(data.picks) ? data.picks : [];
+    box.innerHTML = picks
+      .map(
+        p => `
+        <div class="pick">
+          <b>${escapeHtml(p.title || "")}</b><br/>
+          ${escapeHtml(p.reason || "")}<br/>
+          Confidence: ${Math.round((Number(p.confidence || 0) * 100))}%
+        </div>
+      `
+      )
+      .join("");
+  } catch (e) {
+    console.log("AI picks error", e);
+  }
+}
+
+// ---------------- BOOTSTRAP ----------------
 window.addEventListener("DOMContentLoaded", () => {
-  // Grab elements (update these IDs if your HTML uses different ones)
-  swampBalEl = document.getElementById("swampBal") || document.getElementById("swampBalance");
+  // Grab elements
+  swampBalEl = document.getElementById("swampBal");
   debugEl = document.getElementById("debug");
   vipLocked = document.getElementById("vipLocked");
   vipContent = document.getElementById("vipContent");
 
-  // If debug exists, show loader status like your screenshot
-  const walletReady = !!window.__WALLET_V1_LOADED__ || !!window.__WALLET_LOADED__;
-  setDebug(
-    `Loader ✅ | wallet ${walletReady ? "✅" : "❌"} | picks ✅`
-  );
+  adminWrap = document.getElementById("adminPanel");
+  adminPinEl = document.getElementById("adminPin");
+  adminTextEl = document.getElementById("adminText");
+  adminBtnEl = document.getElementById("adminPublishBtn");
+  adminMsgEl = document.getElementById("adminMsg");
+
+  // Loader debug
+  const walletReady =
+    !!window.__WALLET_V1_LOADED__ || !!window.__WALLET_LOADED__;
+  setDebug(`Loader ✅ | wallet ${walletReady ? "✅" : "❌"} | picks ✅`);
+
+  // Button handlers
+  if (adminBtnEl) adminBtnEl.addEventListener("click", publishVipPicks);
+
+  // Default hidden admin
+  showAdmin(false);
+
+  // If you have an "Admin" toggle button, it should call window.__toggleAdmin()
+  window.__toggleAdmin = () => {
+    const cur = adminWrap && adminWrap.style.display !== "none";
+    showAdmin(!cur);
+  };
 
   // Listen for wallet connect event from wallet-v1.js
   window.addEventListener("swampdoge:wallet", (e) => {
@@ -253,138 +225,12 @@ window.addEventListener("DOMContentLoaded", () => {
     refreshVipForWallet(addr);
   });
 
-  // Run once if already connected
+  // Run once if already connected (your wallet script sets __SWAMPDOGE_WALLET__)
   setTimeout(() => {
     const addr = window.__SWAMPDOGE_WALLET__ || null;
     if (addr) refreshVipForWallet(addr);
   }, 500);
-// ================= AUTO REFRESH =================
-if (!window.__SWAMPDOGE_PICKS_POLLING__) {
-  window.__SWAMPDOGE_PICKS_POLLING__ = true;
 
-  const REFRESH_MS = 25000;
-
-  setInterval(() => {
-    const addr = window.__SWAMPDOGE_WALLET__;
-    if (addr) {
-      refreshVipForWallet(addr);
-    }
-
-    if (typeof loadVipPicks === "function") {
-      loadVipPicks();
-    }
-
-    if (typeof loadFreePicks === "function") {
-      loadFreePicks();
-    }
-
-    console.log("Auto refresh running ✅");
-  }, REFRESH_MS);
-}
-  // FORCE BALANCE CHECK AFTER LOAD
-  setTimeout(() => {
-    const addr = window.__SWAMPDOGE_WALLET__ || null;
-    if (addr) refreshVipForWallet(addr);
-  }, 1200);
+  // Always load AI picks (free)
+  loadAiPicks();
 });
-// 🐊 VIP PICKS AUTO-LOADER (with on-screen debug)
-async function loadVipPicks() {
-  const dbg = document.getElementById("debugText");
-
-  try {
-    if (dbg) dbg.textContent = "Loading VIP picks JSON...";
-
-    const res = await fetch("/vip-picks.json?v=" + Date.now());
-    if (!res.ok) throw new Error("VIP JSON HTTP " + res.status);
-
-    const data = await res.json();
-
-    const ul = document.getElementById("vipPicksList");
-    if (!ul) throw new Error("Missing element: #vipPicksList");
-
-    ul.innerHTML = "";
-
-(data.picks || []).forEach((p) => {
-
-  p.split(",").forEach(text => {
-    const li = document.createElement("li");
-    li.textContent = text.trim();
-    ul.appendChild(li);
-  });
-
-});
-
-    if (dbg) dbg.textContent = "VIP picks loaded ✅ (" + (data.picks || []).length + ")";
-  } catch (e) {
-    console.log("VIP picks load failed", e);
-    if (dbg) dbg.textContent = "VIP picks ERROR: " + (e?.message || e);
-  }
-}
-
-window.loadVipPicks = loadVipPicks;
-
-// Force one load on page load (safe even if VIP is locked)
-setTimeout(() => {
-  if (window.loadVipPicks) window.loadVipPicks();
-}, 800);
-
-// =============================
-// 🛠️ ADMIN PANEL UI
-// =============================
-(function initAdminPanel() {
-  const btnToggle = document.getElementById("btnAdminToggle");
-  const panel = document.getElementById("adminPanel");
-  const pinInput = document.getElementById("adminPin");
-  const picksBox = document.getElementById("adminPicks");
-  const btnPublish = document.getElementById("btnPublish");
-  const status = document.getElementById("adminStatus");
-
-  if (!btnToggle || !panel || !picksBox || !btnPublish || !status) return;
-
-  // Toggle panel
-  btnToggle.addEventListener("click", () => {
-    panel.style.display = panel.style.display === "none" ? "block" : "none";
-    status.textContent = "";
-  });
-
-  // Prefill with current picks (from DOM list)
-  btnToggle.addEventListener("click", () => {
-    const ul = document.getElementById("vipPicksList");
-    if (!ul) return;
-    const current = Array.from(ul.querySelectorAll("li")).map(li => li.textContent || "");
-    if (current.length) picksBox.value = current.join("\n");
-  });
-
-  // Publish
-  btnPublish.addEventListener("click", async () => {
-    const pin = (pinInput.value || "").trim();
-    const picks = (picksBox.value || "")
-      .split("\n")
-      .map(s => s.trim())
-      .filter(Boolean);
-
-    if (!pin) return (status.textContent = "Enter Admin PIN.");
-    if (!picks.length) return (status.textContent = "Add at least 1 pick.");
-
-    status.textContent = "Publishing...";
-
-    try {
-      const res = await fetch("/api/update-vip-picks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin, picks })
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
-
-      status.textContent = "Published ✅ Reloading picks...";
-      // Refresh picks from JSON after publish
-      setTimeout(() => {
-        if (window.loadVipPicks) window.loadVipPicks();
-      }, 500);
-    } catch (e) {
-      status.textContent = "Publish failed: " + (e?.message || e);
-    }
-  });
-})();
