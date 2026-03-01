@@ -34,7 +34,7 @@ async function connectWallet() {
 // 🔥 FORCE VIP BALANCE CHECK
 window.__SWAMPDOGE_WALLET__ = addr;
       
-checkVIPStatus(addr);
+await checkVIPStatus(addr);
 window.dispatchEvent(
   new CustomEvent("swampdoge:wallet", {
     detail: { addr }
@@ -145,30 +145,28 @@ const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"; // <-- confir
 
 async function getSwampBalance(walletAddress) {
   try {
-    const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com");
+    const tokenAccounts =
+      await connection.getParsedTokenAccountsByOwner(
+        new solanaWeb3.PublicKey(walletAddress),
+        { mint: new solanaWeb3.PublicKey(SWAMP_MINT) }
+      );
 
-    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-      new solanaWeb3.PublicKey(walletAddress),
-      { mint: new solanaWeb3.PublicKey(SWAMP_MINT) }
-    );
+    let total = 0;
 
-    let balance = 0;
+    for (const ta of tokenAccounts.value) {
+      const amt = ta.account.data.parsed.info.tokenAmount;
+      // safest: uiAmountString already includes decimals correctly
+      total += Number(amt.uiAmountString || 0);
+    }
 
-    tokenAccounts.value.forEach((acc) => {
-      const amt = Number(acc.account.data.parsed.info.tokenAmount.uiAmount || 0);
-      balance += amt;
-    });
-
-    window.__SWAMPDOGE_BALANCE__ = balance;
-    return balance;
+    return total;
   } catch (e) {
-    console.log(e);
-    const el = document.getElementById("debugText");
-    if (el) el.textContent = "TOKEN ERROR ❌";
+    console.log("TOKEN ERROR", e);
+    const dbg = document.getElementById("debugText");
+    if (dbg) dbg.textContent = "TOKEN ERROR ❌";
     return 0;
   }
 }
-
 async function checkVIPStatus(walletAddress) {
   try {
     const swampBalance = await getSwampBalance(walletAddress);
