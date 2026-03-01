@@ -319,7 +319,7 @@ async function connectWalletSmart() {
     // Wallet section IDs
     statusText = $("statusText");
     walletText = $("walletText");
-    swampBalEl = $("swampBal");
+    swampBalEl = $("balanceText");
     debugEl = $("debugText");
 
     // VIP section IDs
