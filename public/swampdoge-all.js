@@ -438,8 +438,8 @@ aiPicksMeta = document.getElement
     }
 
     // Load picks immediately (AI + VIP list)
-    loadAiPicks();
-    loadVipPicks();
+    // Load picks immediately (AI + VIP list)
+refreshAllPicks();
 
     // If already connected (Phantom can auto-inject)
     setTimeout(async () => {
@@ -452,6 +452,7 @@ aiPicksMeta = document.getElement
           setStatus("Connected ✅");
           setWallet(addr);
           await refreshVipForWallet(addr);
+           refreshAllPicks();
         }
       } catch {
         // ignore
