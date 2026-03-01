@@ -415,3 +415,7 @@ setDebug(`BAL ✅ ${bal}`);
     setDebug("Loader ✅ | wallet ✅ | picks ✅");
   });
 })();
+window.connectWalletSmart = connectWalletSmart;
+window.connectWalletMobile = connectWalletMobile;
+
+
