@@ -1,378 +1,407 @@
-/* SwampDoge All-in-One (Wallet + VIP + Admin + AI Picks)
-   Works with IDs shown in your screenshots:
-   btnConnect, btnDisconnect, statusText, walletText, swampBal, debugText
-   vipLocked, vipContent, vipPicksList, freePicksList
-   vipProgressBar, vipProgressText
-   adminPanel, adminPin, adminPicks, btnPublish, adminStatus, btnAdminToggle
-   aiPicksMeta, aiPicksList
+/* swampdoge-all.js
+   All-in-one: wallet + picks + VIP + admin + AI picks
+
+   Requires in index.html (order matters):
+   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+   <script src="./swampdoge-all.js?v=3"></script>
 */
 
 (() => {
-  // =========================
-  // CONFIG (edit if needed)
-  // =========================
-  const REQUIRED_SWAMP = 1_000_000; // VIP unlock threshold
-  const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"; // your token mint
-  const RPC_URL =
-    window.__SWAMP_RPC__ ||
-    "https://api.mainnet-beta.solana.com"; // change if you use a custom RPC
+  // ====== CONFIG ======
+  const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"; // must be real SPL mint pubkey
+  const VIP_MIN = 1_000_000;
 
-  const VIP_PICKS_URL = "/api/vip-picks"; // you have a vercel.json rewrite
-  const AI_PICKS_URL = "/api/ai-picks";
-  const PUBLISH_VIP_URL = "/api/update-vip-picks";
+  // CORS-friendly Solana RPC (browser safe)
+  const RPC_URL = "https://rpc.ankr.com/solana";
+  const RPC_COMMITMENT = "confirmed";
 
-  // =========================
-  // DOM HELPERS
-  // =========================
-  const $ = (id) => document.getElementById(id);
+  const REFRESH_BAL_MS = 25_000;
+  const REFRESH_PICKS_MS = 60_000;
 
-  // Elements (match your HTML IDs)
-  let elStatus,
-    elWallet,
-    elBal,
-    elDebug,
-    elVipLocked,
-    elVipContent,
-    elVipList,
-    elFreeList,
-    elVipBar,
-    elVipText,
-    elAdminPanel,
-    elAdminPin,
-    elAdminPicks,
-    elBtnPublish,
-    elAdminStatus,
-    elBtnAdminToggle,
-    elAiMeta,
-    elAiList;
+  // ====== FLAGS FOR LOADER PROOF ======
+  window.__WALLET_V1_LOADED__ = true;
+  window.__PICKS_V1_LOADED__ = true;
 
-  function setText(el, txt) {
-    if (el) el.textContent = String(txt);
+  // ====== DOM REFS ======
+  let statusText, walletText, swampBalEl, debugEl;
+
+  let vipLocked, vipContent, vipPicksList;
+  let vipProgressBar, vipProgressText;
+
+  let aiPicksMeta, aiPicksList, freePicksList;
+
+  let adminPanel, adminPin, adminPicks, btnPublish, adminStatus;
+  let btnAdminToggle;
+
+  // ====== STATE ======
+  let currentWallet = null;
+  let isVIP = false;
+
+  // Keep one Connection instance
+  function getConnection() {
+    if (!window.solanaWeb3) return null;
+    return new window.solanaWeb3.Connection(RPC_URL, RPC_COMMITMENT);
+  }
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function setStatus(msg) {
+    if (statusText) statusText.textContent = msg;
+  }
+
+  function setWallet(addr) {
+    if (walletText) walletText.textContent = addr || "";
   }
 
   function setDebug(msg) {
-    setText(elDebug, msg);
+    if (debugEl) debugEl.textContent = msg;
   }
 
-  function show(el, on) {
-    if (!el) return;
-    el.style.display = on ? "block" : "none";
+  function setSwampBal(v) {
+    if (swampBalEl) swampBalEl.textContent = String(v ?? "");
   }
 
-  function fmtNum(n) {
-    const x = Number(n);
-    if (!isFinite(x)) return String(n);
-    return x.toLocaleString(undefined, { maximumFractionDigits: 6 });
+  function showVip(unlocked) {
+    if (vipLocked) vipLocked.style.display = unlocked ? "none" : "block";
+    if (vipContent) vipContent.style.display = unlocked ? "block" : "none";
   }
 
-  // =========================
-  // WALLET
-  // =========================
-  let connectedWallet = null;
+  function setVipProgress(balance) {
+    const pct = Math.max(0, Math.min(100, (Number(balance || 0) / VIP_MIN) * 100));
+    if (vipProgressBar) vipProgressBar.style.width = `${pct.toFixed(1)}%`;
+    if (vipProgressText) vipProgressText.textContent = `VIP Progress: ${pct.toFixed(1)}%`;
+  }
+
+  function showAdmin(show) {
+    if (adminPanel) adminPanel.style.display = show ? "block" : "none";
+  }
+
+  // ====== PHANTOM HELPERS ======
+  function phantomProvider() {
+    // Phantom injects window.solana in its in-app browser OR via extension on desktop
+    if (window.solana && window.solana.isPhantom) return window.solana;
+    return null;
+  }
+
+  // If user is NOT in Phantom browser, this deep-link opens Phantom and returns to your site
+  function openPhantomDeepLink() {
+    const back = encodeURIComponent(window.location.href);
+    const link = `https://phantom.app/ul/browse/${back}?ref=${encodeURIComponent("swampdoge")}`;
+    window.location.href = link;
+  }
+
+  // You used onclick="connectWalletMobile()" in HTML — we provide it.
+  window.connectWalletMobile = async function connectWalletMobile() {
+    await connectWallet();
+  };
 
   async function connectWallet() {
     try {
-      if (!window.solana || !window.solana.isPhantom) {
-        setText(elStatus, "Phantom not found ❌");
+      const provider = phantomProvider();
+      if (!provider) {
+        setStatus("Phantom not found ❌");
+        setDebug("Open this page inside Phantom browser");
+        // Deep link helps on iPhone
+        openPhantomDeepLink();
         return;
       }
-      setText(elStatus, "Connecting...");
-      const res = await window.solana.connect();
-      connectedWallet = res?.publicKey?.toString?.() || null;
 
-      setText(elStatus, connectedWallet ? "Connected ✅" : "Not connected ❌");
-      setText(elWallet, connectedWallet || "");
-      setDebug(`Loader ✅ | wallet ${connectedWallet ? "✅" : "❌"} | picks ✅`);
+      setStatus("Connecting…");
+      const resp = await provider.connect();
+      const addr = resp?.publicKey?.toString?.() || null;
+      if (!addr) throw new Error("No wallet address returned");
 
-      await refreshVipForWallet(connectedWallet);
+      currentWallet = addr;
+      window.__SWAMPDOGE_WALLET__ = addr;
+
+      setStatus("Connected ✅");
+      setWallet(addr);
+
+      // notify other code if needed
+      window.dispatchEvent(new CustomEvent("swampdoge:wallet", { detail: { addr } }));
+
+      // Immediately refresh VIP + balance
+      await refreshVipForWallet(addr);
     } catch (e) {
       console.log(e);
-      setText(elStatus, "Connect failed ❌");
-      setDebug(`Connect error ❌`);
+      setStatus("Connect error ❌");
+      setDebug(String(e?.message || e));
     }
   }
 
   async function disconnectWallet() {
     try {
-      await window.solana?.disconnect?.();
-    } catch {}
-    connectedWallet = null;
-    setText(elStatus, "Disconnected");
-    setText(elWallet, "");
-    setText(elBal, "0");
-    showVip(false);
-  }
-
-  // =========================
-  // SOLANA TOKEN BALANCE
-  // =========================
-  async function getTokenBalance(owner, mint) {
-    // Uses getTokenAccountsByOwner and parses SPL token amount
-    const body = {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "getTokenAccountsByOwner",
-      params: [
-        owner,
-        { mint },
-        { encoding: "jsonParsed" }
-      ]
-    };
-
-    const r = await fetch(RPC_URL, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    const j = await r.json();
-    const accounts = j?.result?.value || [];
-    let total = 0;
-
-    for (const acc of accounts) {
-      const amt =
-        acc?.account?.data?.parsed?.info?.tokenAmount?.uiAmount ??
-        0;
-      total += Number(amt) || 0;
+      const provider = phantomProvider();
+      if (provider?.disconnect) await provider.disconnect();
+    } catch (e) {
+      // ignore
     }
-    return total;
+    currentWallet = null;
+    window.__SWAMPDOGE_WALLET__ = null;
+    window.__SWAMPDOGE_BALANCE__ = 0;
+
+    setStatus("Disconnected");
+    setWallet("");
+    setSwampBal("...");
+    setVipProgress(0);
+    showVip(false);
+    showAdmin(false);
   }
 
-  function showVip(unlocked) {
-    // locked view shows when NOT unlocked
-    show(elVipLocked, !unlocked);
-    show(elVipContent, unlocked);
-  }
-
-  function setVipProgress(balance) {
-    const pct = Math.max(0, Math.min(100, (balance / REQUIRED_SWAMP) * 100));
-    if (elVipBar) elVipBar.style.width = `${pct}%`;
-    setText(elVipText, `VIP Progress: ${pct.toFixed(1)}%`);
-  }
-
-  async function refreshVipForWallet(wallet) {
+  // ====== TOKEN BALANCE ======
+  async function getSwampBalance(walletAddress) {
     try {
-      if (!wallet) {
-        setText(elBal, "0");
-        setVipProgress(0);
-        showVip(false);
-        return;
-      }
+      const connection = getConnection();
+      if (!connection) throw new Error("solanaWeb3 not loaded");
 
-      const bal = await getTokenBalance(wallet, SWAMP_MINT);
-      setText(elBal, fmtNum(bal));
-      setVipProgress(bal);
+      const owner = new window.solanaWeb3.PublicKey(walletAddress);
+      const mint = new window.solanaWeb3.PublicKey(SWAMP_MINT);
 
-      const unlocked = bal >= REQUIRED_SWAMP;
-      showVip(unlocked);
+      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(owner, { mint });
 
-      // Load VIP picks list regardless (you can show them only if unlocked)
-      await loadVipPicks(unlocked);
+      let balance = 0;
+      tokenAccounts.value.forEach(({ account }) => {
+        const amt = account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0;
+        balance += amt;
+      });
+
+      return balance;
     } catch (e) {
       console.log(e);
-      setDebug("Balance check error ❌");
-      setText(elBal, "0");
-      setVipProgress(0);
-      showVip(false);
+      setDebug("TOKEN ERROR ❌");
+      return 0;
     }
   }
 
-  // =========================
-  // VIP PICKS (read)
-  // =========================
-  async function loadVipPicks(unlocked) {
+  // ====== VIP / PICKS ======
+  async function loadVipPicks() {
     try {
-      const res = await fetch(VIP_PICKS_URL, { cache: "no-store" });
+      const res = await fetch("/api/vip-picks", { cache: "no-store" });
+      if (!res.ok) throw new Error(`vip-picks status ${res.status}`);
       const data = await res.json();
 
-      const picks = Array.isArray(data?.picks) ? data.picks : [];
-      if (elVipList) elVipList.innerHTML = "";
+      // Expect: { updatedAt, picks: [...] } OR { picks: [...] }
+      const picks = Array.isArray(data?.picks) ? data.picks : Array.isArray(data) ? data : [];
 
-      for (const p of picks) {
-        const li = document.createElement("li");
-        li.textContent = p;
-        if (elVipList) elVipList.appendChild(li);
+      if (vipPicksList) {
+        vipPicksList.innerHTML = "";
+        picks.forEach((p) => {
+          const li = document.createElement("li");
+          li.textContent = typeof p === "string" ? p : JSON.stringify(p);
+          vipPicksList.appendChild(li);
+        });
       }
 
       setDebug(`VIP picks loaded ✅ (${picks.length})`);
-
-      // If locked, you can still keep VIP list hidden by showVip(false)
-      if (!unlocked) showVip(false);
     } catch (e) {
       console.log(e);
-      setDebug("VIP picks load failed ❌");
+      setDebug("VIP picks load ❌");
     }
   }
 
-  // =========================
-  // AI PICKS (read)
-  // =========================
-  function renderAiPicks(payload) {
-    if (!elAiList) return;
-    elAiList.innerHTML = "";
+  async function refreshVipForWallet(walletAddress) {
+    // 1) balance
+    const bal = await getSwampBalance(walletAddress);
 
-    const updated = payload?.generatedAt ? new Date(payload.generatedAt) : null;
-    setText(
-      elAiMeta,
-      updated ? `Updated: ${updated.toLocaleString()}` : "Updated: —"
-    );
+    window.__SWAMPDOGE_BALANCE__ = bal;
+    setSwampBal(bal);
+    setVipProgress(bal);
 
-    const picks = Array.isArray(payload?.picks) ? payload.picks : [];
-    for (const p of picks) {
-      const li = document.createElement("li");
-      const title = document.createElement("div");
-      title.style.fontWeight = "700";
-      title.textContent = p?.title || "Pick";
+    // 2) gating
+    isVIP = bal >= VIP_MIN;
+    showVip(isVIP);
 
-      const reason = document.createElement("div");
-      reason.style.opacity = "0.9";
-      reason.style.marginTop = "6px";
-      reason.textContent = p?.reason || "";
-
-      const conf = document.createElement("div");
-      conf.style.marginTop = "6px";
-      conf.textContent =
-        p?.confidence != null ? `Confidence: ${Math.round(p.confidence * 100)}%` : "";
-
-      li.appendChild(title);
-      li.appendChild(reason);
-      li.appendChild(conf);
-      elAiList.appendChild(li);
-    }
+    // 3) picks
+    await loadVipPicks();
   }
 
+  // ====== AI PICKS ======
   async function loadAiPicks() {
     try {
-      const res = await fetch(AI_PICKS_URL, { cache: "no-store" });
+      if (aiPicksMeta) aiPicksMeta.textContent = "Loading AI picks…";
+
+      const res = await fetch("/api/ai-picks", { cache: "no-store" });
+      if (!res.ok) throw new Error(`ai-picks status ${res.status}`);
       const data = await res.json();
-      if (data?.ok === false) throw new Error(data?.message || "AI picks failed");
-      renderAiPicks(data);
+
+      const updatedAt = data?.updatedAt || data?.updated || null;
+      const picks = Array.isArray(data?.picks) ? data.picks : Array.isArray(data) ? data : [];
+
+      if (aiPicksMeta) {
+        aiPicksMeta.textContent = updatedAt ? `Updated: ${updatedAt}` : "Updated";
+      }
+
+      if (aiPicksList) {
+        aiPicksList.innerHTML = "";
+        picks.forEach((p) => {
+          const li = document.createElement("li");
+
+          // Supports either string or object
+          if (typeof p === "string") {
+            li.textContent = p;
+          } else if (p && typeof p === "object") {
+            const title = p.pick || p.title || "Pick";
+            const reason = p.reason || p.analysis || "";
+            const conf = p.confidence != null ? `Confidence: ${p.confidence}%` : "";
+
+            li.innerHTML = `
+              <div style="font-weight:700">${escapeHtml(title)}</div>
+              ${reason ? `<div style="opacity:.9; margin-top:4px">${escapeHtml(reason)}</div>` : ""}
+              ${conf ? `<div style="opacity:.9; margin-top:4px">${escapeHtml(conf)}</div>` : ""}
+            `;
+          } else {
+            li.textContent = String(p);
+          }
+
+          aiPicksList.appendChild(li);
+        });
+      }
     } catch (e) {
       console.log(e);
-      setText(elAiMeta, "AI picks failed to load");
+      if (aiPicksMeta) aiPicksMeta.textContent = "AI picks error ❌";
     }
   }
 
-  // =========================
-  // ADMIN (toggle + publish VIP)
-  // =========================
-  function toggleAdmin() {
-    if (!elAdminPanel) return;
-    const showing = elAdminPanel.style.display !== "none";
-    show(elAdminPanel, !showing);
-  }
-
+  // ====== ADMIN PUBLISH ======
   async function publishVipPicks() {
     try {
-      const pin = (elAdminPin?.value || "").trim();
-      const text = (elAdminPicks?.value || "").trim();
+      if (!adminStatus) return;
 
-      if (!pin) {
-        setText(elAdminStatus, "Enter PIN");
-        return;
-      }
-      if (!text) {
-        setText(elAdminStatus, "Enter picks");
-        return;
-      }
+      const pin = adminPin?.value || "";
+      const text = adminPicks?.value || "";
 
-      const picks = text
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean);
+      adminStatus.textContent = "Publishing…";
 
-      setText(elAdminStatus, "Publishing...");
-
-      const res = await fetch(PUBLISH_VIP_URL, {
+      const res = await fetch("/api/update-vip-picks", {
         method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ pin, picks }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, picksText: text }),
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || data?.ok === false) {
-        throw new Error(data?.message || `HTTP ${res.status}`);
+
+      if (!res.ok) {
+        adminStatus.textContent = data?.error ? `Error: ${data.error}` : `Error (${res.status})`;
+        return;
       }
 
-      setText(elAdminStatus, "Published ✅");
-      // Reload VIP picks after publish
-      await loadVipPicks(true);
+      adminStatus.textContent = "Published ✅";
+      // refresh VIP picks display
+      await loadVipPicks();
     } catch (e) {
       console.log(e);
-      setText(elAdminStatus, `Publish failed ❌ (${e.message})`);
+      if (adminStatus) adminStatus.textContent = "Publish error ❌";
     }
   }
 
-  // =========================
-  // BOOTSTRAP
-  // =========================
-  function bindEls() {
-    elStatus = $("statusText");
-    elWallet = $("walletText");
-    elBal = $("swampBal");
-    elDebug = $("debugText") || $("debug"); // fallback just in case
+  // ====== UTIL ======
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
-    elVipLocked = $("vipLocked");
-    elVipContent = $("vipContent");
-    elVipList = $("vipPicksList");
-    elFreeList = $("freePicksList");
+  // ====== BOOTSTRAP ======
+  window.addEventListener("DOMContentLoaded", () => {
+    // Wallet section IDs
+    statusText = $("statusText");
+    walletText = $("walletText");
+    swampBalEl = $("swampBal");
+    debugEl = $("debugText");
 
-    elVipBar = $("vipProgressBar");
-    elVipText = $("vipProgressText");
+    // VIP section IDs
+    vipLocked = $("vipLocked");
+    vipContent = $("vipContent");
+    vipPicksList = $("vipPicksList");
 
-    elAdminPanel = $("adminPanel");
-    elAdminPin = $("adminPin");
-    elAdminPicks = $("adminPicks");
-    elBtnPublish = $("btnPublish");
-    elAdminStatus = $("adminStatus");
-    elBtnAdminToggle = $("btnAdminToggle");
+    vipProgressBar = $("vipProgressBar");
+    vipProgressText = $("vipProgressText");
 
-    elAiMeta = $("aiPicksMeta");
-    elAiList = $("aiPicksList");
+    // Picks section IDs
+    aiPicksMeta = $("aiPicksMeta");
+    aiPicksList = $("aiPicksList");
+    freePicksList = $("freePicksList"); // (optional)
 
-    // Default admin hidden
-    show(elAdminPanel, false);
+    // Admin IDs (based on your screenshots)
+    adminPanel = $("adminPanel");
+    adminPin = $("adminPin");
+    adminPicks = $("adminPicks");
+    btnPublish = $("btnPublish");
+    adminStatus = $("adminStatus");
+    btnAdminToggle = $("btnAdminToggle");
 
-    // Buttons
+    // Default UI state
+    setStatus("Not connected");
+    setWallet("");
+    setSwampBal("...");
+    showVip(false);
+    showAdmin(false);
+    setVipProgress(0);
+
+    // Buttons: supports both onclick and addEventListener
     const btnConnect = $("btnConnect");
     const btnDisconnect = $("btnDisconnect");
-    if (btnConnect) btnConnect.addEventListener("click", connectWallet);
+
+    if (btnConnect && !btnConnect.getAttribute("onclick")) {
+      btnConnect.addEventListener("click", connectWallet);
+    }
+
     if (btnDisconnect) btnDisconnect.addEventListener("click", disconnectWallet);
 
-    if (elBtnPublish) elBtnPublish.addEventListener("click", publishVipPicks);
-    if (elBtnAdminToggle) elBtnAdminToggle.addEventListener("click", toggleAdmin);
+    if (btnPublish) btnPublish.addEventListener("click", publishVipPicks);
 
-    // Mark file loaded
-    window.__PICKS_V1_LOADED__ = true;
-    setDebug("Loader ✅ | wallet ❌ | picks ✅");
-  }
+    if (btnAdminToggle) {
+      btnAdminToggle.addEventListener("click", () => {
+        const cur = adminPanel && adminPanel.style.display !== "none";
+        showAdmin(!cur);
+      });
+    }
 
-  async function init() {
-    bindEls();
+    // Load picks immediately (AI + VIP list)
+    loadAiPicks();
+    loadVipPicks();
 
-    // Try auto-connect if Phantom already connected
-    try {
-      if (window.solana?.isPhantom) {
-        const resp = await window.solana.connect({ onlyIfTrusted: true }).catch(() => null);
-        const addr = resp?.publicKey?.toString?.() || null;
+    // If already connected (Phantom can auto-inject)
+    setTimeout(async () => {
+      const provider = phantomProvider();
+      try {
+        // If Phantom is available and already authorized, it may expose publicKey
+        const addr = provider?.publicKey?.toString?.() || window.__SWAMPDOGE_WALLET__ || null;
         if (addr) {
-          connectedWallet = addr;
-          setText(elStatus, "Connected ✅");
-          setText(elWallet, addr);
+          currentWallet = addr;
+          setStatus("Connected ✅");
+          setWallet(addr);
           await refreshVipForWallet(addr);
         }
+      } catch {
+        // ignore
       }
-    } catch {}
+    }, 600);
 
-    // Load AI picks now + refresh every 60s
-    await loadAiPicks();
-    setInterval(loadAiPicks, 60_000);
-
-    // Refresh VIP/balance every 25s if connected
+    // Auto-refresh loops
     setInterval(() => {
-      if (connectedWallet) refreshVipForWallet(connectedWallet);
-    }, 25_000);
-  }
+      loadAiPicks();
+    }, REFRESH_PICKS_MS);
 
-  window.addEventListener("DOMContentLoaded", init);
+    setInterval(() => {
+      if (currentWallet) refreshVipForWallet(currentWallet);
+    }, REFRESH_BAL_MS);
+
+    // Listen for wallet event if something else fires it
+    window.addEventListener("swampdoge:wallet", async (e) => {
+      const addr = e?.detail?.addr || null;
+      if (addr) {
+        currentWallet = addr;
+        await refreshVipForWallet(addr);
+      }
+    });
+
+    // Debug loader message
+    setDebug("Loader ✅ | wallet ✅ | picks ✅");
+  });
 })();
