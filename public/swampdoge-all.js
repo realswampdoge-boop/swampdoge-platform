@@ -8,7 +8,7 @@
 
 (() => {
   // ====== CONFIG ======
-  const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"; // must be real SPL mint pubkey
+const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
   const VIP_MIN = 1_000_000;
 
   // CORS-friendly Solana RPC (browser safe)
