@@ -225,6 +225,7 @@ setDebug(`BAL ✅ ${bal}`);
 
     // 3) picks
     await loadVipPicks();
+     await loadAiPicks();
   }
 
   // ====== AI PICKS ======
