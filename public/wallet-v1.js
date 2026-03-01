@@ -22,7 +22,40 @@ function setStatus(msg) {
 function setWallet(addr) {
   if (walletText) walletText.textContent = addr || "Not connected";
 }
+function setWallet(addr) {
+  if (walletText) walletText.textContent = addr;
+}
 
+/* ✅ PASTE STEP 2 CODE HERE */
+async function getSwampBalance(walletAddress) {
+  try {
+    const owner = new solanaWeb3.PublicKey(walletAddress);
+    const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
+
+    const resp =
+      await connection.getParsedTokenAccountsByOwner(
+        owner,
+        { mint }
+      );
+
+    let total = 0;
+
+    for (const item of resp.value) {
+      const amt = item.account.data.parsed.info.tokenAmount;
+      total += Number(
+        amt.uiAmountString || amt.uiAmount || 0
+      );
+    }
+
+    return total;
+
+  } catch (e) {
+    console.log(e);
+    const el = document.getElementById("debugText");
+    if (el) el.textContent = "TOKEN ERROR ❌";
+    return 0;
+  }
+}
 async function connectWallet() {
   try {
     // If Phantom provider exists (desktop OR Phantom in-app browser)
