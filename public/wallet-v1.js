@@ -1,5 +1,10 @@
 const SWAMP_MINT =
 "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
+// ✅ GLOBAL SOLANA CONNECTION
+const connection = new solanaWeb3.Connection(
+  "https://api.mainnet-beta.solana.com",
+  "confirmed"
+);
 window.__WALLET_V1_LOADED__ = true;
 // wallet.js
 
