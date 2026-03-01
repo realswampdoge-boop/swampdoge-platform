@@ -11,9 +11,9 @@ export default async function handler(req, res) {
 
   if (secretEnabled && provided !== CRON_SECRET) {
     return res.status(401).json({ ok: false, message: "Unauthorized" });
-    await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/publish-ai`);
+    
   }
-
+await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/publish-ai`);
   // ---- GitHub env vars (you already use these in publishVip.js) ----
   const token = process.env.GITHUB_TOKEN;
   const owner = process.env.GITHUB_OWNER;
