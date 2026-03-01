@@ -1,3 +1,5 @@
+const SWAMP_MINT =
+"GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 window.__WALLET_V1_LOADED__ = true;
 // wallet.js
 
@@ -125,8 +127,34 @@ async function checkVIPStatus(walletAddress) {
 
   try {
 
-    // TEMP FAKE BALANCE (we add real blockchain check next)
-    const swampBalance = window.__SWAMPDOGE_BALANCE__ || 0;
+    const connection = new solanaWeb3.Connection(
+  "https://api.mainnet-beta.solana.com"
+);
+
+async function getSwampBalance(walletAddress) {
+  try {
+    const tokenAccounts =
+      await connection.getParsedTokenAccountsByOwner(
+        new solanaWeb3.PublicKey(walletAddress),
+        { mint: new solanaWeb3.PublicKey(SWAMP_MINT) }
+      );
+
+    let balance = 0;
+
+    tokenAccounts.value.forEach(acc => {
+      balance +=
+        acc.account.data.parsed.info.tokenAmount.uiAmount || 0;
+    });
+
+    window.__SWAMPDOGE_BALANCE__ = balance;
+
+    return balance;
+
+  } catch (e) {
+    console.log("Balance error", e);
+    return 0;
+  }
+}
 
     if (swampBalance >= 1000000) {
       isVIP = true;
