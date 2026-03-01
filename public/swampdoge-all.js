@@ -10,7 +10,7 @@ function refreshAllPicks() {
   loadAiPicks();
   // iPhone Safari timing backup
   setTimeout(loadVipPicks, 600);
-  setTimeout(loadAiPicks, 800);
+  setTimeout(loadAiPicks, 900);
 }
 (() => {
   // ====== CONFIG ======
@@ -135,11 +135,12 @@ window.connectWalletMobile = connectWalletMobile;
       setStatus("Connected ✅");
       setWallet(addr);
       await refreshVipForWallet(addr);
-      // notify other code if needed
+      refreshAllPicks();
+         // notify other code if needed
       window.dispatchEvent(new CustomEvent("swampdoge:wallet", { detail: { addr } }));
 
       // Immediately refresh VIP + balance
-      await refreshVipForWallet(addr);
+   
     } catch (e) {
       console.log(e);
       setStatus("Connect error ❌");
