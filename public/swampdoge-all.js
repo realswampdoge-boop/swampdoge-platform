@@ -486,15 +486,31 @@ window.connectWalletMobile = connectWalletMobile;
 
 
 // ===== SWAMPDOGE STARTUP =====
+
+
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     console.log("SwampDoge booting...");
 
-    // Load picks immediately
+    if (!document.getElementById("aiPicksSection")) {
+      const section = document.createElement("section");
+      section.id = "aiPicksSection";
+
+      section.innerHTML = `
+        <h3>🤖 AI Picks</h3>
+        <div id="aiPicksMeta" class="small muted">
+          Loading AI picks...
+        </div>
+        <ul id="aiPicksList"></ul>
+        <hr>
+      `;
+
+      document.body.appendChild(section);
+    }
+
     await loadVipPicks();
     await loadAiPicks();
 
-    // Auto refresh
     setInterval(loadVipPicks, 30000);
     setInterval(loadAiPicks, 30000);
 
