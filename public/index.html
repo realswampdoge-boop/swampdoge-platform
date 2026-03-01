@@ -17,7 +17,7 @@
     <div class="card">
       <h1>SwampDoge</h1>
       <p>Wallet Test (v1)</p>
-<button id="btnConnect" type="button">
+<button id="btnConnect" type="button" onclick="connectWalletMobile()">
   Connect Phantom
 </button>
 
@@ -149,6 +149,29 @@
     const p = window.__PICKS_V1_LOADED__ ? "picks ✅" : "picks ❌";
     if (el) el.textContent = `Loader ✅ | ${w} | ${p}`;
   }, 800);
+</script>
+  <script>
+async function connectWalletMobile() {
+
+  // Desktop OR Phantom in-app browser
+  if (window.solana && window.solana.isPhantom) {
+    try {
+      await window.solana.connect();
+    } catch (e) {
+      console.log(e);
+    }
+    return;
+  }
+
+  // iPhone / Android deep link
+  const currentUrl = window.location.href;
+
+  const phantomUrl =
+    "https://phantom.app/ul/browse/" +
+    encodeURIComponent(currentUrl);
+
+  window.location.href = phantomUrl;
+}
 </script>
 </body>
 </html>
