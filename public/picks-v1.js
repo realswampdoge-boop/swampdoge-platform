@@ -188,6 +188,44 @@ async function loadAiPicks() {
 }
 
 // ---------------- BOOTSTRAP ----------------
+/* ===== SWAMPDOGE AI PICKS AUTO LOAD ===== */
+
+async function loadAiPicks() {
+  try {
+    const res = await fetch("/api/ai-picks", { cache: "no-store" });
+    const data = await res.json();
+
+    const meta = document.getElementById("aiPicksMeta");
+    const list = document.getElementById("aiPicksList");
+
+    if (!data.ok) {
+      if (meta) meta.textContent = "AI picks unavailable";
+      return;
+    }
+
+    if (meta)
+      meta.textContent =
+        "Updated: " +
+        new Date(data.generatedAt).toLocaleString();
+
+    if (list) {
+      list.innerHTML = "";
+      data.picks.forEach(p => {
+        const li = document.createElement("li");
+        li.innerHTML =
+          `<b>${p.title}</b><br>
+           ${p.reason}<br>
+           Confidence: ${(p.confidence * 100).toFixed(0)}%`;
+        list.appendChild(li);
+      });
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+loadAiPicks();
+setInterval(loadAiPicks, 60000);
 window.addEventListener("DOMContentLoaded", () => {
   // Grab elements
   swampBalEl = document.getElementById("swampBal");
