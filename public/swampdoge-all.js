@@ -54,7 +54,15 @@
   function setWallet(addr) {
     if (walletText) walletText.textContent = addr || "";
   }
+async function connectWalletSmart() {
+  // If Phantom is injected (desktop / Phantom in-app browser)
+  if (window.solana && window.solana.isPhantom) {
+    return connectWallet();
+  }
 
+  // iPhone Safari: open Phantom via deep link
+  return connectWalletMobile();
+}
   function setDebug(msg) {
     if (debugEl) debugEl.textContent = msg;
   }
