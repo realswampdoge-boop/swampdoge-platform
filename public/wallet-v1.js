@@ -1,109 +1,178 @@
-// 🐊 SWAMPDOGE TOKEN
-const SWAMP_MINT =
-"GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
+/************************************************************
+ * 🐊 SWAMPDOGE - WALLET + BALANCE + VIP (SINGLE CLEAN FILE)
+ * - One (1) getSwampBalance() only
+ * - Mainnet connection
+ * - Balance updates UI
+ * - VIP lock/unlock updates
+ * - Admin wallet check
+ ************************************************************/
 
-// ✅ GLOBAL SOLANA CONNECTION
+/* ✅ CONFIG */
+const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
+const VIP_MIN_BALANCE = 1000000;
+
+// Put YOUR admin wallet here (the wallet that should see the Admin button)
+const ADMIN_WALLET = "PASTE_ADMIN_WALLET_HERE";
+
+/* ✅ MAINNET CONNECTION */
 const connection = new solanaWeb3.Connection(
   "https://api.mainnet-beta.solana.com",
   "confirmed"
 );
 
-window.__WALLET_V1_LOADED__ = true;
-window.__WALLET_V1_LOADED__ = true;
-// wallet.js
+/* ✅ GLOBAL STATE */
+let walletAddress = null;
+let isVIP = false;
 
-const statusText = document.getElementById("statusText");
-const walletText = document.getElementById("walletText");
-const btnConnect = document.getElementById("btnConnect");
-const btnDisconnect = document.getElementById("btnDisconnect");
+// (optional debug globals)
+window.__WALLET_V1_LOADED__ = true;
+window.__SWAMPDOGE_WALLET__ = null;
+window.__SWAMPDOGE_BALANCE__ = 0;
+
+/* ✅ UI HELPERS (safe) */
+function $(id) {
+  return document.getElementById(id);
+}
 
 function setStatus(msg) {
-  if (statusText) statusText.textContent = msg;
+  const el = $("statusText");
+  if (el) el.textContent = msg;
 }
 
 function setWallet(addr) {
-  if (walletText) walletText.textContent = addr || "Not connected";
-}
-function setWallet(addr) {
-  if (walletText) walletText.textContent = addr;
+  const el = $("walletText");
+  if (el) el.textContent = addr || "Not connected";
 }
 
-/* ✅ PASTE STEP 2 CODE HERE */
-async function getSwampBalance(walletAddress) {
+function setBalanceUI(val) {
+  const el = $("balanceText");
+  if (el) el.textContent = Number(val || 0).toLocaleString();
+}
+
+function setDebug(msg) {
+  const el = $("debugText");
+  if (el) el.textContent = msg || "";
+}
+
+/* ✅ VIP UI */
+function unlockVIP() {
+  const locked = $("vipLocked");
+  const content = $("vipContent");
+  if (locked) locked.style.display = "none";
+  if (content) content.style.display = "block";
+
+  const vip = $("vipStatus");
+  if (vip) vip.textContent = "VIP UNLOCKED 🐊🔥";
+
+  // 🔒 ADMIN WALLET CHECK (show/hide admin button)
+  const adminBtn = $("adminBtn");
+  if (adminBtn) {
+    adminBtn.style.display = (walletAddress === ADMIN_WALLET) ? "block" : "none";
+  }
+
+  // Load VIP picks if your page defines window.loadVipPicks()
+  setTimeout(() => {
+    if (typeof window.loadVipPicks === "function") {
+      window.loadVipPicks();
+    }
+  }, 200);
+}
+
+function lockVIP() {
+  const locked = $("vipLocked");
+  const content = $("vipContent");
+  if (locked) locked.style.display = "block";
+  if (content) content.style.display = "none";
+
+  const vip = $("vipStatus");
+  if (vip) vip.textContent = "Standard User";
+
+  const adminBtn = $("adminBtn");
+  if (adminBtn) adminBtn.style.display = "none";
+}
+
+/* ✅ ONE SINGLE BALANCE FUNCTION (NO DUPLICATES) */
+async function getSwampBalance(addr) {
   try {
-    const owner = new solanaWeb3.PublicKey(walletAddress);
+    const owner = new solanaWeb3.PublicKey(addr);
     const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
 
-    const resp =
-      await connection.getParsedTokenAccountsByOwner(
-        owner,
-        { mint }
-      );
+    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+      owner,
+      { mint }
+    );
 
     let total = 0;
 
-    for (const item of resp.value) {
-      const amt = item.account.data.parsed.info.tokenAmount;
-      total += Number(
-        amt.uiAmountString || amt.uiAmount || 0
-      );
+    for (const item of tokenAccounts.value) {
+      const ta = item.account.data.parsed.info.tokenAmount;
+      // uiAmount is already decimals-adjusted
+      const ui = Number(ta.uiAmount ?? ta.uiAmountString ?? 0);
+      total += (Number.isFinite(ui) ? ui : 0);
     }
 
     return total;
 
   } catch (e) {
-  console.log(e);
-  const el = document.getElementById("debugText");
-  if (el) el.textContent = "TOKEN ERROR ❌ " + (e?.message || String(e));
-  return 0;
-}
+    console.log("TOKEN ERROR", e);
+    setDebug("TOKEN ERROR ❌");
+    return 0;
   }
 }
-async function connectWallet() {const swampBalance =
-  await getSwampBalance(walletAddress);
 
-window.__SWAMPDOGE_BALANCE__ = swampBalance;
-
-const balEl = document.getElementById("swampBal");
-if (balEl) {
-  balEl.textContent = swampBalance.toLocaleString();
-}
+/* ✅ VIP CHECK */
+async function checkVIPStatus(addr) {
   try {
-    // If Phantom provider exists (desktop OR Phantom in-app browser)
-    if (window.solana && window.solana.isPhantom) {
-      setStatus("Connecting...");
-      const resp = await window.solana.connect();
-      const addr = resp.publicKey.toString();
+    const swampBalance = await getSwampBalance(addr);
 
-      setStatus("Connected ✅");
-      setWallet(addr);
-// 🔥 FORCE VIP BALANCE CHECK
-window.__SWAMPDOGE_WALLET__ = addr;
-      
-await checkVIPStatus(addr);
-window.dispatchEvent(
-  new CustomEvent("swampdoge:wallet", {
-    detail: { addr }
-  })
-);
-      // Optional: tell picks.js (if it listens for this)
-      window.__SWAMPDOGE_WALLET__ = addr;
-    
+    // store + show
+    window.__SWAMPDOGE_BALANCE__ = swampBalance;
+    setBalanceUI(swampBalance);
 
+    if (swampBalance >= VIP_MIN_BALANCE) {
+      isVIP = true;
+      unlockVIP();
+    } else {
+      isVIP = false;
+      lockVIP();
+    }
 
+    return swampBalance;
 
+  } catch (e) {
+    console.log("VIP check failed", e);
+    lockVIP();
+    return 0;
+  }
+}
+
+/* ✅ CONNECT / DISCONNECT */
+async function connectWallet() {
+  try {
+    setDebug("");
+    setStatus("Connecting...");
+
+    if (!window.solana || !window.solana.isPhantom) {
+      setStatus("Phantom not found");
+      setDebug("Install Phantom ❌");
       return;
     }
 
-    // iPhone Safari fallback: open site inside Phantom browser
-    const appUrl = window.location.href;
-    const deepLink = "https://phantom.app/ul/browse/" + encodeURIComponent(appUrl);
+    const resp = await window.solana.connect();
+    const addr = resp.publicKey.toString();
 
-    setStatus("Opening Phantom...");
-    window.location.href = deepLink;
+    walletAddress = addr;
+    window.__SWAMPDOGE_WALLET__ = addr;
+
+    setWallet(addr);
+    setStatus("Connected ✅");
+
+    // 🔥 Force balance + VIP refresh every connect
+    await checkVIPStatus(addr);
+
   } catch (e) {
     console.log(e);
-    setStatus("Connect failed");
+    setStatus("Connect failed ❌");
   }
 }
 
@@ -114,157 +183,32 @@ async function disconnectWallet() {
     }
   } catch (e) {
     console.log(e);
-  } finally {
-    setStatus("Ready");
-    setWallet("Not connected");
-
-    window.__SWAMPDOGE_WALLET__ = null;
-    window.dispatchEvent(new CustomEvent("swampdoge:wallet", { detail: { addr: null } }));
   }
+
+  walletAddress = null;
+  window.__SWAMPDOGE_WALLET__ = null;
+  window.__SWAMPDOGE_BALANCE__ = 0;
+  isVIP = false;
+
+  setWallet("Not connected");
+  setBalanceUI(0);
+  lockVIP();
+  setStatus("Ready");
 }
 
-// Hook up buttons
-btnConnect?.addEventListener("click", connectWallet);
-btnDisconnect?.addEventListener("click", disconnectWallet);
+/* ✅ BUTTON HOOKUP */
+function hookButtons() {
+  const btnConnect = $("btnConnect");
+  const btnDisconnect = $("btnDisconnect");
 
-// Default UI
-// Default UI
-setStatus("Ready");
-setWallet("Not connected");
+  if (btnConnect) btnConnect.addEventListener("click", connectWallet);
+  if (btnDisconnect) btnDisconnect.addEventListener("click", disconnectWallet);
 
-
-// ===== SWAMP TOKEN BALANCE =====
-async function getSwampBalance(walletAddress) {
-  try {
-    const owner = new solanaWeb3.PublicKey(walletAddress);
-    const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
-
-    // Token Program IDs (classic + Token-2022)
-    const TOKEN_PROGRAM = new solanaWeb3.PublicKey(
-      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-    );
-    const TOKEN_2022_PROGRAM = new solanaWeb3.PublicKey(
-      "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-    );
-
-    async function fetchBalanceForProgram(programId) {
-      const resp = await connection.getParsedTokenAccountsByOwner(
-        owner,
-        { programId }
-      );
-
-      let total = 0;
-
-      for (const item of resp.value) {
-        const info = item.account.data.parsed.info;
-        if (info.mint !== mint.toBase58()) continue;
-
-        const amt = info.tokenAmount;
-        const decimals = Number(amt.decimals || 0);
-        const raw = Number(amt.amount || 0);
-        total += raw / Math.pow(10, decimals);
-      }
-
-      return total;
-    }
-
-    const bal1 = await fetchBalanceForProgram(TOKEN_PROGRAM);
-    const bal2 = await fetchBalanceForProgram(TOKEN_2022_PROGRAM);
-
-    const total = bal1 + bal2;
-
-    // store + return
-    window.__SWAMPDOGE_BALANCE__ = total;
-    return total;
-  } catch (e) {
-    console.log(e);
-    const el = document.getElementById("debugText");
-    if (el) el.textContent = "TOKEN ERROR ❌";
-    return 0;
-  }
-}
-// 🐊 SWAMPDOGE VIP SYSTEM
-let isVIP = false;
-
-// IMPORTANT: put your real mint here (SPL token mint address)
-const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"; // <-- confirm this is the mint
-
-async function getSwampBalance(walletAddress) {
-  try {
-    const tokenAccounts =
-      await connection.getParsedTokenAccountsByOwner(
-        new solanaWeb3.PublicKey(walletAddress),
-        { mint: new solanaWeb3.PublicKey(SWAMP_MINT) }
-      );
-
-    let total = 0;
-
-    for (const ta of tokenAccounts.value) {
-      const amt = ta.account.data.parsed.info.tokenAmount;
-      // safest: uiAmountString already includes decimals correctly
-      total += Number(amt.uiAmountString || 0);
-    }
-
-    return total;
-  } catch (e) {
-    console.log("TOKEN ERROR", e);
-    const dbg = document.getElementById("debugText");
-    if (dbg) dbg.textContent = "TOKEN ERROR ❌";
-    return 0;
-  }
-}
-async function checkVIPStatus(walletAddress) {
-  try {
-    const swampBalance = await getSwampBalance(walletAddress);
-
-    // 1,000,000 to unlock (change if you want)
-    if (swampBalance >= 1000000) {
-      isVIP = true;
-      unlockVIP();
-    } else {
-      isVIP = false;
-      lockVIP();
-    }
-  } catch (e) {
-    console.log(e);
-  }
-}
-    if (swampBalance >= 1000000) {
-      isVIP = true;
-      unlockVIP();
-    } else {
-      lockVIP();
-    }
-
-  } catch (error) {
-    console.log("VIP check failed", error);
-  }
-}
-function unlockVIP() {
-  const locked = document.getElementById("vipLocked");
-  const content = document.getElementById("vipContent");
-  if (locked) locked.style.display = "none";
-  if (content) content.style.display = "block";
-  // 🔒 ADMIN WALLET CHECK
-const adminBtn = document.getElementById("adminBtn");
-
-if (adminBtn) {
-  if (walletAddress === ADMIN_WALLET) {
-    adminBtn.style.display = "block";
-  } else {
-    adminBtn.style.display = "none";
-  }
-}
-  // LOAD VIP PICKS
-setTimeout(() => {
-  if (window.loadVipPicks) window.loadVipPicks();
-}, 200);
-  
+  // default UI state
+  setStatus("Ready");
+  setWallet("Not connected");
+  setBalanceUI(0);
+  lockVIP();
 }
 
-function lockVIP() {
-  const locked = document.getElementById("vipLocked");
-  const content = document.getElementById("vipContent");
-  if (locked) locked.style.display = "block";
-  if (content) content.style.display = "none";
-}
+document.addEventListener("DOMContentLoaded", hookButtons);
