@@ -1,49 +1,36 @@
-// api/vip-picks.js
 export default async function handler(req, res) {
   try {
-    const token = process.env.GITHUB_TOKEN;
     const owner = process.env.GITHUB_OWNER;
     const repo = process.env.GITHUB_REPO;
-    const path =
-      process.env.GITHUB_FILE_PATH || "public/vip-picks.json";
+    const path = process.env.GITHUB_FILE_PATH || "public/vip-picks.json";
+    const token = process.env.GITHUB_TOKEN;
 
-    if (!token || !owner || !repo) {
-      return res.status(500).json({
-        message: "Missing GitHub environment variables",
-      });
+    if (!owner || !repo || !token) {
+      return res.status(500).json({ ok: false, error: "Missing GitHub env vars" });
     }
 
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+    const apiBase = "https://api.github.com";
+    const url = `${apiBase}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}`;
 
     const gh = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-      },
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github+json"
+      }
     });
 
     const data = await gh.json();
-
     if (!gh.ok) {
-      return res.status(500).json({
-        message: "GitHub read failed",
-        error: data,
-      });
+      return res.status(gh.status).json({ ok: false, error: "GitHub read failed", details: data });
     }
 
-    // Decode GitHub base64 file
-    const jsonText = Buffer.from(data.content, "base64").toString(
-      "utf8"
-    );
+    const content = Buffer.from(data.content || "", "base64").toString("utf8");
+    const json = JSON.parse(content);
 
-    // Prevent Vercel caching
     res.setHeader("Cache-Control", "no-store");
-
-    return res.status(200).send(jsonText);
-  } catch (err) {
-    return res.status(500).json({
-      message: "Server error",
-      error: String(err),
-    });
+    return res.status(200).json(json);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({ ok: false, error: "Server error" });
   }
 }
