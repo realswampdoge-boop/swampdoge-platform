@@ -233,6 +233,41 @@ setDebug(`BAL ✅ ${bal}`);
   // ======= AI PICKS =======
 async function loadAiPicks() {
   try {
+     // If the AI section is missing in HTML, create it dynamically
+let aiSection = document.getElementById("aiPicksSection");
+if (!aiSection) {
+  aiSection = document.createElement("section");
+  aiSection.id = "aiPicksSection";
+
+  const h = document.createElement("h3");
+  h.textContent = "🤖 AI Picks";
+
+  const meta = document.createElement("div");
+  meta.id = "aiPicksMeta";
+  meta.className = "small muted";
+  meta.textContent = "Loading AI picks...";
+
+  const ul = document.createElement("ul");
+  ul.id = "aiPicksList";
+
+  aiSection.appendChild(h);
+  aiSection.appendChild(meta);
+  aiSection.appendChild(ul);
+
+  // Insert AI section right before the Admin Panel (best spot)
+  const adminTitle = Array.from(document.querySelectorAll("h2,h3")).find(x =>
+    (x.textContent || "").toLowerCase().includes("admin")
+  );
+
+  if (adminTitle && adminTitle.parentNode) {
+    adminTitle.parentNode.insertBefore(aiSection, adminTitle);
+  } else {
+    document.body.appendChild(aiSection);
+  }
+}
+
+// Re-grab these in case we just created them
+aiPicksMeta = document.getElement
     if (aiPicksMeta) aiPicksMeta.textContent = "Loading AI picks...";
 
     const res = await fetch("/api/ai-picks", { cache: "no-store" });
