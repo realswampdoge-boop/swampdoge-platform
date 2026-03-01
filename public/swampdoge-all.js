@@ -348,7 +348,7 @@
     const btnDisconnect = $("btnDisconnect");
 
     if (btnConnect && !btnConnect.getAttribute("onclick")) {
-      btnConnect.addEventListener("click", connectWallet);
+      btnConnect?.addEventListener("click", connectWalletSmart);
     }
 
     if (btnDisconnect) btnDisconnect.addEventListener("click", disconnectWallet);
