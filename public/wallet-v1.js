@@ -56,7 +56,15 @@ async function getSwampBalance(walletAddress) {
     return 0;
   }
 }
-async function connectWallet() {
+async function connectWallet() {const swampBalance =
+  await getSwampBalance(walletAddress);
+
+window.__SWAMPDOGE_BALANCE__ = swampBalance;
+
+const balEl = document.getElementById("swampBal");
+if (balEl) {
+  balEl.textContent = swampBalance.toLocaleString();
+}
   try {
     // If Phantom provider exists (desktop OR Phantom in-app browser)
     if (window.solana && window.solana.isPhantom) {
