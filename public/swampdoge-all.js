@@ -212,7 +212,7 @@ async function connectWalletSmart() {
   async function refreshVipForWallet(walletAddress) {
     // 1) balance
     const bal = await getSwampBalance(walletAddress);
-
+setDebug(`BAL ✅ ${bal}`);
     window.__SWAMPDOGE_BALANCE__ = bal;
     setSwampBal(bal);
     setVipProgress(bal);
