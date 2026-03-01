@@ -1,5 +1,6 @@
 const SWAMP_MINT =
-  const RPC_URL = "https://rpc.ankr.com/solana";
+  const RPC_URL = "https://api.mainnet-beta.solana.com";
+const connection = new solanaWeb3.Connection(RPC_URL, "confirmed");
 const connection = new solanaWeb3.Connection(RPC_URL, "confirmed");
 "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 // ✅ GLOBAL SOLANA CONNECTION
@@ -50,10 +51,11 @@ async function getSwampBalance(walletAddress) {
     return total;
 
   } catch (e) {
-    console.log(e);
-    const el = document.getElementById("debugText");
-    if (el) el.textContent = "TOKEN ERROR ❌";
-    return 0;
+  console.log(e);
+  const el = document.getElementById("debugText");
+  if (el) el.textContent = "TOKEN ERROR ❌ " + (e?.message || String(e));
+  return 0;
+}
   }
 }
 async function connectWallet() {const swampBalance =
