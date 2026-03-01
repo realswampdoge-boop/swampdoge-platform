@@ -229,51 +229,73 @@ setDebug(`BAL ✅ ${bal}`);
   }
 
   // ====== AI PICKS ======
-  async function loadAiPicks() {
-    try {
-      if (aiPicksMeta) aiPicksMeta.textContent = "Loading AI picks…";
+  // ======= AI PICKS =======
+async function loadAiPicks() {
+  try {
+    if (aiPicksMeta) aiPicksMeta.textContent = "Loading AI picks...";
 
-      const res = await fetch("/api/ai-picks", { cache: "no-store" });
-      if (!res.ok) throw new Error(`ai-picks status ${res.status}`);
-      const data = await res.json();
+    const res = await fetch("/api/ai-picks", { cache: "no-store" });
+    if (!res.ok) throw new Error(`ai-picks status ${res.status}`);
 
-      const updatedAt = data?.updatedAt || data?.updated || null;
-      const picks = Array.isArray(data?.picks) ? data.picks : Array.isArray(data) ? data : [];
+    const data = await res.json();
 
-      if (aiPicksMeta) {
-        aiPicksMeta.textContent = updatedAt ? `Updated: ${updatedAt}` : "Updated";
-      }
+    // Support generatedAt OR updatedAt
+    const ts =
+      data?.updatedAt ||
+      data?.generatedAt ||
+      data?.generated_at ||
+      "";
 
-      if (aiPicksList) {
-        aiPicksList.innerHTML = "";
-        picks.forEach((p) => {
-          const li = document.createElement("li");
+    const picks = Array.isArray(data?.picks) ? data.picks : [];
 
-          // Supports either string or object
-          if (typeof p === "string") {
-            li.textContent = p;
-          } else if (p && typeof p === "object") {
-            const title = p.pick || p.title || "Pick";
-            const reason = p.reason || p.analysis || "";
-            const conf = p.confidence != null ? `Confidence: ${p.confidence}%` : "";
-
-            li.innerHTML = `
-              <div style="font-weight:700">${escapeHtml(title)}</div>
-              ${reason ? `<div style="opacity:.9; margin-top:4px">${escapeHtml(reason)}</div>` : ""}
-              ${conf ? `<div style="opacity:.9; margin-top:4px">${escapeHtml(conf)}</div>` : ""}
-            `;
-          } else {
-            li.textContent = String(p);
-          }
-
-          aiPicksList.appendChild(li);
-        });
-      }
-    } catch (e) {
-      console.log(e);
-      if (aiPicksMeta) aiPicksMeta.textContent = "AI picks error ❌";
+    if (aiPicksMeta) {
+      aiPicksMeta.textContent = ts
+        ? `Updated: ${ts}`
+        : "AI Picks Ready ✅";
     }
+
+    if (aiPicksList) {
+      aiPicksList.innerHTML = "";
+
+      if (!picks.length) {
+        const li = document.createElement("li");
+        li.textContent = "No AI picks yet.";
+        aiPicksList.appendChild(li);
+        return;
+      }
+
+      picks.forEach((p) => {
+        const li = document.createElement("li");
+
+        if (typeof p === "string") {
+          li.textContent = p;
+        } else {
+          const title = p.title || "AI Pick";
+          const reason = p.reason || "";
+          const conf =
+            typeof p.confidence === "number"
+              ? ` (${Math.round(p.confidence * 100)}%)`
+              : "";
+
+          li.innerHTML =
+            `<strong>${title}${conf}</strong>` +
+            (reason ? `<br><small>${reason}</small>` : "");
+        }
+
+        aiPicksList.appendChild(li);
+      });
+    }
+
+    const dbg = document.getElementById("debugText");
+    if (dbg) dbg.textContent = "AI picks loaded ✅";
+
+  } catch (e) {
+    console.log("AI PICKS ERROR", e);
+    if (aiPicksMeta) aiPicksMeta.textContent = "AI picks error ❌";
+    const dbg = document.getElementById("debugText");
+    if (dbg) dbg.textContent = "AI picks error ❌";
   }
+}
 
   // ====== ADMIN PUBLISH ======
   async function publishVipPicks() {
