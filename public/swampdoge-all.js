@@ -5,7 +5,13 @@
    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
    <script src="./swampdoge-all.js?v=3"></script>
 */
-
+function refreshAllPicks() {
+  loadVipPicks();
+  loadAiPicks();
+  // iPhone Safari timing backup
+  setTimeout(loadVipPicks, 600);
+  setTimeout(loadAiPicks, 800);
+}
 (() => {
   // ====== CONFIG ======
 const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
