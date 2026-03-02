@@ -618,3 +618,21 @@ window.__tapAdmin = () => {
   const open = adminPanel && adminPanel.style.display !== "none";
   showAdmin(!open);
 };
+/* =========================
+   SWAMPDOGE BUTTON BRIDGE
+========================= */
+
+window.__tapConnect = async function () {
+  console.log("CONNECT TAP ✅");
+  connectWallet();
+};
+
+window.__tapDisconnect = function () {
+  console.log("DISCONNECT TAP ✅");
+  disconnectWallet && disconnectWallet();
+};
+
+window.__tapPublish = function () {
+  console.log("PUBLISH TAP ✅");
+  publishVipPicks && publishVipPicks();
+};
