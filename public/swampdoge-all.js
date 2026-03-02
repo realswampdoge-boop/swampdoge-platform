@@ -1,3 +1,14 @@
+function setDebug(msg) {
+  const el = document.getElementById("debugText");
+  if (el) el.textContent = msg;
+}
+
+window.addEventListener("error", (e) => setDebug("JS ERROR ❌ " + (e.message || "")));
+window.addEventListener("unhandledrejection", (e) =>
+  setDebug("PROMISE ❌ " + (e.reason?.message || e.reason || ""))
+);
+
+setDebug("JS START ✅");
 document.addEventListener("DOMContentLoaded", () => {
   const el = document.getElementById("debugText");
 if (el) el.textContent = "JS LOADED v103 ✅";
@@ -636,3 +647,50 @@ window.__tapPublish = function () {
   console.log("PUBLISH TAP ✅");
   publishVipPicks && publishVipPicks();
 };
+document.addEventListener("DOMContentLoaded", () => {
+  const onTap = (id, fn, label) => {
+    const btn = document.getElementById(id);
+    if (!btn) return setDebug(`MISSING ❌ ${id}`);
+
+    const handler = async (e) => {
+      e?.preventDefault?.();
+      try {
+        setDebug(`${label} ✅`);
+        await fn();
+      } catch (err) {
+        console.log(err);
+        setDebug(`${label} ❌ ${err?.message || err}`);
+      }
+    };
+
+    btn.addEventListener("click", handler);
+    btn.addEventListener("touchstart", handler, { passive: false });
+  };
+
+  onTap("btnConnect", async () => {
+    // SAFARI / DESKTOP
+    if (window.solana && window.solana.isPhantom) {
+      const resp = await window.solana.connect();
+      if (typeof setWallet === "function") setWallet(resp.publicKey.toString());
+      return;
+    }
+
+    // iOS HOME SCREEN / WEBVIEW fallback
+    const url = encodeURIComponent(window.location.href);
+    window.location.href = `https://phantom.app/ul/browse/${url}?ref=swampdoge`;
+  }, "CONNECT");
+
+  onTap("btnDisconnect", async () => {
+    if (window.solana && window.solana.isPhantom) {
+      await window.solana.disconnect();
+    }
+    if (typeof setWallet === "function") setWallet("");
+  }, "DISCONNECT");
+
+  onTap("btnPublish", async () => {
+    if (typeof publishVipPicks !== "function") throw new Error("publishVipPicks() missing");
+    await publishVipPicks();
+  }, "PUBLISH");
+
+  setDebug("BUTTONS READY ✅");
+});
