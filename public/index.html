@@ -54,20 +54,42 @@ const connection = new solanaWeb3.Connection(
 );
 async function getSwampBalance(walletAddress) {
   try {
-    debug("Scanning tokens...");
+
+    debug("Scanning SWAMP...");
 
     const owner = new solanaWeb3.PublicKey(walletAddress);
     const mint  = new solanaWeb3.PublicKey(SWAMP_MINT);
 
-    const resp =
-      await connection.getParsedTokenAccountsByOwner(
-        owner,
-        { mint }
-      );
-
     let total = 0;
 
-    for (const item of resp.value) {
+    // ✅ Standard SPL Token Program
+    const splAccounts =
+      await connection.getParsedTokenAccountsByOwner(
+        owner,
+        { mint },
+        "confirmed"
+      );
+
+    // ✅ Token-2022 Program (Pump.fun tokens)
+    const token2022Accounts =
+      await connection.getParsedTokenAccountsByOwner(
+        owner,
+        {
+          mint,
+          programId:
+            new solanaWeb3.PublicKey(
+              "TokenzQdBNbLqP5VEh9UpAJZciV06P88GJEqn3Ejj6"
+            )
+        },
+        "confirmed"
+      );
+
+    const allAccounts = [
+      ...splAccounts.value,
+      ...token2022Accounts.value
+    ];
+
+    for (const item of allAccounts) {
       const amt =
         item.account.data.parsed.info.tokenAmount;
 
