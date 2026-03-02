@@ -35,6 +35,20 @@ body{
 <div>Wallet Test (Reset)</div>
   <button id="connectBtn" class="btn">Connect Phantom</button>
 <button id="disconnectBtn" class="btn">Disconnect</button>
+  <!-- 🔒 Admin Toggle Button (hidden until your wallet connects) -->
+<button id="adminBtn" class="btn" style="display:none;">Admin</button>
+
+<!-- Admin Panel -->
+<div id="adminPanel" class="card" style="display:none; margin-top:16px;">
+  <div style="font-weight:700; margin-bottom:10px;">LEVEL UP ADMIN</div>
+
+  <button id="publishBtn" class="btn">Publish Picks</button>
+  <button id="resetBtn" class="btn">Reset VIP</button>
+
+  <div style="margin-top:10px; font-size:14px; opacity:.85;">
+    (Admin-only tools)
+  </div>
+</div>
 <div class="card">
 <div>Status: <span id="status">...</span></div>
 <div>Wallet: <span id="wallet">...</span></div>
@@ -64,7 +78,9 @@ body{
 const debug = m=>document.getElementById("debug").textContent=m;
 const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 const VIP_MIN = 10_000_000; // change if you want
-
+const ADMIN_WALLET = "AumagmtFTNer1QYcCmpG3AyqbLKMD9ByDg4okB3wtiBy"; // <- your wallet
+const ADMIN_PIN = "7777"; // <- your previous pin
+let isAdminWallet = false;
 const connection = new solanaWeb3.Connection(
   "https://rpc.ankr.com/solana",
   "confirmed"
@@ -95,7 +111,8 @@ async function getSwampBalance(walletAddress) {
 
 
 function setVip(isVip) {
-  document.getElementById("vipStatus").textContent = isVip ? "UNLOCKED ✅" : "Locked 🔒";
+  document.getElementById("vipStatus").textContent =
+    isVip ? "UNLOCKED ✅" : "Locked 🔒";
 
   const vipPicksBox = document.getElementById("vipPicksBox");
   const vipLockedMsg = document.getElementById("vipLockedMsg");
@@ -103,6 +120,12 @@ function setVip(isVip) {
   if (vipPicksBox && vipLockedMsg) {
     vipPicksBox.style.display = isVip ? "block" : "none";
     vipLockedMsg.style.display = isVip ? "none" : "block";
+  }
+
+  // 🔒 ADMIN VISIBILITY CONTROL (PUT C HERE)
+  const adminBtn = document.getElementById("adminBtn");
+  if (adminBtn) {
+    adminBtn.style.display = (isVip && isAdminWallet) ? "block" : "none";
   }
 }
 document.getElementById("connectBtn").onclick = async () => {
@@ -112,7 +135,7 @@ document.getElementById("connectBtn").onclick = async () => {
     if (window.solana && window.solana.isPhantom) {
       const r = await window.solana.connect();
       const walletAddr = r.publicKey.toString();
-
+      isAdminWallet = (walletAddr === ADMIN_WALLET);
       document.getElementById("wallet").textContent = walletAddr;
       document.getElementById("status").textContent = "Connected";
       debug("CONNECTED ✅");
@@ -138,6 +161,30 @@ document.getElementById("disconnectBtn").onclick=async()=>{
   document.getElementById("status").textContent="Disconnected";
   debug("DISCONNECTED");
 };
+// 🔒 ADMIN BUTTON LOGIC
+const adminBtn = document.getElementById("adminBtn");
+const adminPanel = document.getElementById("adminPanel");
+
+if (adminBtn) {
+  adminBtn.onclick = () => {
+
+    // Only YOUR wallet can unlock
+    if (!isAdminWallet) {
+      debug("ADMIN BLOCKED ❌ Not your wallet");
+      return;
+    }
+
+    const pin = prompt("Enter Admin PIN:");
+
+    if (pin !== ADMIN_PIN) {
+      debug("WRONG PIN ❌");
+      return;
+    }
+
+    adminPanel.style.display = "block";
+    debug("ADMIN UNLOCKED ✅");
+  };
+}  
 </script>
 </body>
 </html>
