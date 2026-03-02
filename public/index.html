@@ -54,41 +54,21 @@ const connection = new solanaWeb3.Connection(
 );
 async function getSwampBalance(walletAddress) {
   try {
-    const owner = new solanaWeb3.PublicKey(walletAddress);
-    const mint  = new solanaWeb3.PublicKey(SWAMP_MINT);
+    debug("Checking SWAMP…");
 
-    const TOKEN_2022_PROGRAM = new solanaWeb3.PublicKey(
-      "TokenzQdBNbLqP5Xb8b1tPjzvY4xXHzkwmo7aX6ixSe"
-    );
+    const r = await fetch(`/api/swamp-balance?wallet=${encodeURIComponent(walletAddress)}`);
+    const j = await r.json();
 
-    let total = 0;
-
-    // 1) Classic SPL (works for normal tokens)
-    const spl = await connection.getParsedTokenAccountsByOwner(owner, { mint });
-    for (const it of spl.value) {
-      const t = it.account.data.parsed.info.tokenAmount;
-      total += Number(t.uiAmountString || t.uiAmount || 0);
+    if (!j.ok) {
+      debug("SWAMP API ERROR ❌");
+      return 0;
     }
 
-    // 2) Token-2022 (Pump.fun) -> query by programId, then filter by mint
-    const t22 = await connection.getParsedTokenAccountsByOwner(owner, {
-      programId: TOKEN_2022_PROGRAM
-    });
-
-    for (const it of t22.value) {
-      const info = it.account.data.parsed.info;
-      if (info.mint === mint.toString()) {
-        const t = info.tokenAmount;
-        total += Number(t.uiAmountString || t.uiAmount || 0);
-      }
-    }
-
-    debug("SWAMP READY ✅ (" + spl.value.length + "/" + t22.value.length + ")");
-    return total;
-
+    debug("SWAMP READY ✅");
+    return Number(j.uiAmount || 0);
   } catch (e) {
     console.log(e);
-    debug("SWAMP ERROR ❌ " + (e?.message || e));
+    debug("SWAMP ERROR ❌");
     return 0;
   }
 }
