@@ -5,36 +5,37 @@ export default async function handler(req, res) {
 
     const mint = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
-    // Solscan public endpoint (no auth)
-    const url = `https://public-api.solscan.io/account/tokens?account=${encodeURIComponent(wallet)}`;
+    const body = {
+      jsonrpc: "2.0",
+      id: "1",
+      method: "getTokenAccountsByOwner",
+      params: [
+        wallet,
+        { mint },
+        { encoding: "jsonParsed" }
+      ]
+    };
 
-    const r = await fetch(url, {
-      headers: { accept: "application/json" },
+    const r = await fetch("https://api.mainnet-beta.solana.com", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
     });
 
-    if (!r.ok) {
-      const txt = await r.text();
-      return res.status(502).json({ ok: false, error: "Solscan fetch failed", status: r.status, body: txt });
+    const j = await r.json();
+
+    const accounts = j?.result?.value || [];
+
+    let total = 0;
+
+    for (const acc of accounts) {
+      const amt = acc.account.data.parsed.info.tokenAmount;
+      total += Number(amt.uiAmountString || amt.uiAmount || 0);
     }
 
-    const list = await r.json();
+    return res.status(200).json({ ok: true, uiAmount: total });
 
-    // Find our mint
-    const item = Array.isArray(list)
-      ? list.find((t) => (t?.tokenAddress || t?.mintAddress || "") === mint)
-      : null;
-
-    // Solscan responses vary; handle common shapes
-    let uiAmount = 0;
-
-    if (item?.tokenAmount?.uiAmount != null) uiAmount = Number(item.tokenAmount.uiAmount);
-    else if (item?.tokenAmount?.uiAmountString != null) uiAmount = Number(item.tokenAmount.uiAmountString);
-    else if (item?.tokenAmount?.amount != null && item?.tokenAmount?.decimals != null) {
-      uiAmount = Number(item.tokenAmount.amount) / Math.pow(10, Number(item.tokenAmount.decimals));
-    }
-
-    return res.status(200).json({ ok: true, wallet, mint, uiAmount });
   } catch (e) {
-    return res.status(500).json({ ok: false, error: e?.message || String(e) });
+    return res.status(500).json({ ok: false, error: e.message });
   }
 }
