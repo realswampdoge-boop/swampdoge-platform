@@ -254,9 +254,8 @@ async function loadAiPick() {
       aiPicksMeta.textContent = "Loading AI picks...";
 
     const res = await fetch("/api/ai-picks?ts=" + Date.now(), {
-      cache: "no-store"
-    });
-
+      cache: "no-store" });
+if (!res.ok) throw new Error(`ai-picks status ${res.status}`);
     const data = await res.json();
 
 // Re-grab these in case we just created them
