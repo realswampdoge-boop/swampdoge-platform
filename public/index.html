@@ -46,19 +46,23 @@ body{
 <script>
 const debug = m=>document.getElementById("debug").textContent=m;
 const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
-const VIP_MIN = 1_000_000; // change if you want
+const VIP_MIN = 10_000_000; // change if you want
 
 const connection = new solanaWeb3.Connection(
   "https://rpc.ankr.com/solana",
   "confirmed"
 );
+  debug("CONNECTED ✅ " + walletAddr);
+debug("MINT ✅ " + SWAMP_MINT);
 async function getSwampBalance(walletAddress) {
   try {
+    debug("SWAMP CHECK…");
     debug("Checking SWAMP…");
 
     const r = await fetch(`/api/swamp-balance?wallet=${encodeURIComponent(walletAddress)}`);
     const j = await r.json();
-
+    debug("API RESPONSE: " + JSON.stringify(j));
+    
     if (!j.ok) {
       debug("SWAMP API ERROR ❌");
       return 0;
