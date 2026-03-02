@@ -55,54 +55,51 @@ const connection = new solanaWeb3.Connection(
 async function getSwampBalance(walletAddress) {
   try {
     const owner = new solanaWeb3.PublicKey(walletAddress);
-    const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
+    const mint  = new solanaWeb3.PublicKey(SWAMP_MINT);
 
-    // Standard SPL Token program
-    const TOKEN_PROGRAM =
-      new solanaWeb3.PublicKey(
-        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-      );
+    // ✅ Correct ATA program id
+    const ATA_PROGRAM = new solanaWeb3.PublicKey(
+      "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+    );
 
-    // Token-2022 program (Pump.fun tokens)
-    const TOKEN_2022_PROGRAM =
-      new solanaWeb3.PublicKey(
-        "TokenzQdBNbLqP5Xb8b1tPjzvY4xXHzkwmo7aX6ixSe"
-      );
+    // Classic SPL token program
+    const TOKEN_PROGRAM = new solanaWeb3.PublicKey(
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    );
 
-    const accounts1 =
-      await connection.getParsedTokenAccountsByOwner(
-        owner,
-        { mint },
-        TOKEN_PROGRAM
-      );
+    // Token-2022 program (Pump.fun / newer mints)
+    const TOKEN_2022_PROGRAM = new solanaWeb3.PublicKey(
+      "TokenzQdBNbLqP5Xb8b1tPjzvY4xXHzkwmo7aX6ixSe"
+    );
 
-    const accounts2 =
-      await connection.getParsedTokenAccountsByOwner(
-        owner,
-        { mint },
-        TOKEN_2022_PROGRAM
-      );
+    // Derive BOTH possible ATAs (classic + 2022)
+    const [ataClassic] = solanaWeb3.PublicKey.findProgramAddressSync(
+      [owner.toBuffer(), TOKEN_PROGRAM.toBuffer(), mint.toBuffer()],
+      ATA_PROGRAM
+    );
 
-    const allAccounts = [
-      ...accounts1.value,
-      ...accounts2.value
-    ];
+    const [ata2022] = solanaWeb3.PublicKey.findProgramAddressSync(
+      [owner.toBuffer(), TOKEN_2022_PROGRAM.toBuffer(), mint.toBuffer()],
+      ATA_PROGRAM
+    );
 
-    let total = 0;
+    // Try both accounts
+    const accClassic = await connection.getParsedAccountInfo(ataClassic);
+    const acc2022    = await connection.getParsedAccountInfo(ata2022);
 
-    for (const item of allAccounts) {
-      const amt =
-        item.account.data.parsed.info.tokenAmount;
+    const pickAmount = (acc) => {
+      if (!acc?.value?.data?.parsed?.info?.tokenAmount) return 0;
+      const t = acc.value.data.parsed.info.tokenAmount;
+      return Number(t.uiAmountString || t.uiAmount || 0);
+    };
 
-      total += Number(
-        amt.uiAmountString || amt.uiAmount || 0
-      );
-    }
+    const balClassic = pickAmount(accClassic);
+    const bal2022    = pickAmount(acc2022);
 
-    return total;
+    return balClassic + bal2022;
   } catch (e) {
     console.log(e);
-    debug("SWAMP ERROR ❌");
+    debug("SWAMP ERROR ❌ " + (e?.message || e));
     return 0;
   }
 }
