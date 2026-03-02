@@ -283,7 +283,7 @@ if (!aiSection) {
 aiPicksMeta = document.getElement
     if (aiPicksMeta) aiPicksMeta.textContent = "Loading AI picks...";
 
-    const res = await fetch(`/ai-picks.json?v=${Date.now()}`, { cache: "no-store" });
+    const res = await fetch('/api/ai-picks?ts=' + Date.now(), { cache: "no-store" })
     if (!res.ok) throw new Error(`ai-picks status ${res.status}`);
 
     const data = await res.json();
