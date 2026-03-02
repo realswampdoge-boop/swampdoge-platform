@@ -82,33 +82,31 @@ function setVip(isVip) {
   const el = document.getElementById("vipStatus");
   if (el) el.textContent = isVip ? "UNLOCKED ✅" : "Locked 🔒";
 }
-document.getElementById("connectBtn").onclick=async()=>{
+document.getElementById("connectBtn").onclick = async () => {
+  try {
+    debug("CONNECT TAP…");
 
-  debug("CONNECT TAP");
+    if (window.solana && window.solana.isPhantom) {
+      const r = await window.solana.connect();
+      const walletAddr = r.publicKey.toString();
 
-  if(window.solana && window.solana.isPhantom){
-    const r=await window.solana.connect();
-document.getElementById("wallet").textContent = r.publicKey.toString();
-document.getElementById("status").textContent = "Connected";
-debug("CONNECTED ✅");
-    
-    const walletAddr = r.publicKey.toString();
+      document.getElementById("wallet").textContent = walletAddr;
+      document.getElementById("status").textContent = "Connected";
+      debug("CONNECTED ✅");
 
-debug("Checking SWAMP…");
+      const bal = await getSwampBalance(walletAddr);
+      document.getElementById("swampBal").textContent = bal.toLocaleString();
 
-const bal = await getSwampBalance(walletAddr);
-
-document.getElementById("swampBal").textContent =
-  bal.toLocaleString();
-setVip(bal >= VIP_MIN);
-
-debug("SWAMP READY ✅");
-      
-      return;
+      setVip(bal >= VIP_MIN);
+      debug("SWAMP READY ✅");
+    } else {
+      alert("Phantom not found");
+      debug("NO PHANTOM ❌");
+    }
+  } catch (e) {
+    console.log(e);
+    debug("CONNECT ERROR ❌ " + (e?.message || e));
   }
-
-  const url=encodeURIComponent(location.href);
-  location.href=`https://phantom.app/ul/browse/${url}`;
 };
 
 document.getElementById("disconnectBtn").onclick=async()=>{
