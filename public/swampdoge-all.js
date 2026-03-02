@@ -246,82 +246,44 @@ setDebug(`BAL ✅ ${bal}`);
   // ======= AI PICKS =======
 async function loadAiPicks() {
   try {
+    // Always use LET if we might re-grab elements
+    let aiPicksMeta = document.getElementById("aiPicksMeta");
+    let aiPicksList = document.getElementById("aiPicksList");
 
-    const aiPicksMeta = document.getElementById("aiPicksMeta");
-    const aiPicksList = document.getElementById("aiPicksList");
-
-    if (aiPicksMeta)
-      aiPicksMeta.textContent = "Loading AI picks...";
-
-    const res = await fetch("/api/ai-picks?ts=" + Date.now(), {
-      cache: "no-store" });
-if (!res.ok) throw new Error(`ai-picks status ${res.status}`);
-    const data = await res.json();
-
-// Re-grab these in case we just created them
-aiPicksMeta = document.getElement
     if (aiPicksMeta) aiPicksMeta.textContent = "Loading AI picks...";
 
-    const res = await fetch('/api/ai-picks?ts=' + Date.now(), { cache: "no-store" })
-    if (!res.ok) throw new Error(`ai-picks status ${res.status}`);
+    const res = await fetch("/api/ai-picks?ts=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error("ai-picks status " + res.status);
 
     const data = await res.json();
 
-    // Support generatedAt OR updatedAt
-    const ts =
-      data?.updatedAt ||
-      data?.generatedAt ||
-      data?.generated_at ||
-      "";
+    // Re-grab once (safe because LET)
+    aiPicksMeta = document.getElementById("aiPicksMeta");
+    aiPicksList = document.getElementById("aiPicksList");
 
     const picks = Array.isArray(data?.picks) ? data.picks : [];
 
-    if (aiPicksMeta) {
-      aiPicksMeta.textContent = ts
-        ? `Updated: ${ts}`
-        : "AI Picks Ready ✅";
-    }
+    const ts = data?.updatedAt || data?.generatedAt || "";
+    if (aiPicksMeta) aiPicksMeta.textContent = ts ? `Updated: ${ts}` : "Updated";
 
     if (aiPicksList) {
       aiPicksList.innerHTML = "";
+      picks.forEach((p) => {
+        const li = document.createElement("li");
+        li.textContent = typeof p === "string" ? p : (p?.title || JSON.stringify(p));
+        aiPicksList.appendChild(li);
+      });
 
       if (!picks.length) {
         const li = document.createElement("li");
         li.textContent = "No AI picks yet.";
         aiPicksList.appendChild(li);
-        return;
       }
-
-      picks.forEach((p) => {
-        const li = document.createElement("li");
-
-        if (typeof p === "string") {
-          li.textContent = p;
-        } else {
-          const title = p.title || "AI Pick";
-          const reason = p.reason || "";
-          const conf =
-            typeof p.confidence === "number"
-              ? ` (${Math.round(p.confidence * 100)}%)`
-              : "";
-
-          li.innerHTML =
-            `<strong>${title}${conf}</strong>` +
-            (reason ? `<br><small>${reason}</small>` : "");
-        }
-
-        aiPicksList.appendChild(li);
-      });
     }
-
-    const dbg = document.getElementById("debugText");
-    if (dbg) dbg.textContent = "AI picks loaded ✅";
-
   } catch (e) {
     console.log("AI PICKS ERROR", e);
+    const aiPicksMeta = document.getElementById("aiPicksMeta");
     if (aiPicksMeta) aiPicksMeta.textContent = "AI picks error ❌";
-    const dbg = document.getElementById("debugText");
-    if (dbg) dbg.textContent = "AI picks error ❌";
   }
 }
 
