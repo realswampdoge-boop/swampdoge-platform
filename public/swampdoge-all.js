@@ -244,7 +244,7 @@ setDebug(`BAL ✅ ${bal}`);
 
   
   // ======= AI PICKS =======
-async function loadAiPick() {
+async function loadAiPicks() {
   try {
 
     const aiPicksMeta = document.getElementById("aiPicksMeta");
