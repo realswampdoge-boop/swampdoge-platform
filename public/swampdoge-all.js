@@ -19,6 +19,7 @@ document.addEventListener("touchstart", (e) => {
   const t = e.target;
   debug("TOUCH: " + (t.id || t.tagName));
 }, { capture: true, passive: true });
+  debug("TAP DETECTOR ON v99 ✅");
   const el = document.getElementById("debugText");
   if (el) el.textContent = msg;
 }
