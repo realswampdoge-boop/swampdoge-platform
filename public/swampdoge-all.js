@@ -1,3 +1,12 @@
+// ✅ Show any JS crash on-screen (so we stop being blind)
+window.addEventListener("error", (e) => {
+  const el = document.getElementById("debugText");
+  if (el) el.textContent = "JS ERROR ❌ " + (e?.message || "unknown");
+});
+window.addEventListener("unhandledrejection", (e) => {
+  const el = document.getElementById("debugText");
+  if (el) el.textContent = "PROMISE ERROR ❌ " + (e?.reason?.message || e?.reason || "unknown");
+});
 function debug(msg) {
   console.log(msg);
 
@@ -504,3 +513,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
+// ✅ PANIC BIND: always bind buttons after DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+  const debugEl = document.getElementById("debugText");
+  const say = (m) => { if (debugEl) debugEl.textContent = m; console.log(m); };
+
+  const btnConnect = document.getElementById("btnConnect");
+  const btnDisconnect = document.getElementById("btnDisconnect");
+  const btnPublish = document.getElementById("btnPublish");
+
+  say("Binding buttons...");
+
+  const safe = (fn, name) => () => {
+    try { fn(); }
+    catch (e) { console.log(e); say(`${name} ERROR ❌`); }
+  };
+
+  // Use whichever connect function actually exists
+  const connectFn =
+    (typeof connectWalletSmart === "function" && connectWalletSmart) ||
+    (typeof connectWallet === "function" && connectWallet) ||
+    (typeof connectPhantom === "function" && connectPhantom);
+
+  if (btnConnect && connectFn) {
+    btnConnect.addEventListener("click", safe(connectFn, "Connect"));
+    btnConnect.addEventListener("touchstart", (e) => { e.preventDefault(); safe(connectFn, "Connect")(); }, { passive: false });
+    say("Buttons ready ✅");
+  } else {
+    say("Connect bind failed ❌");
+  }
+
+  if (btnDisconnect && typeof disconnectWallet === "function") {
+    btnDisconnect.addEventListener("click", safe(disconnectWallet, "Disconnect"));
+    btnDisconnect.addEventListener("touchstart", (e) => { e.preventDefault(); safe(disconnectWallet, "Disconnect")(); }, { passive: false });
+  }
+
+  if (btnPublish && typeof publishVipPicks === "function") {
+    btnPublish.addEventListener("click", safe(publishVipPicks, "Publish"));
+    btnPublish.addEventListener("touchstart", (e) => { e.preventDefault(); safe(publishVipPicks, "Publish")(); }, { passive: false });
+  }
+});
