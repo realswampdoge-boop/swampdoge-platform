@@ -1,3 +1,8 @@
+window.onerror = function(msg, src, line, col, err) {
+  const el = document.getElementById("debugText");
+  if (el) el.textContent =
+    "JS CRASH ❌ line " + line + ": " + msg;
+};
 // ✅ Show any JS crash on-screen (so we stop being blind)
 window.addEventListener("error", (e) => {
   const el = document.getElementById("debugText");
