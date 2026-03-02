@@ -57,25 +57,52 @@ async function getSwampBalance(walletAddress) {
     const owner = new solanaWeb3.PublicKey(walletAddress);
     const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
 
-    const fetchPromise =
-      connection.getParsedTokenAccountsByOwner(owner, { mint });
+    // Standard SPL Token program
+    const TOKEN_PROGRAM =
+      new solanaWeb3.PublicKey(
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      );
 
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("RPC timeout")), 8000)
-    );
+    // Token-2022 program (Pump.fun tokens)
+    const TOKEN_2022_PROGRAM =
+      new solanaWeb3.PublicKey(
+        "TokenzQdBNbLqP5Xb8b1tPjzvY4xXHzkwmo7aX6ixSe"
+      );
 
-    const resp = await Promise.race([fetchPromise, timeoutPromise]);
+    const accounts1 =
+      await connection.getParsedTokenAccountsByOwner(
+        owner,
+        { mint },
+        TOKEN_PROGRAM
+      );
+
+    const accounts2 =
+      await connection.getParsedTokenAccountsByOwner(
+        owner,
+        { mint },
+        TOKEN_2022_PROGRAM
+      );
+
+    const allAccounts = [
+      ...accounts1.value,
+      ...accounts2.value
+    ];
 
     let total = 0;
-    for (const item of resp.value) {
-      const amt = item.account.data.parsed.info.tokenAmount;
-      total += Number(amt.uiAmountString || amt.uiAmount || 0);
+
+    for (const item of allAccounts) {
+      const amt =
+        item.account.data.parsed.info.tokenAmount;
+
+      total += Number(
+        amt.uiAmountString || amt.uiAmount || 0
+      );
     }
 
     return total;
   } catch (e) {
     console.log(e);
-    debug("SWAMP ERROR ❌ " + (e?.message || e));
+    debug("SWAMP ERROR ❌");
     return 0;
   }
 }
