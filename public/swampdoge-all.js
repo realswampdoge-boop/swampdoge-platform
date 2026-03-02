@@ -1,3 +1,7 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const el = document.getElementById("debugText");
+  if (el) el.textContent = "BOOT v100 ✅";
+});
 window.onerror = function(msg, src, line, col, err) {
   const el = document.getElementById("debugText");
   if (el) el.textContent =
