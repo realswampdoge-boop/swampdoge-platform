@@ -32,8 +32,17 @@
       <h1>SwampDoge</h1>
       <div class="small muted">Wallet Test (v1 • one-file)</div>
 
-      <button id="btnConnect" class="btn" type="button">Connect Phantom</button>
-      <button id="btnDisconnect" class="btn" type="button">Disconnect</button>
+      <button id="btnConnect" class="btn" type="button"
+onclick="window.__tapConnect && window.__tapConnect()"
+ontouchstart="window.__tapConnect && window.__tapConnect()">
+Connect Phantom
+</button>
+      <button id="btnDisconnect" class="btn" type="button"
+onclick="window.__tapDisconnect && window.__tapDisconnect()"
+ontouchstart="window.__tapDisconnect && window.__tapDisconnect()">
+Disconnect
+</button>
+       
 
       <div class="small">Status: <span id="statusText"></span></div>
       <div class="small">Wallet: <span id="walletText"></span></div>
@@ -73,7 +82,11 @@
         <ul id="vipPicksList"></ul>
       </div>
 
-      <button id="btnAdminToggle" class="btn" type="button" style="margin-top:14px;">Admin</button>
+      <button id="btnAdminToggle" class="btn" type="button"
+onclick="window.__tapAdmin && window.__tapAdmin()"
+ontouchstart="window.__tapAdmin && window.__tapAdmin()">
+Admin
+</button>
 
       <div id="adminPanel" class="admin">
         <div class="small muted">Update VIP picks (one per line) then Publish.</div>
@@ -83,7 +96,11 @@
 Lakers ML
 Celtics -3
 Over 220.5"></textarea>
-        <button id="btnPublish" class="btn" type="button">Publish VIP Picks 🚀</button>
+        <button id="btnPublish" class="btn" type="button"
+onclick="window.__tapPublish && window.__tapPublish()"
+ontouchstart="window.__tapPublish && window.__tapPublish()">
+Publish VIP Picks 🚀
+</button>
         <div id="adminStatus" class="small muted"></div>
       </div>
 
