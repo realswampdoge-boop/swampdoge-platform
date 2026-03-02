@@ -1,3 +1,9 @@
+function debug(msg) {
+  console.log(msg);
+
+  const el = document.getElementById("debugText");
+  if (el) el.textContent = msg;
+}
 console.log("✅ swampdoge-all.js LOADED");
 window.__SWAMPDOGE_ALL_LOADED__ = true;
 setTimeout(() => {
@@ -465,3 +471,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("BOOT ERROR", e);
   }
 });
+document.addEventListener("DOMContentLoaded", () => {
+
+  debug("Binding buttons...");
+
+  const btnConnect = document.getElementById("btnConnect");
+  const btnDisconnect = document.getElementById("btnDisconnect");
+  const btnPublish = document.getElementById("btnPublish");
+
+  if (btnConnect) {
+    btnConnect.addEventListener("click", () => {
+      debug("Connect tapped ✅");
+      connectWalletSmart();
+    });
+  } else {
+    debug("btnConnect NOT FOUND ❌");
+  }
+
+  if (btnDisconnect) {
+    btnDisconnect.addEventListener("click", () => {
+      debug("Disconnect tapped ✅");
+      disconnectWallet();
+    });
+  }
+
+  if (btnPublish) {
+    btnPublish.addEventListener("click", () => {
+      debug("Publish tapped ✅");
+      publishVipPicks();
+    });
+  }
+
+});
+
