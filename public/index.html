@@ -45,13 +45,50 @@ body{
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 <script>
 const debug = m=>document.getElementById("debug").textContent=m;
+const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
+const VIP_MIN = 1_000_000; // change if you want
 
+const connection = new solanaWeb3.Connection(
+  "https://api.mainnet-beta.solana.com",
+  "confirmed"
+);
+
+async function getSwampBalance(walletAddress) {
+  const owner = new solanaWeb3.PublicKey(walletAddress);
+  const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
+
+  const resp = await connection.getParsedTokenAccountsByOwner(owner, { mint });
+
+  let total = 0;
+  for (const item of resp.value) {
+    const amt = item.account.data.parsed.info.tokenAmount;
+    total += Number(amt.uiAmountString || amt.uiAmount || 0);
+  }
+  return total;
+}
+
+function setVip(isVip) {
+  const el = document.getElementById("vipStatus");
+  if (el) el.textContent = isVip ? "UNLOCKED ✅" : "Locked 🔒";
+}
 document.getElementById("connectBtn").onclick=async()=>{
 
   debug("CONNECT TAP");
 
   if(window.solana && window.solana.isPhantom){
       const r=await window.solana.connect();
+    const walletAddr = r.publicKey.toString();
+
+debug("Checking SWAMP…");
+
+const bal = await getSwampBalance(walletAddr);
+
+document.getElementById("swampBal").textContent =
+  bal.toLocaleString();
+
+setVip(bal >= VIP_MIN);
+
+debug("SWAMP READY ✅");
       document.getElementById("wallet").textContent=r.publicKey.toString();
       document.getElementById("status").textContent="Connected";
       debug("CONNECTED ✅");
