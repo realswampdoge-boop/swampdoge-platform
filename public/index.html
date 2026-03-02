@@ -42,6 +42,23 @@ body{
 <div>VIP: <span id="vipStatus">Locked</span></div>
 <div>Debug: <span id="debug">READY</span></div>
 </div>
+  <!-- ✅ VIP PICKS -->
+<div class="card" style="margin-top:16px;">
+  <div style="font-weight:800; font-size:26px;">🔒 VIP Picks</div>
+
+  <div id="vipLockedMsg" style="margin-top:10px; opacity:.9;">
+    Hold <b>$SWAMP</b> to unlock VIP picks.
+  </div>
+
+  <div id="vipPicksBox" style="display:none; margin-top:12px; text-align:left;">
+    <div style="font-weight:700;">Today’s VIP Picks</div>
+    <ul style="margin-top:10px; line-height:1.6;">
+      <li>VIP Pick #1: (coming next)</li>
+      <li>VIP Pick #2: (coming next)</li>
+      <li>VIP Pick #3: (coming next)</li>
+    </ul>
+  </div>
+</div>
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 <script>
 const debug = m=>document.getElementById("debug").textContent=m;
@@ -78,8 +95,15 @@ async function getSwampBalance(walletAddress) {
 
 
 function setVip(isVip) {
-  const el = document.getElementById("vipStatus");
-  if (el) el.textContent = isVip ? "UNLOCKED ✅" : "Locked 🔒";
+  document.getElementById("vipStatus").textContent = isVip ? "UNLOCKED ✅" : "Locked 🔒";
+
+  const vipPicksBox = document.getElementById("vipPicksBox");
+  const vipLockedMsg = document.getElementById("vipLockedMsg");
+
+  if (vipPicksBox && vipLockedMsg) {
+    vipPicksBox.style.display = isVip ? "block" : "none";
+    vipLockedMsg.style.display = isVip ? "none" : "block";
+  }
 }
 document.getElementById("connectBtn").onclick = async () => {
   try {
