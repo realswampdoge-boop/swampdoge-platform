@@ -9,7 +9,16 @@ window.addEventListener("unhandledrejection", (e) => {
 });
 function debug(msg) {
   console.log(msg);
+// ✅ Tap detector (captures even if button handlers fail)
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  debug("CLICK: " + (t.id || t.tagName));
+}, true);
 
+document.addEventListener("touchstart", (e) => {
+  const t = e.target;
+  debug("TOUCH: " + (t.id || t.tagName));
+}, { capture: true, passive: true });
   const el = document.getElementById("debugText");
   if (el) el.textContent = msg;
 }
