@@ -49,23 +49,37 @@ const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 const VIP_MIN = 1_000_000; // change if you want
 
 const connection = new solanaWeb3.Connection(
-  "https://api.mainnet-beta.solana.com",
+  "https://rpc.ankr.com/solana",
   "confirmed"
 );
-
 async function getSwampBalance(walletAddress) {
-  const owner = new solanaWeb3.PublicKey(walletAddress);
-  const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
+  try {
+    const owner = new solanaWeb3.PublicKey(walletAddress);
+    const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
 
-  const resp = await connection.getParsedTokenAccountsByOwner(owner, { mint });
+    const fetchPromise =
+      connection.getParsedTokenAccountsByOwner(owner, { mint });
 
-  let total = 0;
-  for (const item of resp.value) {
-    const amt = item.account.data.parsed.info.tokenAmount;
-    total += Number(amt.uiAmountString || amt.uiAmount || 0);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("RPC timeout")), 8000)
+    );
+
+    const resp = await Promise.race([fetchPromise, timeoutPromise]);
+
+    let total = 0;
+    for (const item of resp.value) {
+      const amt = item.account.data.parsed.info.tokenAmount;
+      total += Number(amt.uiAmountString || amt.uiAmount || 0);
+    }
+
+    return total;
+  } catch (e) {
+    console.log(e);
+    debug("SWAMP ERROR ❌ " + (e?.message || e));
+    return 0;
   }
-  return total;
 }
+
 
 function setVip(isVip) {
   const el = document.getElementById("vipStatus");
@@ -76,7 +90,11 @@ document.getElementById("connectBtn").onclick=async()=>{
   debug("CONNECT TAP");
 
   if(window.solana && window.solana.isPhantom){
-      const r=await window.solana.connect();
+    const r=await window.solana.connect();
+document.getElementById("wallet").textContent = r.publicKey.toString();
+document.getElementById("status").textContent = "Connected";
+debug("CONNECTED ✅");
+    
     const walletAddr = r.publicKey.toString();
 
 debug("Checking SWAMP…");
@@ -85,13 +103,10 @@ const bal = await getSwampBalance(walletAddr);
 
 document.getElementById("swampBal").textContent =
   bal.toLocaleString();
-
 setVip(bal >= VIP_MIN);
 
 debug("SWAMP READY ✅");
-      document.getElementById("wallet").textContent=r.publicKey.toString();
-      document.getElementById("status").textContent="Connected";
-      debug("CONNECTED ✅");
+      
       return;
   }
 
