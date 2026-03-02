@@ -101,12 +101,18 @@ const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
     if (walletText) walletText.textContent = addr || "";
   }
 async function connectWallet() {
-  // Normal Phantom connect (works in Safari / desktop)
+  // Works in Safari/desktop when Phantom injects
   if (window.solana && window.solana.isPhantom) {
     const resp = await window.solana.connect();
     setWallet(resp.publicKey.toString());
     return;
   }
+
+  // iOS Home Screen app / webview fallback:
+  // open Phantom’s in-app browser on your Vercel URL
+  const url = encodeURIComponent(window.location.href);
+  window.location.href = `https://phantom.app/ul/browse/${url}?ref=swampdoge`;
+}
 
   // iOS "app" / PWA / webview fallback
   const url = encodeURIComponent(window.location.href);
