@@ -54,52 +54,35 @@ const connection = new solanaWeb3.Connection(
 );
 async function getSwampBalance(walletAddress) {
   try {
+    debug("Scanning tokens...");
+
     const owner = new solanaWeb3.PublicKey(walletAddress);
     const mint  = new solanaWeb3.PublicKey(SWAMP_MINT);
 
-    // ✅ Correct ATA program id
-    const ATA_PROGRAM = new solanaWeb3.PublicKey(
-      "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
-    );
+    const resp =
+      await connection.getParsedTokenAccountsByOwner(
+        owner,
+        { mint }
+      );
 
-    // Classic SPL token program
-    const TOKEN_PROGRAM = new solanaWeb3.PublicKey(
-      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-    );
+    let total = 0;
 
-    // Token-2022 program (Pump.fun / newer mints)
-    const TOKEN_2022_PROGRAM = new solanaWeb3.PublicKey(
-      "TokenzQdBNbLqP5Xb8b1tPjzvY4xXHzkwmo7aX6ixSe"
-    );
+    for (const item of resp.value) {
+      const amt =
+        item.account.data.parsed.info.tokenAmount;
 
-    // Derive BOTH possible ATAs (classic + 2022)
-    const [ataClassic] = solanaWeb3.PublicKey.findProgramAddressSync(
-      [owner.toBuffer(), TOKEN_PROGRAM.toBuffer(), mint.toBuffer()],
-      ATA_PROGRAM
-    );
+      total += Number(
+        amt.uiAmountString || amt.uiAmount || 0
+      );
+    }
 
-    const [ata2022] = solanaWeb3.PublicKey.findProgramAddressSync(
-      [owner.toBuffer(), TOKEN_2022_PROGRAM.toBuffer(), mint.toBuffer()],
-      ATA_PROGRAM
-    );
+    debug("SWAMP FOUND ✅");
 
-    // Try both accounts
-    const accClassic = await connection.getParsedAccountInfo(ataClassic);
-    const acc2022    = await connection.getParsedAccountInfo(ata2022);
+    return total;
 
-    const pickAmount = (acc) => {
-      if (!acc?.value?.data?.parsed?.info?.tokenAmount) return 0;
-      const t = acc.value.data.parsed.info.tokenAmount;
-      return Number(t.uiAmountString || t.uiAmount || 0);
-    };
-
-    const balClassic = pickAmount(accClassic);
-    const bal2022    = pickAmount(acc2022);
-
-    return balClassic + bal2022;
   } catch (e) {
     console.log(e);
-    debug("SWAMP ERROR ❌ " + (e?.message || e));
+    debug("SWAMP ERROR ❌");
     return 0;
   }
 }
