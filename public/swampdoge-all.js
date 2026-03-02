@@ -553,3 +553,36 @@ document.addEventListener("DOMContentLoaded", () => {
     btnPublish.addEventListener("touchstart", (e) => { e.preventDefault(); safe(publishVipPicks, "Publish")(); }, { passive: false });
   }
 });
+
+// ✅ Hard fallback taps (works even when addEventListener breaks)
+window.__tapConnect = () => {
+  debug("Connect tapped ✅");
+  const fn =
+    (typeof connectWalletSmart === "function" && connectWalletSmart) ||
+    (typeof connectWallet === "function" && connectWallet) ||
+    (typeof connectPhantom === "function" && connectPhantom);
+
+  if (!fn) return debug("No connect function ❌");
+  fn();
+};
+
+window.__tapDisconnect = () => {
+  debug("Disconnect tapped ✅");
+  if (typeof disconnectWallet !== "function") return debug("disconnectWallet missing ❌");
+  disconnectWallet();
+};
+
+window.__tapPublish = () => {
+  debug("Publish tapped ✅");
+  if (typeof publishVipPicks !== "function") return debug("publishVipPicks missing ❌");
+  publishVipPicks();
+};
+
+window.__tapAdmin = () => {
+  debug("Admin tapped ✅");
+  if (typeof showAdmin !== "function") return debug("showAdmin missing ❌");
+
+  const adminPanel = document.getElementById("adminPanel");
+  const open = adminPanel && adminPanel.style.display !== "none";
+  showAdmin(!open);
+};
