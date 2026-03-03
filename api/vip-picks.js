@@ -1,13 +1,13 @@
-export default async function handler(req, res) {
-  try {
-    const origin =
-      (req.headers["x-forwarded-proto"] || "https") + "://" + req.headers.host;
-
-    // Read the latest deployed JSON from /public
-    const r = await fetch(origin + "/vip-picks.json", {
-      cache: "no-store",
-      headers: { "cache-control": "no-store" },
-    });
+export default function handler(req, res) {
+  res.status(200).json({
+    updatedAt: new Date().toISOString(),
+    picks: [
+      "Pj Washington over 15pts.",
+      "Lakers ML",
+      "Celtics -4.5"
+    ]
+  });
+}
 
     if (!r.ok) {
       res.setHeader("Cache-Control", "no-store");
