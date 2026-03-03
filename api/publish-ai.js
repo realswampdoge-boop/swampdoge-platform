@@ -24,13 +24,17 @@ Soccer - Over 2.5 Goals
 `,
     });
 
-    const text = response.output[0].content[0].text;
+   const text = response.output[0].content[0].text || "";
 
-    const picks = text
-      .split("\n")
-      .map((p) => p.trim())
-      .filter(Boolean)
-      .slice(0, 3);
+const picks = text
+  .split("\n")
+  .map(s => s.trim())
+  .filter(Boolean)
+  .map(s => s.replace(/^[-*•\d.]+\s*/, ""))      // remove bullets/1./2.
+  .filter(s => !/^sure|^here are/i.test(s))      // remove intro lines
+  .slice(0, 3);
+
+    
 
     const data = {
       generatedAt: new Date().toISOString(),
