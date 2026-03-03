@@ -1,41 +1,33 @@
-import { kv } from "@vercel/kv";
-let latest = {
-  updatedAt: new Date().toISOString(),
-  picks: [
-    "PJ Washington over 15pts.",
-    "Lakers ML",
-    "Celtics -4.5"
-  ]
-};
+const { Redis } = require("@upstash/redis");
+
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 module.exports = async function handler(req, res) {
-  try {
-    const body = req.body || {};
-    let picks = [];
+  res.setHeader("Cache-Control", "no-store");
 
-    if (Array.isArray(body.picks)) {
-      picks = body.picks;
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ ok: false, error: "Method not allowed" });
     }
 
-    picks = picks
-      .map(p => String(p).trim())
-      .filter(Boolean)
-      .slice(0, 3);
+    const body = req.body || {};
+    let picks = Array.isArray(body.picks) ? body.picks : [];
+
+    picks = picks.map(p => String(p).trim()).filter(Boolean).slice(0, 3);
 
     if (!picks.length) {
-      return res.status(400).json({ ok: false });
+      return res.status(400).json({ ok: false, error: "No picks provided" });
     }
 
-    latest = {
-      updatedAt: new Date().toISOString(),
-      picks
-    };
+    const latest = { updatedAt: new Date().toISOString(), picks };
 
-    await kv.set("vip_picks", latest);
-    
+    await redis.set("vip_picks", latest);
+
     return res.status(200).json({ ok: true, saved: latest });
-
   } catch (e) {
-    return res.status(500).json({ ok: false });
+    return res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
 };
