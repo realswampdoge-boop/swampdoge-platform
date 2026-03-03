@@ -71,6 +71,7 @@ body{
 <li id="vip2">VIP Pick #2: (loading...)</li>
 <li id="vip3">VIP Pick #3: (loading...)</li>
     </ul>
+    <div id="vipUpdated" style="margin-top:10px; opacity:.8; font-size:14px;"></div>
   </div>
 </div>
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
@@ -160,9 +161,12 @@ async function loadVipPicks() {
     document.getElementById("vip3").textContent =
       "VIP Pick #3: " + (j.picks[2] || "(missing)");
 
-    document.getElementById("vipUpdated").textContent =
-      "Last updated: " +
-      (j.updatedAt ? new Date(j.updatedAt).toLocaleString() : "");
+    const upd = document.getElementById("vipUpdated");
+if (upd) {
+  upd.textContent =
+    "Last updated: " +
+    (j.updatedAt ? new Date(j.updatedAt).toLocaleString() : "");
+}
   } catch (e) {
     document.getElementById("vip1").textContent =
       "VIP Pick #1: (error loading)";
