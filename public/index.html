@@ -147,7 +147,7 @@ function setVip(isVip) {
 // 👇 PASTE HERE
 async function loadVipPicks() {
   try {
-    const r = await fetch("/api/picks");
+    const r = await fetch("/api/vip-picks?v=" + Date.now());
     const j = await r.json();
 
     if (!j || !Array.isArray(j.picks)) throw new Error("Bad picks JSON");
