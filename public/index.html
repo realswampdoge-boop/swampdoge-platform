@@ -233,6 +233,7 @@ if (adminBtn) {
 
     // Only YOUR wallet can unlock
     if (!isAdminWallet) {
+      debug("ADMIN? " + isAdminWallet);
       debug("ADMIN BLOCKED ❌ Not your wallet");
       return;
     }
