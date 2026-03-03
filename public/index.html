@@ -199,6 +199,10 @@ document.getElementById("connectBtn").onclick = async () => {
       const r = await window.solana.connect();
       const walletAddr = r.publicKey.toString();
       isAdminWallet = (walletAddr === ADMIN_WALLET);
+      const adminBtn = document.getElementById("adminBtn");
+if (adminBtn) {
+  adminBtn.style.display = isAdminWallet ? "block" : "none";
+}
       document.getElementById("wallet").textContent = walletAddr;
       document.getElementById("status").textContent = "Connected";
       debug("CONNECTED ✅");
