@@ -1,38 +1,31 @@
-import { kv } from "@vercel/kv";
-
-const KEY = "SWAMP_VIP_PICKS";
-
 export default async function handler(req, res) {
   try {
-    // GET = read picks
-    if (req.method === "GET") {
-      const data = (await kv.get(KEY)) || {
-        updatedAt: new Date().toISOString(),
-        picks: ["(no VIP picks yet)"],
-      };
+    const base = process.env.KV_REST_API_URL;
+    const token = process.env.KV_REST_API_TOKEN;
 
-      return res.status(200).json(data);
+    if (!base || !token) {
+      return res.status(500).json({ error: "Missing KV config" });
     }
 
-    // POST = save picks
-    if (req.method === "POST") {
-      const { picks } = req.body || {};
-      if (!Array.isArray(picks)) {
-        return res.status(400).json({ error: "picks must be an array" });
-      }
+    const r = await fetch(`${base}/get/vip_picks`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      const data = {
-        updatedAt: new Date().toISOString(),
-        picks: picks.slice(0, 10),
-      };
+    const j = await r.json();
+    const stored = j?.result;
 
-      await kv.set(KEY, data);
-      return res.status(200).json({ ok: true, ...data });
-    }
+    const picks = stored ? JSON.parse(stored) : [];
 
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(200).json({
+      updatedAt: new Date().toISOString(),
+      picks: Array.isArray(picks) ? picks : [],
+    });
   } catch (e) {
-    console.log(e);
-    return res.status(500).json({ error: e?.message || String(e) });
+    return res.status(500).json({
+      error: "vip-picks crashed",
+      message: e?.message || String(e),
+    });
   }
 }
