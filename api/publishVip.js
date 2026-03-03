@@ -1,3 +1,4 @@
+import { kv } from "@vercel/kv";
 let latest = {
   updatedAt: new Date().toISOString(),
   picks: [
@@ -30,6 +31,8 @@ module.exports = async function handler(req, res) {
       picks
     };
 
+    await kv.set("vip_picks", latest);
+    
     return res.status(200).json({ ok: true, saved: latest });
 
   } catch (e) {
