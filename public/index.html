@@ -141,6 +141,39 @@ function setVip(isVip) {
     vipLockedMsg.style.display = isVip ? "none" : "block";
   }
 }
+  }
+  
+// 👇 PASTE HERE
+async function loadVipPicks() {
+  try {
+    const r = await fetch("/api/picks");
+    const j = await r.json();
+
+    if (!j || !Array.isArray(j.picks)) throw new Error("Bad picks JSON");
+
+    document.getElementById("vip1").textContent =
+      "VIP Pick #1: " + (j.picks[0] || "(missing)");
+
+    document.getElementById("vip2").textContent =
+      "VIP Pick #2: " + (j.picks[1] || "(missing)");
+
+    document.getElementById("vip3").textContent =
+      "VIP Pick #3: " + (j.picks[2] || "(missing)");
+
+    document.getElementById("vipUpdated").textContent =
+      "Last updated: " +
+      (j.updatedAt ? new Date(j.updatedAt).toLocaleString() : "");
+  } catch (e) {
+    document.getElementById("vip1").textContent =
+      "VIP Pick #1: (error loading)";
+    document.getElementById("vip2").textContent =
+      "VIP Pick #2: (error loading)";
+    document.getElementById("vip3").textContent =
+      "VIP Pick #3: (error loading)";
+  }
+}
+
+// 🔒 ADMIN VISIBILITY CONTROL (PUT C HERE)
   // 🔒 ADMIN VISIBILITY CONTROL (PUT C HERE)
   const adminBtn = document.getElementById("adminBtn");
   if (adminBtn) {
@@ -210,7 +243,9 @@ if (adminBtn) {
     adminPanel.style.display = "block";
     debug("ADMIN UNLOCKED ✅");
   };
-}  
+}
+  loadVipPicks();
+setInterval(loadVipPicks, 60000);
 </script>
 </body>
 </html>
