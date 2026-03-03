@@ -13,13 +13,15 @@ export default async function handler(req, res) {
     const response = await openai.responses.create({
       model: "gpt-4.1-mini",
       input: `
-Give me 3 confident sports betting picks for today.
-Short format.
+Return EXACTLY 3 sports picks.
+Output MUST be exactly 3 lines.
+NO intro text. NO numbering. NO bullets.
+Each line format: "League - Pick"
 Example:
-Team A ML
-Over 2.5 Goals
-Lakers -4.5
-      `,
+NBA - Warriors ML
+NHL - Over 5.5 Goals
+Soccer - Over 2.5 Goals
+`,
     });
 
     const text = response.output[0].content[0].text;
