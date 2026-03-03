@@ -80,6 +80,25 @@ const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 const VIP_MIN = 10_000_000; // change if you want
 const ADMIN_WALLET = "AumagmtFTNer1QYcCmpG3AyqbLKMD9ByDg4okB3wtiBy"; // <- your wallet
 const ADMIN_PIN = "7777"; // <- your previous pin
+  function openInPhantomIfNeeded() {
+  // If Phantom injects, we’re good
+  if (window.solana && window.solana.isPhantom) return false;
+
+  // If we're already in Phantom browser, don’t loop
+  const ua = navigator.userAgent || "";
+  const isAlreadyPhantom = ua.toLowerCase().includes("phantom");
+  if (isAlreadyPhantom) return false;
+
+  // Mobile only: deep link into Phantom’s in-app browser
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+  if (!isMobile) return false;
+
+  const target = "https://phantom.app/ul/browse/" + encodeURIComponent(window.location.href);
+
+  // Redirect to Phantom
+  window.location.href = target;
+  return true;
+}
 let isAdminWallet = false;
 const connection = new solanaWeb3.Connection(
   "https://rpc.ankr.com/solana",
@@ -129,6 +148,13 @@ function setVip(isVip) {
   }
 }
 document.getElementById("connectBtn").onclick = async () => {
+
+  // 🔥 ADD THESE 4 LINES RIGHT HERE
+  if (openInPhantomIfNeeded()) {
+    debug("OPENING PHANTOM… 🟣");
+    return;
+  }
+
   try {
     debug("CONNECT TAP…");
 
