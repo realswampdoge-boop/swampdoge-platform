@@ -1,30 +1,17 @@
-import { kv } from "@vercel/kv";
+const { Redis } = require("@upstash/redis");
 
-export default async function handler(req, res) {
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
+module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
   try {
-    const data = await kv.get("vip_picks");
-
-    // If nothing saved yet, return a safe default
-    if (!data) {
-      return res.status(200).json({
-        updatedAt: null,
-        picks: []
-      });
-    }
-
-    // If KV accidentally stored a string, parse it safely
-    if (typeof data === "string") {
-      try {
-        return res.status(200).json(JSON.parse(data));
-      } catch {
-        return res.status(200).json({ updatedAt: null, picks: [] });
-      }
-    }
-
-    return res.status(200).json(data);
+    const data = await redis.get("vip_picks");
+    return res.status(200).json(data || { updatedAt: null, picks: [] });
   } catch (e) {
-    return res.status(200).json({ updatedAt: null, picks: [] });
+    return res.status(500).json({ updatedAt: null, picks: [], error: String(e?.message || e) });
   }
-}
+};
