@@ -61,6 +61,16 @@ body{
 <div>VIP: <span id="vipStatus">Locked</span></div>
 <div>Debug: <span id="debug">READY</span></div>
 </div>
+  <!-- 🤖 AI PICKS -->
+<div class="card" style="margin-top:16px;">
+  <div style="font-weight:800; font-size:22px;">🤖 AI Picks</div>
+  <ul style="margin-top:10px; line-height:1.6;">
+    <li id="ai1">AI Pick #1: (loading...)</li>
+    <li id="ai2">AI Pick #2: (loading...)</li>
+    <li id="ai3">AI Pick #3: (loading...)</li>
+  </ul>
+  <div id="aiUpdated" class="small"></div>
+</div>
   <!-- ✅ VIP PICKS -->
 <div class="card" style="margin-top:16px;">
   <div style="font-weight:800; font-size:26px;">🔒 VIP Picks</div>
@@ -181,7 +191,38 @@ if (upd) {
       "VIP Pick #3: (error loading)";
   }
 }
+async function loadAiPicks() {
+  try {
+    const r = await fetch("/api/ai-picks?v=" + Date.now());
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
 
+    const picks = Array.isArray(j?.picks) ? j.picks : [];
+    const updatedAt = j?.updatedAt || null;
+
+    document.getElementById("ai1").textContent =
+      "AI Pick #1: " + (picks[0] || "(missing)");
+    document.getElementById("ai2").textContent =
+      "AI Pick #2: " + (picks[1] || "(missing)");
+    document.getElementById("ai3").textContent =
+      "AI Pick #3: " + (picks[2] || "(missing)");
+
+    const upd = document.getElementById("aiUpdated");
+    if (upd) {
+      upd.textContent =
+        "Last updated: " +
+        (updatedAt ? new Date(updatedAt).toLocaleString() : "(unknown)");
+    }
+  } catch (e) {
+    console.log(e);
+    document.getElementById("ai1").textContent =
+      "AI Pick #1: (error loading)";
+    document.getElementById("ai2").textContent =
+      "AI Pick #2: (error loading)";
+    document.getElementById("ai3").textContent =
+      "AI Pick #3: (error loading)";
+  }
+}
 
 
 document.getElementById("connectBtn").onclick = async () => {
@@ -291,6 +332,9 @@ if (publishBtn) {
 }
   loadVipPicks();
 setInterval(loadVipPicks, 5 * 60 * 1000);
+
+loadAiPicks();
+setInterval(loadAiPicks, 5 * 60 * 1000);
 </script>
 </body>
 </html>
