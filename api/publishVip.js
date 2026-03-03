@@ -1,4 +1,11 @@
-const { kv } = require("@vercel/kv");
+let latest = {
+  updatedAt: new Date().toISOString(),
+  picks: [
+    "PJ Washington over 15pts.",
+    "Lakers ML",
+    "Celtics -4.5"
+  ]
+};
 
 module.exports = async function handler(req, res) {
   try {
@@ -7,8 +14,6 @@ module.exports = async function handler(req, res) {
 
     if (Array.isArray(body.picks)) {
       picks = body.picks;
-    } else if (typeof body.text === "string") {
-      picks = body.text.split("\n");
     }
 
     picks = picks
@@ -17,19 +22,17 @@ module.exports = async function handler(req, res) {
       .slice(0, 3);
 
     if (!picks.length) {
-      return res.status(400).json({ ok: false, error: "No picks provided" });
+      return res.status(400).json({ ok: false });
     }
 
-    const payload = {
+    latest = {
       updatedAt: new Date().toISOString(),
       picks
     };
 
-    await kv.set("vip_picks", payload);
-
-    return res.status(200).json({ ok: true, saved: payload });
+    return res.status(200).json({ ok: true, saved: latest });
 
   } catch (e) {
-    return res.status(500).json({ ok: false, error: String(e?.message || e) });
+    return res.status(500).json({ ok: false });
   }
 };
