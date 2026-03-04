@@ -78,7 +78,15 @@ body{
   <div id="vipLockedMsg" style="margin-top:10px; opacity:.9;">
     Hold <b>$SWAMP</b> to unlock VIP picks.
   </div>
+<div id="vipProgressBox" style="margin-top:12px;">
+  <div style="font-weight:700; margin-bottom:6px;">VIP Progress</div>
 
+  <div style="width:100%; background:rgba(255,255,255,0.2); height:14px; border-radius:8px; overflow:hidden;">
+    <div id="vipBarFill" style="width:0%; height:14px; background:#22c55e;"></div>
+  </div>
+
+  <div id="vipProgressText" style="margin-top:6px; font-size:14px;"></div>
+</div>
   <div id="vipPicksBox" style="display:none; margin-top:12px; text-align:left;">
     <div style="font-weight:700;">Today’s VIP Picks</div>
     <ul style="margin-top:10px; line-height:1.6;">
@@ -94,6 +102,28 @@ body{
 const debug = m=>document.getElementById("debug").textContent=m;
 const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 const VIP_MIN = 10_000_000; // change if you want
+  function updateVipProgress(balance) {
+
+  const pct = Math.min(balance / VIP_MIN, 1) * 100;
+
+  const fill = document.getElementById("vipBarFill");
+  const txt = document.getElementById("vipProgressText");
+  const box = document.getElementById("vipProgressBox");
+
+  if (fill) fill.style.width = pct + "%";
+
+  if (txt) {
+    txt.textContent =
+      balance.toLocaleString() +
+      " / " +
+      VIP_MIN.toLocaleString() +
+      " SWAMP (" +
+      pct.toFixed(1) +
+      "%)";
+  }
+
+  if (box) box.style.display = balance >= VIP_MIN ? "none" : "block";
+}
 const ADMIN_WALLET = "AumagmtFTNer1QYcCmpG3AyqbLKMD9ByDg4okB3wtiBy"; // <- your wallet
 const ADMIN_PIN = "7777"; // <- your previous pin
   function openInPhantomIfNeeded() {
