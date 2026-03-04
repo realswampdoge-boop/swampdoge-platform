@@ -298,6 +298,72 @@ if (upd) {
       "VIP Pick #3: (error loading)";
   }
 }
+  // 🔥 LIVE LEAGUE DETECTOR (PASTE HERE)
+
+const LEAGUES = [
+  { key: "NBA", sport: "basketball", league: "nba" },
+  { key: "NHL", sport: "hockey", league: "nhl" },
+  { key: "NCAAB", sport: "basketball", league: "mens-college-basketball" },
+  { key: "EPL", sport: "soccer", league: "eng.1" },
+  { key: "UCL", sport: "soccer", league: "uefa.champions" },
+  { key: "MLB", sport: "baseball", league: "mlb" },
+  { key: "NFL", sport: "football", league: "nfl" }
+];
+
+function yyyymmddET(d = new Date()) {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(d);
+
+  return fmt.replaceAll("-", "");
+}
+
+async function espnEventsCount(sport, league, date) {
+
+  const url =
+  `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard?dates=${date}`;
+
+  try {
+
+    const r = await fetch(url);
+    const j = await r.json();
+
+    return Array.isArray(j?.events) ? j.events.length : 0;
+
+  } catch (e) {
+
+    console.log(e);
+    return 0;
+
+  }
+}
+
+async function getLeaguesToday() {
+
+  const date = yyyymmddET();
+
+  const results = await Promise.all(
+
+    LEAGUES.map(async (l) => {
+
+      const n =
+      await espnEventsCount(l.sport, l.league, date);
+
+      return { ...l, eventsToday: n };
+
+    })
+
+  );
+
+  return results;
+
+}
+
+// EXISTING FUNCTION BELOW
+
 async function loadAiPicks() {
   try {
     const r = await fetch("/api/ai-picks?v=" + Date.now());
