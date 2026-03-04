@@ -64,11 +64,26 @@ body{
   <!-- 🤖 AI PICKS -->
 <div class="card" style="margin-top:16px;">
   <div style="font-weight:800; font-size:22px;">🤖 AI Picks</div>
-  <ul style="margin-top:10px; line-height:1.6;">
-    <li id="ai1">AI Pick #1: (loading...)</li>
-    <li id="ai2">AI Pick #2: (loading...)</li>
-    <li id="ai3">AI Pick #3: (loading...)</li>
-  </ul>
+  <div id="aiPicksLive" style="margin-top:10px;">
+
+  <div style="font-weight:800;margin-bottom:8px;">
+    🔥 TODAY'S PICKS
+  </div>
+
+  <div id="leagueButtons"
+       style="display:flex;gap:10px;flex-wrap:wrap;">
+  </div>
+
+  <div id="noGamesMsg"
+       style="margin-top:10px;opacity:.8;display:none;">
+    No games today — check back later ✅
+  </div>
+
+  <div id="leagueNote"
+       style="margin-top:8px;opacity:.8;">
+  </div>
+
+</div>
   <div id="aiUpdated" class="small"></div>
 </div>
   <!-- ✅ VIP PICKS -->
