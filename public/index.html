@@ -97,6 +97,45 @@ body{
     <div id="vipUpdated" style="margin-top:10px; opacity:.8; font-size:14px;"></div>
   </div>
 </div>
+  <!-- 🐊 VIP UNLOCK POPUP -->
+<div id="vipUnlockPopup" style="
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.65);
+  z-index: 9999;
+">
+  <div id="vipUnlockCard" style="
+    width: 86%;
+    max-width: 420px;
+    background: #1f2b5a;
+    border-radius: 18px;
+    padding: 22px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    transform: scale(0.92);
+    opacity: 0;
+    transition: all .25s ease;
+  ">
+    <div style="font-size:40px; line-height:40px;">🐊</div>
+    <div style="font-size:26px; font-weight:800; margin-top:10px;">VIP UNLOCKED</div>
+    <div style="margin-top:8px; opacity:.9;">Welcome to the Swamp.</div>
+
+    <button id="vipUnlockClose" style="
+      margin-top:16px;
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 800;
+      background: #2bd66a;
+      color: #0b1a2a;
+    ">Let’s go</button>
+  </div>
+</div>
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 <script>
 const debug = m=>document.getElementById("debug").textContent=m;
