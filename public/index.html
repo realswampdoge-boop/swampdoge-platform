@@ -319,11 +319,9 @@ if (upd) {
   }
 }
   // 🔥 LIVE LEAGUE DETECTOR (PASTE HERE)
-  
 function showPicks(league, picks) {
   const out = document.getElementById("picksOutput");
   const msg = document.getElementById("noGamesMsg");
-
   if (!out || !msg) return;
 
   if (!picks || picks.length === 0) {
@@ -336,12 +334,12 @@ function showPicks(league, picks) {
   out.style.display = "block";
 
   out.innerHTML =
-    "<div style='font-weight:800;margin-bottom:10px'>" +
+    "<div style='font-weight:800;margin-bottom:8px'>" +
     league +
     " Picks</div>" +
-    picks.map(p => "<div>• " + p + "</div>").join("");
-  }
-}
+    picks.map((p) => "<div>• " + p + "</div>").join("");
+}  
+
 // LIVE PICKS GENERATOR
 async function getLivePicks(leagueKey) {
   try {
