@@ -278,7 +278,7 @@ if (adminBtn) {
       document.getElementById("status").textContent = "Connected";
       debug("CONNECTED ✅");
 
-      const bal = await getSwampBalance(walletAddr);
+      const bal = 3000000; // test balance
       document.getElementById("swampBal").textContent = bal.toLocaleString();
 
       setVip(bal >= VIP_MIN);
