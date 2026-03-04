@@ -156,6 +156,16 @@ body{
     ">Let’s go</button>
   </div>
 </div>
+  <script>
+  // ✅ runs first, even if the main script has a syntax error
+  const d = document.getElementById("debug");
+  if (d) d.textContent = "BOOTSTRAP ✅";
+
+  window.addEventListener("error", (e) => {
+    const d2 = document.getElementById("debug");
+    if (d2) d2.textContent = "JS LOAD ERROR ❌ " + (e.message || "unknown");
+  });
+</script>
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 <script>
   window.onerror = function (msg, src, line, col) {
