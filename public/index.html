@@ -212,7 +212,25 @@ async function getSwampBalance(walletAddress) {
     return 0;
   }
 }
+function showVipUnlockPopup() {
+  const popup = document.getElementById("vipUnlockPopup");
+  const card = document.getElementById("vipUnlockCard");
 
+  if (!popup || !card) return;
+
+  popup.style.display = "flex";
+
+  requestAnimationFrame(() => {
+    card.style.opacity = "1";
+    card.style.transform = "scale(1)";
+  });
+
+  setTimeout(() => {
+    popup.style.display = "none";
+    card.style.opacity = "0";
+    card.style.transform = "scale(0.92)";
+  }, 2500);
+}
 let vipWasUnlocked = false;
 function setVip(isVip) {
   if (isVip && !vipWasUnlocked) {
