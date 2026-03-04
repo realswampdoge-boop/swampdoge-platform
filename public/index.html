@@ -215,6 +215,11 @@ async function getSwampBalance(walletAddress) {
 
 
 function setVip(isVip) {
+  if (isVip && !vipWasUnlocked) {
+    vipWasUnlocked = true;
+    showVipUnlockPopup();
+  }
+
   document.getElementById("vipStatus").textContent =
     isVip ? "UNLOCKED ✅" : "Locked 🔒";
 
