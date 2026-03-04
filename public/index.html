@@ -282,6 +282,7 @@ if (adminBtn) {
       document.getElementById("swampBal").textContent = bal.toLocaleString();
 
       setVip(bal >= VIP_MIN);
+      updateVipProgress(bal);
       debug("SWAMP READY ✅");
     } else {
       alert("Phantom not found");
