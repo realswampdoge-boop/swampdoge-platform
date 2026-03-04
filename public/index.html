@@ -343,22 +343,34 @@ function showPicks(league, picks) {
   }
 }
 // LIVE PICKS GENERATOR
+// LIVE PICKS GENERATOR
 async function getLivePicks(leagueKey) {
   try {
-    const r = await fetch(`/api/picks?league=${encodeURIComponent(leagueKey)}`, {
-      cache: "no-store"
-    });
+    const r = await fetch(
+      `/api/picks?league=${encodeURIComponent(leagueKey)}`,
+      { cache: "no-store" }
+    );
 
-    if (!r.ok) throw new Error("API error");
+    if (!r.ok) throw new Error(`API ${r.status}`);
 
     const j = await r.json();
-
     return Array.isArray(j.picks) ? j.picks : [];
-
   } catch (e) {
     console.log("getLivePicks error:", e);
     return demoPicks(leagueKey);
   }
+}
+
+function demoPicks(leagueKey) {
+  const map = {
+    NBA: ["Warriors ML", "Over 231.5", "Knicks +4"],
+    NHL: ["Rangers ML", "Under 6.5", "Bruins +1.5"],
+    MLB: ["Yankees ML", "Over 8.5", "Dodgers -1.5"],
+    NCAAB: ["Duke -4.5", "Under 145.5", "Kansas ML"],
+    EPL: ["Arsenal ML", "Over 2.5", "Both teams score"]
+  };
+
+  return map[leagueKey] || ["Demo picks loaded"];
 }
 
 function demoPicks(leagueKey) {
