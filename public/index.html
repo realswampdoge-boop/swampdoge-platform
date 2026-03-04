@@ -213,7 +213,7 @@ async function getSwampBalance(walletAddress) {
   }
 }
 
-
+let vipWasUnlocked = false;
 function setVip(isVip) {
   if (isVip && !vipWasUnlocked) {
     vipWasUnlocked = true;
