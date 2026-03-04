@@ -30,11 +30,15 @@ Knicks +4
 
     const text = response.choices[0].message.content;
 
-    const picks = text
-      .split("\n")
-      .map(p => p.trim())
-      .filter(Boolean)
-      .slice(0, 3);
+ const picks = text
+  .split("\n")
+  .map(p => p.trim())
+  .filter(p =>
+    p &&
+    !p.toLowerCase().includes("here") &&
+    !p.toLowerCase().includes("sure")
+  )
+  .slice(0, 3);
 
     res.status(200).json({
       league,
