@@ -340,10 +340,8 @@ function showPicks(league, picks) {
     league +
     " Picks</div>" +
     picks.map(p => "<div>• " + p + "</div>").join("");
+  }
 }
-
-}
-
 // LIVE PICKS GENERATOR
 async function getLivePicks(leagueKey) {
   try {
