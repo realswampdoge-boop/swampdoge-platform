@@ -426,10 +426,19 @@ async function loadAiPicks() {
         b.style.color = "inherit";
         b.style.fontWeight = "800";
 
-        b.onclick = () => {
-          // For now: show selected league (next we connect this to your picks engine)
-          note.textContent = `Selected: ${l.key} — generating picks…`;
-        };
+      
+          b.onclick = async () => {
+  note.textContent = `Selected: ${l.key} — generating picks...`;
+
+  const picks = await getLivePicks(l.key);
+
+  showPicks(l.key, picks);
+
+  note.textContent =
+    `Selected: ${l.key} — ${picks.length ? "ready ✅" : "no picks today"}`;
+};
+          
+       
 
         wrap.appendChild(b);
       });
