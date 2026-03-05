@@ -3,7 +3,8 @@ export default async function handler(req, res) {
   try {
     const TZ = "America/New_York"; // Tampa time
 const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date()); // YYYY-MM-DD
-
+const todayYYYYMMDD = todayKey.replaceAll("-", "");
+    
     const leagues = [
   { sport: "basketball", league: "nba" },
   { sport: "hockey", league: "nhl" },
