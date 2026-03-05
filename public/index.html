@@ -356,6 +356,28 @@ if (upd) {
   }
 
 }
+  async function loadAiRecord() {
+
+  try {
+
+    const r = await fetch("/api/record");
+    const j = await r.json();
+
+    const t = document.getElementById("recToday");
+    const u = document.getElementById("recUnits");
+    const d = document.getElementById("recUpdated");
+
+    if (t) t.textContent = j.today || "0-0";
+    if (u) u.textContent = j.units || "0.0";
+    if (d) d.textContent = new Date().toLocaleString();
+
+  } catch(e) {
+
+    console.log("record error", e);
+
+  }
+
+}
   async function loadRecord() {
   try {
     const r = await fetch("/api/record", { cache: "no-store" });
