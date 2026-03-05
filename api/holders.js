@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     // If supply exists, there is at least 1 holder (you or someone).
     const holders = supply > 0 ? 1 : 0;
 
-    return res.status(200).json({ holders, supply });
+    return res.status(200).json({ holders, supply, mint: SWAMP_MINT });
   } catch (e) {
     return res.status(200).json({ holders: 0, error: String(e?.message || e) });
   }
