@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
+  const mint = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
   const key = process.env.HELIUS_API_KEY;
 
   if (!key) return res.status(200).json({ holders: 0, error: "Missing HELIUS_API_KEY" });
