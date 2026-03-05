@@ -9,16 +9,17 @@ export default async function handler(req, res) {
     });
 
     const prompt = `
-Generate 3 strong betting picks for today's ${league} games.
-Return only picks like:
+Generate exactly 3 betting picks for today's ${league} games.
 
-Team ML
-Over/Under
-Spread
+Rules:
+- Do NOT include explanations
+- Do NOT include sentences
+- Only return picks
+- One pick per line
 
-Example:
-Warriors ML
-Over 231.5
+Example output:
+Celtics ML
+Over 220.5
 Knicks +4
 `;
 
