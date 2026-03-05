@@ -21,6 +21,19 @@ body{
   background:#2d3f77;
   color:#fff;
 }
+  #buySwampBtn {
+  background: linear-gradient(135deg, #1db954, #0d7a33);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 20px;
+  font-weight: 800;
+  font-size: 16px;
+  margin-top: 12px;
+  width: 100%;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
 .card{
   background:#243a6b;
   padding:20px;
@@ -62,6 +75,7 @@ body{
 <div>Debug: <span id="debug">READY</span></div>
 <div>🐊 SWAMP HOLDERS: <span id="holderCount">Loading...</span></div>
 </div>
+  <button id="buySwampBtn">BUY SWAMP</button>
   <!-- 📊 AI RECORD -->
 <div class="card" style="margin-top:16px;">
   <div style="font-weight:800; font-size:22px;">📊 SWAMP AI RECORD</div>
@@ -356,6 +370,13 @@ if (upd) {
   }
 
 }
+ const buySwampBtn = document.getElementById("buySwampBtn");
+
+if (buySwampBtn) {
+  buySwampBtn.addEventListener("click", () => {
+    window.open("https://pump.fun/coin/GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump", "_blank");
+  });
+} 
   async function loadAiRecord() {
 
   try {
