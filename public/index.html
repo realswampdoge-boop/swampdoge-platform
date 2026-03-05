@@ -320,6 +320,26 @@ if (upd) {
       "VIP Pick #3: (error loading)";
   }
 }
+  async function loadHolderCount() {
+
+  try {
+
+    const r = await fetch("/api/holders");
+    const j = await r.json();
+
+    const el = document.getElementById("holderCount");
+
+    if (el && j.holders != null) {
+      el.textContent = j.holders.toLocaleString();
+    }
+
+  } catch (e) {
+
+    console.log("holder error", e);
+
+  }
+
+}
   // 🔥 LIVE LEAGUE DETECTOR (PASTE HERE)
 function showPicks(league, picks) {
   const out = document.getElementById("picksOutput");
