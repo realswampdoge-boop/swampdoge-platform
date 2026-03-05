@@ -3,42 +3,55 @@ import { kv } from "@vercel/kv";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+function pick3FromGames(games) {
+  // Simple fallback if AI parsing fails: pick first 3 matchups
+  return games.slice(0, 3).map((g) => {
+    const lg = g?.league?.league || g?.league || "SPORT";
+    return `${lg.toUpperCase()} - ${g.matchup} (Moneyline)`;
+  });
+}
+
 export default async function handler(req, res) {
   try {
     const base = `https://${req.headers.host}`;
 
-    // 1) Pull today’s real games from your own API
-    const gamesResp = await fetch(`${base}/api/games`, { cache: "no-store" });
-    const gamesJson = await gamesResp.json();
-    const games = gamesJson?.games || [];
+    // ✅ Always use TODAY'S games from /api/games
+    const gr = await fetch(`${base}/api/games`, { cache: "no-store" });
+    const gj = await gr.json();
+    const games = gj?.games || [];
 
     if (!games.length) {
       return res.status(200).json({
+        ok: true,
         generatedAt: new Date().toISOString(),
         picks: ["No games found for today."]
       });
     }
 
-    // Keep prompt short: only send matchups
+    // Build matchup list (keep it readable)
     const matchupLines = games
-      .slice(0, 30)
-      .map((g) => `- [${g?.league?.league || g?.league || "UNK"}] ${g.matchup}`)
+      .slice(0, 40)
+      .map((g) => {
+        const lg = g?.league?.league || g?.league || "UNK";
+        return `- [${String(lg).toUpperCase()}] ${g.matchup}`;
+      })
       .join("\n");
 
-    // 2) Ask AI to pick from THESE matchups only
     const prompt = `
-You are SwampDoge Picks.
-Use ONLY the matchups listed below. Do NOT invent games.
-Return exactly 3 picks as plain text lines, format:
+You are SwampDoge AI Picks.
+
+Use ONLY the matchups listed below.
+Do NOT invent games or leagues not shown.
+Return exactly 3 picks, one per line, format exactly:
 "LEAGUE - PICK"
 
 Matchups:
 ${matchupLines}
 
 Rules:
-- Only choose from the matchups listed
+- Pick types allowed: Moneyline or Spread or Total
+- Each pick must clearly reference teams from the matchups list
 - No explanations, no extra text
-- Prefer Moneyline or Spread picks
 `;
 
     const completion = await openai.chat.completions.create({
@@ -48,15 +61,22 @@ Rules:
     });
 
     const text = completion.choices?.[0]?.message?.content || "";
-    const picks = text
+
+    // Parse lines
+    let picks = text
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean)
       .slice(0, 3);
 
+    // If AI returned junk, fallback to first 3 matchups
+    if (picks.length < 3) {
+      picks = pick3FromGames(games);
+    }
+
     const generatedAt = new Date().toISOString();
 
-    // 3) Save picks to KV so /api/picks can serve “latest”
+    // ✅ Store “latest picks” for /api/picks to serve
     const payloadToStore = {
       sport: "ALL",
       lastUpdated: generatedAt,
@@ -65,13 +85,14 @@ Rules:
 
     await kv.set("swamp:picks:latest", payloadToStore);
 
-    // 4) Return result
     return res.status(200).json({
+      ok: true,
       generatedAt,
       picks
     });
   } catch (e) {
     return res.status(500).json({
+      ok: false,
       generatedAt: "",
       picks: [],
       error: String(e?.message || e)
