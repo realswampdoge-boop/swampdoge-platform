@@ -3,20 +3,20 @@ export default async function handler(req, res) {
   try {
 
     const leagues = [
-      "nba",
-      "nhl",
-      "mlb",
-      "ncaab",
-      "soccer_epl"
-    ];
+  { sport: "basketball", league: "nba" },
+  { sport: "hockey", league: "nhl" },
+  { sport: "baseball", league: "mlb" },
+  { sport: "basketball", league: "mens-college-basketball" },
+  { sport: "soccer", league: "eng.1" }
+];
 
     const games = [];
 
     for (const league of leagues) {
 
       const r = await fetch(
-        `https://site.api.espn.com/apis/site/v2/sports/${league}/scoreboard`
-      );
+`https://site.api.espn.com/apis/site/v2/sports/${league.sport}/${league.league}/scoreboard`
+);
 
       const data = await r.json();
 
