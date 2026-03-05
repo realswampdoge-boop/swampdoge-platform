@@ -1,6 +1,8 @@
 export default async function handler(req, res) {
 
   try {
+    const TZ = "America/New_York"; // Tampa time
+const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date()); // YYYY-MM-DD
 
     const leagues = [
   { sport: "basketball", league: "nba" },
@@ -23,6 +25,8 @@ export default async function handler(req, res) {
       if (!data.events) continue;
 
       data.events.forEach(e => {
+        const eventKey = new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date(e.date));
+if (eventKey !== todayKey) return;
 
         const home = e.competitions[0].competitors.find(c => c.homeAway === "home").team.displayName;
         const away = e.competitions[0].competitors.find(c => c.homeAway === "away").team.displayName;
