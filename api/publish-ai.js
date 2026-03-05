@@ -22,6 +22,7 @@ function pickMatchesAnyGame(pickLine, gamesUsed) {
 }
 
 export default async function handler(req, res) {
+  return res.status(200).json({ marker: "PUBLISH_AI_NEW", ts: new Date().toISOString() });
   try {
     const base = `https://${req.headers.host}`;
 
