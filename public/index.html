@@ -356,6 +356,26 @@ if (upd) {
   }
 
 }
+  async function loadRecord() {
+  try {
+    const r = await fetch("/api/record", { cache: "no-store" });
+    const j = await r.json();
+
+    const w = Number(j.wins || 0);
+    const l = Number(j.losses || 0);
+    const u = Number(j.units || 0);
+
+    const todayEl = document.getElementById("recToday");
+    const unitsEl = document.getElementById("recUnits");
+    const updEl = document.getElementById("recUpdated");
+
+    if (todayEl) todayEl.textContent = `${w}-${l}`;
+    if (unitsEl) unitsEl.textContent = u.toFixed(1);
+    if (updEl) updEl.textContent = new Date(j.updated || Date.now()).toLocaleString();
+  } catch (e) {
+    // do nothing
+  }
+}
   // 🔥 LIVE LEAGUE DETECTOR (PASTE HERE)
 function showPicks(league, picks) {
   const out = document.getElementById("picksOutput");
@@ -656,6 +676,8 @@ setInterval(loadAiPicks, 5 * 60 * 1000);
 
   loadHolderCount();
 setInterval(loadHolderCount, 5 * 60 * 1000);
+  loadRecord();
+setInterval(loadRecord, 60 * 1000);
   document.getElementById("debug").textContent = "BOOT OK ✅";
 </script>
 </body>
