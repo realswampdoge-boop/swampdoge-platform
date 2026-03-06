@@ -1052,21 +1052,6 @@ window.testLoss = function () {
   alert("🐊 Prediction Locked: " + pick);
 }
 
-function loadPrediction() {
-  const data = localStorage.getItem("swamp_prediction");
-  if (!data) return;
-
-  const pred = JSON.parse(data);
-
-  const userPrediction = document.getElementById("userPrediction");
-  const predictionStatus = document.getElementById("predictionStatus");
-  const predictionReward = document.getElementById("predictionReward");
-
-  if (userPrediction) userPrediction.innerText = "Your Pick: " + pred.pick;
-  if (predictionStatus) predictionStatus.innerText = "Result: " + pred.status;
-  if (predictionReward) predictionReward.innerText = "Reward: " + pred.reward + " SWAMP";
-}
-
 function testWin() {
   const data = localStorage.getItem("swamp_prediction");
   if (!data) return alert("No prediction saved yet");
