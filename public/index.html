@@ -857,53 +857,7 @@ setInterval(loadRecord, 60 * 1000);
   document.getElementById("debug").textContent = "BOOT OK ✅";
   /* SWAMP DASHBOARD DATA */
 
-async function loadSwampDashboard() {
-  try {
-    const priceEl = document.getElementById("price");
-    const liquidityEl = document.getElementById("liquidity");
-    const marketcapEl = document.getElementById("marketcap");
-    const volumeEl = document.getElementById("volume");
-    const updatedEl = document.getElementById("updated");
-
-    if (!priceEl || !liquidityEl || !marketcapEl || !volumeEl || !updatedEl) {
-      console.log("Dashboard IDs missing");
-      return;
-    }
-
-    updatedEl.textContent = "Loading...";
-
-    const res = await fetch("https://api.dexscreener.com/latest/dex/tokens/GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump");
-    const data = await res.json();
-
-    console.log("DEX response:", data);
-
-    if (!data.pairs || !data.pairs.length) {
-      priceEl.textContent = "No pair";
-      liquidityEl.textContent = "No pair";
-      marketcapEl.textContent = "No pair";
-      volumeEl.textContent = "No pair";
-      updatedEl.textContent = "No pair found";
-      return;
-    }
-
-    const pair = data.pairs[0];
-
-    priceEl.textContent = pair.priceUsd ? "$" + Number(pair.priceUsd).toFixed(6) : "—";
-    liquidityEl.textContent = pair.liquidity?.usd ? "$" + Math.floor(pair.liquidity.usd) : "—";
-    marketcapEl.textContent = pair.fdv ? "$" + Math.floor(pair.fdv) : "—";
-    volumeEl.textContent = pair.volume?.h24 ? "$" + Math.floor(pair.volume.h24) : "—";
-    updatedEl.textContent = new Date().toLocaleTimeString();
-
-  } catch (e) {
-    console.log("Dashboard error:", e);
-
-    const updatedEl = document.getElementById("updated");
-    if (updatedEl) updatedEl.textContent = "Load failed";
-  }
-}
-
-setTimeout(loadSwampDashboard, 1000);
-setInterval(loadSwampDashboard, 30000);async function loadSwampDashboard(){
+async function loadSwampDashboard(){
 
   try{
 
