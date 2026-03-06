@@ -66,7 +66,7 @@ function refreshAllPicks() {
 (() => {
   // ====== CONFIG ======
 const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
-  const VIP_MIN = 1_000_000;
+  const VIP_MIN = 10_000_000;
 
   // CORS-friendly Solana RPC (browser safe)
   const RPC_URL = "https://rpc.ankr.com/solana";
@@ -74,6 +74,143 @@ const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
   const REFRESH_BAL_MS = 25_000;
   const REFRESH_PICKS_MS = 60_000;
+  // ===============================
+// 📊 DASHBOARD + 🐊 REWARDS
+// ===============================
+
+function fmtUSD(n) {
+  if (n === null || n === undefined || isNaN(Number(n))) return "—";
+  const x = Number(n);
+  if (x >= 1e9) return `$${(x / 1e9).toFixed(2)}B`;
+  if (x >= 1e6) return `$${(x / 1e6).toFixed(2)}M`;
+  if (x >= 1e3) return `$${(x / 1e3).toFixed(2)}K`;
+  return `$${x.toFixed(6)}`;
+}
+
+function setText(id, v) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = v;
+}
+
+function setHref(id, url) {
+  const el = document.getElementById(id);
+  if (el) el.href = url || "#";
+}
+
+async function loadSwampDashboard() {
+  try {
+    // DexScreener official API: token pools endpoint
+    // https://api.dexscreener.com/token-pairs/v1/{chainId}/{tokenAddress}
+    const url = `https://api.dexscreener.com/token-pairs/v1/solana/${SWAMP_MINT}`;
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) throw new Error(`dexscreener ${r.status}`);
+    const pairs = await r.json();
+
+    if (!Array.isArray(pairs) || pairs.length === 0) {
+      setText("swampPrice", "—");
+      setText("swampLiquidity", "—");
+      setText("swampMcap", "—");
+      setText("swampVol24h", "—");
+      setHref("swampPairLink", `https://dexscreener.com/solana/${SWAMP_MINT}`);
+      setText("swampDashUpdated", new Date().toLocaleString());
+      return;
+    }
+
+    // pick best pair: highest liquidity USD
+    const best = pairs
+      .slice()
+      .sort((a, b) => (Number(b?.liquidity?.usd || 0) - Number(a?.liquidity?.usd || 0)))[0];
+
+    const priceUsd = Number(best?.priceUsd || 0);
+    const liqUsd = Number(best?.liquidity?.usd || 0);
+    const mcap = Number(best?.fdv || best?.marketCap || 0);
+    const vol24 = Number(best?.volume?.h24 || 0);
+
+    setText("swampPrice", fmtUSD(priceUsd));
+    setText("swampLiquidity", fmtUSD(liqUsd));
+    setText("swampMcap", fmtUSD(mcap));
+    setText("swampVol24h", fmtUSD(vol24));
+    setHref("swampPairLink", best?.url || `https://dexscreener.com/solana/${best?.pairAddress || SWAMP_MINT}`);
+    setText("swampDashUpdated", new Date().toLocaleString());
+  } catch (e) {
+    console.log("dashboard error", e);
+    setText("swampDashUpdated", "Dashboard error");
+  }
+}
+
+// ---------- Rewards (local-only for now; no server needed) ----------
+const REWARDS_KEY = "swamp_rewards_v1";
+
+function getRewards() {
+  try {
+    return JSON.parse(localStorage.getItem(REWARDS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveRewards(obj) {
+  localStorage.setItem(REWARDS_KEY, JSON.stringify(obj || {}));
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function calcTier(balance) {
+  const bal = Number(balance || 0);
+  if (bal >= 100_000_000) return "🐊 Legend";
+  if (bal >= 50_000_000) return "🔥 Elite";
+  if (bal >= 10_000_000) return "✅ VIP";
+  if (bal > 0) return "🟦 Holder";
+  return "—";
+}
+
+function renderRewards(balance) {
+  const data = getRewards();
+  const points = Number(data.points || 0);
+  const last = data.lastClaim || "—";
+
+  setText("swampPoints", String(points));
+  setText("swampTier", calcTier(balance));
+  setText("swampLastClaim", last);
+}
+
+function claimDaily(balance) {
+  const data = getRewards();
+  const t = todayKey();
+
+  if (data.lastClaimDay === t) {
+    setDebug?.("Already claimed today ✅");
+    return;
+  }
+
+  // base daily
+  let add = 10;
+
+  // bonus for holding
+  const bal = Number(balance || 0);
+  if (bal >= 1_000_000) add += 25;
+  else if (bal > 0) add += 10;
+
+  data.points = Number(data.points || 0) + add;
+  data.lastClaimDay = t;
+  data.lastClaim = `${new Date().toLocaleString()} (+${add})`;
+  saveRewards(data);
+
+  renderRewards(balance);
+  setDebug?.(`Rewards +${add} ✅`);
+}
+
+function wireRewards(balanceGetter) {
+  const btn = document.getElementById("claimDailyBtn");
+  if (!btn) return;
+
+  btn.onclick = () => {
+    const bal = typeof balanceGetter === "function" ? balanceGetter() : 0;
+    claimDaily(bal);
+  };
+}
 
   // ====== FLAGS FOR LOADER PROOF ======
   window.__WALLET_V1_LOADED__ = true;
