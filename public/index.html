@@ -857,12 +857,12 @@ setInterval(loadRecord, 60 * 1000);
 async function loadSwampDashboard() {
   try {
     const res = await fetch(
-      "https://api.dexscreener.com/latest/dex/tokens/GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"
+      "https://api.dexscreener.com/token-pairs/v1/solana/GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"
     );
 
     const data = await res.json();
 
-    if (!data.pairs || !data.pairs.length) {
+    if (!Array.isArray(data) || !data.length) {
       document.getElementById("price").textContent = "No pair";
       document.getElementById("liquidity").textContent = "No pair";
       document.getElementById("marketcap").textContent = "No pair";
@@ -871,32 +871,41 @@ async function loadSwampDashboard() {
       return;
     }
 
-    const pair = data.pairs[0];
+    const pair = data[0];
 
     document.getElementById("price").textContent =
-      "$" + Number(pair.priceUsd || 0).toFixed(6);
+      pair.priceUsd ? "$" + Number(pair.priceUsd).toFixed(8) : "No pair";
 
     document.getElementById("liquidity").textContent =
-      "$" + Math.floor(pair.liquidity?.usd || 0);
+      pair.liquidity?.usd
+        ? "$" + Math.floor(pair.liquidity.usd).toLocaleString()
+        : "No pair";
 
     document.getElementById("marketcap").textContent =
-      "$" + Math.floor(pair.fdv || 0);
+      (pair.marketCap || pair.fdv)
+        ? "$" + Math.floor(pair.marketCap || pair.fdv).toLocaleString()
+        : "No pair";
 
     document.getElementById("volume").textContent =
-      "$" + Math.floor(pair.volume?.h24 || 0);
+      pair.volume?.h24
+        ? "$" + Math.floor(pair.volume.h24).toLocaleString()
+        : "No pair";
 
     document.getElementById("updated").textContent =
       new Date().toLocaleTimeString();
 
   } catch (e) {
     console.log("Dashboard error", e);
+    document.getElementById("price").textContent = "No pair";
+    document.getElementById("liquidity").textContent = "No pair";
+    document.getElementById("marketcap").textContent = "No pair";
+    document.getElementById("volume").textContent = "No pair";
     document.getElementById("updated").textContent = "Load failed";
   }
 }
 
 loadSwampDashboard();
 setInterval(loadSwampDashboard, 30000);
-  /* SWAMP REWARDS SYSTEM */
 
 /* SWAMP REWARDS SYSTEM */
 
