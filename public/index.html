@@ -857,43 +857,48 @@ setInterval(loadRecord, 60 * 1000);
   document.getElementById("debug").textContent = "BOOT OK ✅";
   /* SWAMP DASHBOARD DATA */
 
-async function loadSwampDashboard(){
-
-  try{
-
+async function loadSwampDashboard() {
+  try {
     const res = await fetch(
       "https://api.dexscreener.com/latest/dex/tokens/GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"
     );
 
     const data = await res.json();
 
+    if (!data.pairs || !data.pairs.length) {
+      document.getElementById("price").textContent = "No pair";
+      document.getElementById("liquidity").textContent = "No pair";
+      document.getElementById("marketcap").textContent = "No pair";
+      document.getElementById("volume").textContent = "No pair";
+      document.getElementById("updated").textContent = "No pair";
+      return;
+    }
+
     const pair = data.pairs[0];
 
     document.getElementById("price").textContent =
-      "$" + Number(pair.priceUsd).toFixed(6);
+      "$" + Number(pair.priceUsd || 0).toFixed(6);
 
     document.getElementById("liquidity").textContent =
-      "$" + Math.floor(pair.liquidity.usd);
+      "$" + Math.floor(pair.liquidity?.usd || 0);
 
     document.getElementById("marketcap").textContent =
-      "$" + Math.floor(pair.fdv);
+      "$" + Math.floor(pair.fdv || 0);
 
     document.getElementById("volume").textContent =
-      "$" + Math.floor(pair.volume.h24);
+      "$" + Math.floor(pair.volume?.h24 || 0);
 
     document.getElementById("updated").textContent =
       new Date().toLocaleTimeString();
 
-  }catch(e){
-
-    console.log("Dashboard error",e);
-
+  } catch (e) {
+    console.log("Dashboard error", e);
+    document.getElementById("updated").textContent = "Load failed";
   }
-
 }
 
 loadSwampDashboard();
-setInterval(loadSwampDashboard,30000);
+setInterval(loadSwampDashboard, 30000);
 </script>
 </body>
 </html>
