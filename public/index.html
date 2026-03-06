@@ -982,6 +982,30 @@ if(claimBtn){
 }
 
 updateRewardsUI();
+// 🔥 STREAK SYSTEM
+
+let streak = Number(localStorage.getItem("swampStreak") || 0);
+
+function updateStreakUI() {
+  const el = document.getElementById("streakWins");
+  if (el) el.textContent = streak;
+}
+
+updateStreakUI();
+
+// example test button logic (temporary)
+window.testWin = function () {
+  streak += 1;
+  localStorage.setItem("swampStreak", streak);
+  updateStreakUI();
+};
+
+window.testLoss = function () {
+  streak = 0;
+  localStorage.setItem("swampStreak", streak);
+  updateStreakUI();
+};
+  
 </script>
 </body>
 </html>
