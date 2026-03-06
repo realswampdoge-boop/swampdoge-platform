@@ -855,52 +855,11 @@ setInterval(loadRecord, 60 * 1000);
   /* SWAMP DASHBOARD DATA */
 
 async function loadSwampDashboard() {
-  try {
-    const res = await fetch(
-      "https://api.dexscreener.com/latest/dex/pairs/solana/GZ6C9tsZDuapu9Jjff7hV19oG47utmWGLsY8Fd33PKn4"
-    );
-
-    const data = await res.json();
-    const pair = data.pairs && data.pairs[0];
-
-    if (!pair) {
-      document.getElementById("price").textContent = "No pair";
-      document.getElementById("liquidity").textContent = "No pair";
-      document.getElementById("marketcap").textContent = "No pair";
-      document.getElementById("volume").textContent = "No pair";
-      document.getElementById("updated").textContent = "No pair";
-      return;
-    }
-
-    document.getElementById("price").textContent =
-      pair.priceUsd ? "$" + Number(pair.priceUsd).toFixed(8) : "No pair";
-
-    document.getElementById("liquidity").textContent =
-      pair.liquidity && pair.liquidity.usd
-        ? "$" + Math.floor(pair.liquidity.usd).toLocaleString()
-        : "No pair";
-
-    document.getElementById("marketcap").textContent =
-      (pair.marketCap || pair.fdv)
-        ? "$" + Math.floor(pair.marketCap || pair.fdv).toLocaleString()
-        : "No pair";
-
-    document.getElementById("volume").textContent =
-      pair.volume && pair.volume.h24
-        ? "$" + Math.floor(pair.volume.h24).toLocaleString()
-        : "No pair";
-
-    document.getElementById("updated").textContent =
-      new Date().toLocaleTimeString();
-
-  } catch (e) {
-    console.log("Dashboard error", e);
-    document.getElementById("price").textContent = "No pair";
-    document.getElementById("liquidity").textContent = "No pair";
-    document.getElementById("marketcap").textContent = "No pair";
-    document.getElementById("volume").textContent = "No pair";
-    document.getElementById("updated").textContent = "Load failed";
-  }
+  document.getElementById("price").textContent = "Pump.fun only";
+  document.getElementById("liquidity").textContent = "Low / not indexed";
+  document.getElementById("marketcap").textContent = "Coming soon";
+  document.getElementById("volume").textContent = "Coming soon";
+  document.getElementById("updated").textContent = new Date().toLocaleTimeString();
 }
 
 loadSwampDashboard();
