@@ -473,6 +473,7 @@ async function getSwampBalance(walletAddress) {
     return 0;
   }
 }
+  
 function showVipUnlockPopup() {
   const popup = document.getElementById("vipUnlockPopup");
   const card = document.getElementById("vipUnlockCard");
@@ -824,6 +825,22 @@ if (adminBtn) {
 
       const bal = await getSwampBalance(walletAddr);
       document.getElementById("swampBal").textContent = bal.toLocaleString();
+      // 🐊 HOLDER TIER SYSTEM
+
+let tier = "—";
+
+if (bal >= 1000000) {
+  tier = "👑 KING GATOR";
+}
+else if (bal >= 100000) {
+  tier = "🐊 GATOR";
+}
+else if (bal >= 10000) {
+  tier = "🐸 FROG";
+}
+
+const tierEl = document.getElementById("swampTier");
+if (tierEl) tierEl.textContent = tier;
 
       setVip(bal >= VIP_MIN);
       updateVipProgress(bal);
