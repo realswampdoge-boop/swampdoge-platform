@@ -1091,35 +1091,6 @@ function testLoss() {
   loadPrediction();
 }
 
-window.addEventListener("load", loadPrediction);
-  function makePrediction(pick) {
-
-  try {
-
-    const prediction = {
-      pick: pick,
-      result: "Pending",
-      reward: 0,
-      time: Date.now()
-    };
-
-    localStorage.setItem("swamp_prediction", JSON.stringify(prediction));
-
-    const p = document.getElementById("userPrediction");
-    const s = document.getElementById("predictionStatus");
-    const r = document.getElementById("predictionReward");
-
-    if (p) p.textContent = "Your Pick: " + pick;
-    if (s) s.textContent = "Result: Pending";
-    if (r) r.textContent = "Reward: 0 SWAMP";
-
-    alert("🐊 Prediction locked: " + pick);
-
-  } catch (e) {
-    console.log(e);
-  }
-
-}
 </script>
 </body>
 </html>
