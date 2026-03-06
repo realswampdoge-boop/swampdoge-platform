@@ -260,6 +260,9 @@ body{
 <div class="card" style="margin-top:16px;">
   <div style="font-weight:800; font-size:22px;">🤖 AI Picks</div>
   <div id="aiPicksLive" style="margin-top:10px;">
+    <button class="swampBtn" onclick="makePrediction('Warriors +3')">
+  Make Prediction
+</button>
 
   <div style="font-weight:800;margin-bottom:8px;">
     🔥 TODAY'S PICKS
@@ -296,7 +299,12 @@ body{
 <div style="margin-top:10px;font-size:18px;">
 Wins: <span id="streakWins">0</span>
 </div>
-
+<div class="card">
+  <h3>🐊 Your Prediction</h3>
+  <div id="userPrediction">No prediction yet</div>
+  <div id="predictionStatus">Result: Pending</div>
+  <div id="predictionReward">Reward: 0 SWAMP</div>
+</div>
 </div>
   <!-- 🏆 LEADERBOARD -->
 <div class="card" style="margin-top:40px;">
@@ -1022,7 +1030,66 @@ window.testLoss = function () {
   localStorage.setItem("swampStreak", streak);
   updateStreakUI();
 };
-  
+
+  function makePrediction(pick) {
+  if (!walletAddress) {
+    alert("Connect wallet first");
+    return;
+  }
+
+  const prediction = {
+    wallet: walletAddress,
+    pick: pick,
+    status: "Pending",
+    reward: 0,
+    time: Date.now()
+  };
+
+  localStorage.setItem("swamp_prediction", JSON.stringify(prediction));
+  loadPrediction();
+  alert("🐊 Prediction Locked: " + pick);
+}
+
+function loadPrediction() {
+  const data = localStorage.getItem("swamp_prediction");
+  if (!data) return;
+
+  const pred = JSON.parse(data);
+
+  const userPrediction = document.getElementById("userPrediction");
+  const predictionStatus = document.getElementById("predictionStatus");
+  const predictionReward = document.getElementById("predictionReward");
+
+  if (userPrediction) userPrediction.innerText = "Your Pick: " + pred.pick;
+  if (predictionStatus) predictionStatus.innerText = "Result: " + pred.status;
+  if (predictionReward) predictionReward.innerText = "Reward: " + pred.reward + " SWAMP";
+}
+
+function testWin() {
+  const data = localStorage.getItem("swamp_prediction");
+  if (!data) return alert("No prediction saved yet");
+
+  const pred = JSON.parse(data);
+  pred.status = "✅ WIN";
+  pred.reward = 500;
+
+  localStorage.setItem("swamp_prediction", JSON.stringify(pred));
+  loadPrediction();
+}
+
+function testLoss() {
+  const data = localStorage.getItem("swamp_prediction");
+  if (!data) return alert("No prediction saved yet");
+
+  const pred = JSON.parse(data);
+  pred.status = "❌ LOSS";
+  pred.reward = 0;
+
+  localStorage.setItem("swamp_prediction", JSON.stringify(pred));
+  loadPrediction();
+}
+
+window.addEventListener("load", loadPrediction);
 </script>
 </body>
 </html>
