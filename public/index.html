@@ -145,6 +145,40 @@ body{
   <button id="connectBtn" class="btn">Connect Phantom</button>
   <button id="disconnectBtn" class="btn">Disconnect</button>
   <button id="buySwampBtn" class="btn">BUY SWAMP</button>
+  <!-- 📊 SWAMP DASHBOARD -->
+<div class="card" style="margin-top:16px;">
+  <div style="font-weight:800; font-size:22px;">📊 SWAMP DASHBOARD</div>
+
+  <div style="margin-top:10px; font-size:18px;">
+    Price: <span id="swampPrice">—</span><br/>
+    Liquidity: <span id="swampLiquidity">—</span><br/>
+    Market Cap: <span id="swampMcap">—</span><br/>
+    24h Volume: <span id="swampVol24h">—</span><br/>
+    Pair: <a id="swampPairLink" href="#" target="_blank">View chart</a>
+  </div>
+
+  <div class="small" style="margin-top:10px; opacity:.85;">
+    Updated: <span id="swampDashUpdated">—</span>
+  </div>
+</div>
+
+<!-- 🐊 SWAMP REWARDS -->
+<div class="card" style="margin-top:16px;">
+  <div style="font-weight:800; font-size:22px;">🐊 SWAMP REWARDS</div>
+
+  <div style="margin-top:10px; font-size:18px;">
+    Points: <span id="swampPoints">0</span><br/>
+    Holder Tier: <span id="swampTier">—</span>
+  </div>
+
+  <button id="claimDailyBtn" class="mainBtn" style="margin-top:12px;">
+    Claim Daily Bonus
+  </button>
+
+  <div class="small" style="margin-top:10px; opacity:.85;">
+    Last claim: <span id="swampLastClaim">—</span>
+  </div>
+</div>
   <!-- 🔒 Admin Toggle Button (hidden until your wallet connects) -->
   <button id="adminBtn" class="btn" style="display:none;">Admin</button>
 <!-- Admin Panel -->
