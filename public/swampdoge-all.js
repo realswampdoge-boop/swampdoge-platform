@@ -281,10 +281,40 @@ window.connectWalletMobile = connectWalletMobile;
       setDebug("VIP picks load ❌");
     }
   }
+function setVipVisual(isUnlocked, balance, needed) {
+  const vipCard = document.getElementById("vipCard");
+  const vipLockNote = document.getElementById("vipLockNote");
+  const vipProgressFill = document.getElementById("vipProgressFill");
+  const vipStatusText = document.getElementById("vipStatusText");
+  const vipPicksBox = document.getElementById("vipPicksBox");
+
+  if (!vipCard || !vipLockNote || !vipProgressFill || !vipStatusText || !vipPicksBox) return;
+
+  const pct = Math.max(0, Math.min(100, (balance / needed) * 100));
+  vipProgressFill.style.width = pct + "%";
+
+  if (isUnlocked) {
+    vipCard.classList.add("vipUnlocked");
+    vipLockNote.textContent = "VIP ACCESS UNLOCKED ✅";
+    vipLockNote.classList.add("vipUnlockedText");
+    vipStatusText.textContent = "Premium access active";
+    vipStatusText.classList.add("vipUnlockedText");
+    vipPicksBox.style.display = "block";
+  } else {
+    vipCard.classList.remove("vipUnlocked");
+    vipLockNote.innerHTML = "Hold <b>$SWAMP</b> to unlock VIP picks.";
+    vipLockNote.classList.remove("vipUnlockedText");
+    vipStatusText.textContent = `${Number(balance).toLocaleString()} / ${Number(needed).toLocaleString()} SWAMP`;
+    vipStatusText.classList.remove("vipUnlockedText");
+    vipPicksBox.style.display = "none";
+  }
+}
+
 
   async function refreshVipForWallet(walletAddress) {
     // 1) balance
     const bal = await getSwampBalance(walletAddress);
+    setVipVisual(bal >= MIN_SWAMP_FOR_VIP, bal, MIN_SWAMP_FOR_VIP);
 setDebug(`BAL ✅ ${bal}`);
     window.__SWAMPDOGE_BALANCE__ = bal;
     setSwampBal(bal);
