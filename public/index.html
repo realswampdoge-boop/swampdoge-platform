@@ -4,6 +4,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SwampDoge</title>
 <style>
+  /* ============================= /
+/ SWAMPDOGE SECTION CARD STYLE /
+/ ============================= /
+
+.card{
+  width:100%;
+  background:#2f4688;
+  border-radius:26px;
+  padding:24px 20px;
+
+  / spacing between sections /
+  margin:28px 0;
+
+  / button-like look /
+  box-shadow:0 10px 28px rgba(0,0,0,0.25);
+  border:1px solid rgba(255,255,255,0.08);
+
+  / smooth animation /
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+
+/ slight press effect /
+.card:active{
+  transform:scale(0.98);
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+}
+
+/ section titles /
+.card h2{
+  margin-bottom:12px;
+  font-size:20px;
+}
+
+/ spacing for rows inside cards */
+.card div{
+  margin-top:6px;
+}
 body{
   font-family:Arial;
   background:#0b2c3c;
