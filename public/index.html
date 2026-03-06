@@ -47,6 +47,87 @@ body{
   margin-top: 12px;
   margin-bottom: 16px;
 }
+  #vipCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+#vipCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 90%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.08),
+    transparent
+  );
+  transform: skewX(-20deg);
+}
+
+#vipCard.vipUnlocked {
+  border: 1px solid rgba(0,255,140,0.35);
+  box-shadow: 0 0 0 1px rgba(0,255,140,0.15), 0 12px 36px rgba(0,255,140,0.18);
+}
+
+#vipCard.vipUnlocked::before {
+  animation: vipShine 3s linear infinite;
+}
+
+@keyframes vipShine {
+  0% { left: -120%; }
+  100% { left: 140%; }
+}
+
+#vipTitle {
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 0.4px;
+}
+
+#vipLockNote {
+  opacity: 0.95;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+#vipProgressWrap {
+  margin-top: 14px;
+}
+
+#vipProgressBar {
+  width: 100%;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+  overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.22);
+}
+
+#vipProgressFill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1dd15f, #63ff9b);
+  transition: width 0.4s ease;
+  box-shadow: 0 0 14px rgba(29,209,95,0.45);
+}
+
+#vipStatusText {
+  margin-top: 10px;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.vipUnlockedText {
+  color: #7dffb2;
+  text-shadow: 0 0 12px rgba(125,255,178,0.22);
+}
 </style>
 </head>
 <body>
