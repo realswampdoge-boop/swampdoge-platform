@@ -295,6 +295,8 @@ function setVipVisual(isUnlocked, balance, needed) {
 
   if (isUnlocked) {
     vipCard.classList.add("vipUnlocked");
+    vipCard.classList.add("pulse");
+setTimeout(() => vipCard.classList.remove("pulse"), 450);
     vipLockNote.textContent = "VIP ACCESS UNLOCKED ✅";
     vipLockNote.classList.add("vipUnlockedText");
     vipStatusText.textContent = "Premium access active";
