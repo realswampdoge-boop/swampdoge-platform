@@ -12,9 +12,11 @@ setDebug("JS START ✅");
 document.addEventListener("DOMContentLoaded", () => {
   const el = document.getElementById("debugText");
 if (el) el.textContent = "JS LOADED v103 ✅";
+  
   loadSwampDashboard();
 renderRewards(0);
 wireRewards(() => window.__SWAMPDOGE_BALANCE__ || 0);
+  
 });
 window.onerror = function(msg, src, line, col, err) {
   const el = document.getElementById("debugText");
