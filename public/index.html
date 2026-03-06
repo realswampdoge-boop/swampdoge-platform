@@ -857,12 +857,13 @@ setInterval(loadRecord, 60 * 1000);
 async function loadSwampDashboard() {
   try {
     const res = await fetch(
-      "https://api.dexscreener.com/token-pairs/v1/solana/GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump"
+      "https://api.dexscreener.com/latest/dex/pairs/solana/GZ6C9tsZDuapu9Jjff7hV19oG47utmWGLsY8Fd33PKn4"
     );
 
     const data = await res.json();
+    const pair = data.pair;
 
-    if (!Array.isArray(data) || !data.length) {
+    if (!pair) {
       document.getElementById("price").textContent = "No pair";
       document.getElementById("liquidity").textContent = "No pair";
       document.getElementById("marketcap").textContent = "No pair";
@@ -870,8 +871,6 @@ async function loadSwampDashboard() {
       document.getElementById("updated").textContent = "No pair";
       return;
     }
-
-    const pair = data[0];
 
     document.getElementById("price").textContent =
       pair.priceUsd ? "$" + Number(pair.priceUsd).toFixed(8) : "No pair";
