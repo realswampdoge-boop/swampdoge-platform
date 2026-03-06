@@ -638,11 +638,13 @@ function showPicks(league, picks) {
   out.style.display = "block";
 
   out.innerHTML =
-    "<div style='font-weight:800;margin-bottom:8px'>" +
-    league +
-    " Picks</div>" +
-    picks.map((p) => "<div onclick=\"makePrediction('" + p + "')\">• " + p + "</div>")
-}  
+  "<div style='font-weight:800;margin-bottom:8px'>" +
+  league +
+  " Picks</div>" +
+  picks.map((p) =>
+    "<div onclick=\"makePrediction('" + p + "')\">• " + p + "</div>"
+  ).join("");
+  
 
 // LIVE PICKS GENERATOR
 async function getLivePicks(leagueKey) {
