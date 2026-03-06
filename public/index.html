@@ -861,7 +861,7 @@ async function loadSwampDashboard() {
     );
 
     const data = await res.json();
-    const pair = data.pair;
+    const pair = data.pairs && data.pairs[0];
 
     if (!pair) {
       document.getElementById("price").textContent = "No pair";
@@ -876,7 +876,7 @@ async function loadSwampDashboard() {
       pair.priceUsd ? "$" + Number(pair.priceUsd).toFixed(8) : "No pair";
 
     document.getElementById("liquidity").textContent =
-      pair.liquidity?.usd
+      pair.liquidity && pair.liquidity.usd
         ? "$" + Math.floor(pair.liquidity.usd).toLocaleString()
         : "No pair";
 
@@ -886,7 +886,7 @@ async function loadSwampDashboard() {
         : "No pair";
 
     document.getElementById("volume").textContent =
-      pair.volume?.h24
+      pair.volume && pair.volume.h24
         ? "$" + Math.floor(pair.volume.h24).toLocaleString()
         : "No pair";
 
