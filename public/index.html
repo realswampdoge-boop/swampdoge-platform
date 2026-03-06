@@ -168,7 +168,6 @@ body{
     Points: <span id="swampPoints">0</span><br/>
     Holder Tier: <span id="swampTier">—</span>
   </div>
-
   <button id="claimDailyBtn" class="mainBtn" style="margin-top:12px;">
     Claim Daily Bonus
   </button>
@@ -897,6 +896,44 @@ async function loadSwampDashboard() {
 
 loadSwampDashboard();
 setInterval(loadSwampDashboard, 30000);
+  /* SWAMP REWARDS SYSTEM */
+
+let swampPoints = Number(localStorage.getItem("swampPoints") || 0);
+let lastClaim = Number(localStorage.getItem("swampLastClaim") || 0);
+
+function updateRewardsUI(){
+
+  document.getElementById("points").textContent = swampPoints;
+
+  if(lastClaim){
+    const date = new Date(lastClaim);
+    document.getElementById("lastClaim").textContent =
+      date.toLocaleDateString();
+  }
+
+}
+
+document.getElementById("claimBtn").onclick = () => {
+
+  const now = Date.now();
+
+  if(now - lastClaim < 86400000){
+    alert("You already claimed today 🐊");
+    return;
+  }
+
+  swampPoints += 100;
+  lastClaim = now;
+
+  localStorage.setItem("swampPoints", swampPoints);
+  localStorage.setItem("swampLastClaim", lastClaim);
+
+  updateRewardsUI();
+
+  alert("+100 Swamp Points!");
+};
+
+updateRewardsUI();
 </script>
 </body>
 </html>
