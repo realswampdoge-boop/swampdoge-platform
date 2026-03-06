@@ -898,40 +898,56 @@ loadSwampDashboard();
 setInterval(loadSwampDashboard, 30000);
   /* SWAMP REWARDS SYSTEM */
 
+/* SWAMP REWARDS SYSTEM */
+
 let swampPoints = Number(localStorage.getItem("swampPoints") || 0);
-let lastClaim = Number(localStorage.getItem("swampLastClaim") || 0);
+let swampLastClaim = Number(localStorage.getItem("swampLastClaim") || 0);
 
 function updateRewardsUI(){
 
-  document.getElementById("points").textContent = swampPoints;
+  const pointsEl = document.getElementById("swampPoints");
+  const lastClaimEl = document.getElementById("swampLastClaim");
 
-  if(lastClaim){
-    const date = new Date(lastClaim);
-    document.getElementById("lastClaim").textContent =
-      date.toLocaleDateString();
+  if(pointsEl){
+    pointsEl.textContent = swampPoints;
+  }
+
+  if(lastClaimEl){
+    if(swampLastClaim){
+      const date = new Date(swampLastClaim);
+      lastClaimEl.textContent = date.toLocaleDateString();
+    }else{
+      lastClaimEl.textContent = "—";
+    }
   }
 
 }
 
-document.getElementById("claimBtn").onclick = () => {
+const claimBtn = document.getElementById("claimDailyBtn");
 
-  const now = Date.now();
+if(claimBtn){
 
-  if(now - lastClaim < 86400000){
-    alert("You already claimed today 🐊");
-    return;
-  }
+  claimBtn.onclick = () => {
 
-  swampPoints += 100;
-  lastClaim = now;
+    const now = Date.now();
 
-  localStorage.setItem("swampPoints", swampPoints);
-  localStorage.setItem("swampLastClaim", lastClaim);
+    if(swampLastClaim && now - swampLastClaim < 86400000){
+      alert("You already claimed today 🐊");
+      return;
+    }
 
-  updateRewardsUI();
+    swampPoints += 100;
+    swampLastClaim = now;
 
-  alert("+100 Swamp Points!");
-};
+    localStorage.setItem("swampPoints", swampPoints);
+    localStorage.setItem("swampLastClaim", swampLastClaim);
+
+    updateRewardsUI();
+
+    alert("+100 Swamp Points!");
+  };
+
+}
 
 updateRewardsUI();
 </script>
