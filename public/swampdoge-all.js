@@ -454,6 +454,9 @@ setTimeout(() => vipCard.classList.remove("pulse"), 450);
     // 1) balance
     const bal = await getSwampBalance(walletAddress);
     setVipVisual(bal >= MIN_SWAMP_FOR_VIP, bal, MIN_SWAMP_FOR_VIP);
+    await loadSwampDashboard();
+renderRewards(bal);
+wireRewards(() => bal);
 setDebug(`BAL ✅ ${bal}`);
     window.__SWAMPDOGE_BALANCE__ = bal;
     setSwampBal(bal);
