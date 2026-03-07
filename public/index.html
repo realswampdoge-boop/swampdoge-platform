@@ -1032,46 +1032,6 @@ window.testLoss = function () {
   localStorage.setItem("swampStreak", streak);
   updateStreakUI();
 };
-
-  function makePrediction(pick) {
-  if (!walletAddress) {
-    alert("Connect wallet first");
-    return;
-  }
-
-  const prediction = {
-    wallet: walletAddress,
-    pick: pick,
-    status: "Pending",
-    reward: 0,
-    time: Date.now()
-  };
-
-  localStorage.setItem("swamp_prediction", JSON.stringify(prediction));
-  loadPrediction();
-  alert("🐊 Prediction Locked: " + pick);
-}
-
-function testWin() {
-  const data = localStorage.getItem("swamp_prediction");
-  if (!data) return alert("No prediction saved yet");
-
-  const pred = JSON.parse(data);
-  pred.status = "✅ WIN";
-  pred.reward = 500;
-
-  localStorage.setItem("swamp_prediction", JSON.stringify(pred));
-  loadPrediction();
-}
-
-function testLoss() {
-  const data = localStorage.getItem("swamp_prediction");
-  if (!data) return alert("No prediction saved yet");
-
-  const pred = JSON.parse(data);
-  pred.status = "❌ LOSS";
-  pred.reward = 0;
-
 </script>
 </body>
 </html>
