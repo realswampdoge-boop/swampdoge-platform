@@ -1084,52 +1084,7 @@ setInterval(loadSwampDashboard, 30000);
 }
 /* SWAMP REWARDS SYSTEM */
 
-let swampPoints = Number(localStorage.getItem("swampPoints") || 0);
-let swampLastClaim = Number(localStorage.getItem("swampLastClaim") || 0);
 
-function updateRewardsUI(){
-
-  const pointsEl = document.getElementById("swampPoints");
-  const lastClaimEl = document.getElementById("swampLastClaim");
-
-  if(pointsEl){
-    pointsEl.textContent = swampPoints;
-  }
-
-  if(lastClaimEl){
-  if(swampLastClaim){
-    const date = new Date(swampLastClaim);
-    lastClaimEl.textContent = date.toLocaleString();
-  } else {
-    lastClaimEl.textContent = "--";
-  }
-}
-
-const claimBtn = document.getElementById("claimDailyBtn");
-
-if(claimBtn){
-
-  claimBtn.onclick = () => {
-
-    const now = Date.now();
-
-    if(swampLastClaim && now - swampLastClaim < 86400000){
-      alert("You already claimed today 🐊");
-      return;
-    }
-
-    swampPoints += 100;
-    swampLastClaim = now;
-
-    localStorage.setItem("swampPoints", swampPoints);
-    localStorage.setItem("swampLastClaim", swampLastClaim);
-
-    updateRewardsUI();
-
-    alert("+100 Swamp Points!");
-  };
-
-}
 // 🔥 STREAK SYSTEM
 
 let streak = Number(localStorage.getItem("swampStreak") || 0);
