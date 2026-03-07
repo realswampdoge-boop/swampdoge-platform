@@ -930,33 +930,37 @@ async function loadAiPicks() {
       msg.textContent = "Could not load today's games (network error).";
     }
   }
-}
+const connectBtn = document.getElementById("connectBtn");
 
-document.getElementById("connectBtn").onclick = async () => {
+if (connectBtn) {
+  connectBtn.addEventListener("click", async () => {
+    if (openInPhantomIfNeeded()) {
+      debug("OPENING PHANTOM...");
+      return;
+    }
 
-  // 🔥 ADD THESE 4 LINES RIGHT HERE
-  if (openInPhantomIfNeeded()) {
-    debug("OPENING PHANTOM… 🟣");
-    return;
-  }
+    try {
+      debug("CONNECT TAP...");
+      const provider = getProvider();
+      if (!provider) {
+        debug("PHANTOM NOT FOUND ❌");
+        return;
+      }
 
-  try {
-    debug("CONNECT TAP…");
+      const resp = await provider.connect();
+      const walletAddress = resp.publicKey.toString();
 
-    if (window.solana && window.solana.isPhantom) {
-      const r = await window.solana.connect();
-      const walletAddr = r.publicKey.toString();
-      isAdminWallet = (walletAddr === ADMIN_WALLET);
-      const adminBtn = document.getElementById("adminBtn");
-if (adminBtn) {
-  adminBtn.style.display = isAdminWallet ? "block" : "none";
-}
-      document.getElementById("wallet").textContent = walletAddr;
-      document.getElementById("status").textContent = "Connected";
+      setWallet(walletAddress);
       debug("CONNECTED ✅");
 
-      const bal = await getSwampBalance(walletAddr);
-      document.getElementById("swampBal").textContent = bal.toLocaleString();
+      await refreshVipForWallet(walletAddress);
+    } catch (e) {
+      console.log(e);
+      debug("CONNECT FAILED ❌");
+    }
+  });
+}
+
       // 🐊 HOLDER TIER SYSTEM
 
 let tier = "—";
