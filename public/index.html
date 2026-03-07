@@ -918,20 +918,46 @@ document.getElementById("connectBtn").addEventListener("click", async () => {
       localStorage.setItem("lastPrediction", lastPrediction);
       updatePredictionUI();
     }
+    function queuePayout({ wallet, pick, amount, reason }) {
+  const queue = getPayoutQueue();
+
+  const newItem = {
+    id: "p_" + Date.now(),
+    wallet: wallet || window.currentWallet || "",
+    pick: pick || lastPrediction || "Prediction reward",
+    amount: Number(amount || 0),
+    reason: reason || "Correct prediction",
+    status: "queued",
+    tx: ""
+  };
+
+  queue.unshift(newItem);
+  savePayoutQueue(queue);
+  renderPayoutQueue();
+}
 
     function rewardCorrectPrediction() {
-      correctPicks += 1;
-      swampPoints += 250;
-      streak += 1;
+  correctPicks += 1;
+  swampPoints += 250;
+  streak += 1;
 
-      localStorage.setItem("correctPicks", correctPicks);
-      localStorage.setItem("swampPoints", swampPoints);
-      localStorage.setItem("swampStreak", streak);
+  localStorage.setItem("correctPicks", correctPicks);
+  localStorage.setItem("swampPoints", swampPoints);
+  localStorage.setItem("swampStreak", streak);
 
-      updateRewardsUI();
-      updatePredictionUI();
-      updateStreakUI();
-    }
+  queuePayout({
+    wallet: window.currentWallet || "",
+    pick: lastPrediction || "Prediction reward",
+    amount: 250,
+    reason: "Correct prediction"
+  });
+
+  updateRewardsUI();
+  updatePredictionUI();
+  updateStreakUI();
+
+  debug("PAYOUT QUEUED ✅");
+}
 
     const claimDailyBtn = document.getElementById("claimDailyBtn");
     if (claimDailyBtn) {
@@ -1154,6 +1180,9 @@ function showAdminSections() {
   if (payoutCard) payoutCard.classList.remove("hidden");
   renderPayoutQueue();
 }
+    window.testWinAndQueue = function () {
+  rewardCorrectPrediction();
+};
   </script>
   <div id="vipUnlockPopup" class="vip-popup hidden">
   <div class="vip-popup-card">
