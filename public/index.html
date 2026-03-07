@@ -1040,43 +1040,6 @@ window.testLoss = function () {
   localStorage.setItem("swampStreak", streak);
   updateStreakUI();
 };
-  /* 🐊 SWAMP REWARDS SYSTEM */
-
-let swampPoints = 0;
-let correctPicks = 0;
-
-function updateRewardsUI() {
-
-  const p = document.getElementById("pointsValue");
-  const c = document.getElementById("correctValue");
-
-  if (p) p.textContent = swampPoints;
-  if (c) c.textContent = correctPicks;
-
-}
-
-/* simulate earning points */
-function addCorrectPick() {
-
-  correctPicks += 1;
-  swampPoints += 10;
-
-  updateRewardsUI();
-
-}
-
-/* claim rewards */
-function claimRewards() {
-
-  alert("🐊 Rewards Claimed: " + swampPoints + " SWAMP");
-
-  swampPoints = 0;
-  correctPicks = 0;
-
-  updateRewardsUI();
-
-}
-  updateRewardsUI();
 </script>
 </body>
 </html>
