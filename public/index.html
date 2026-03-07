@@ -211,6 +211,22 @@ body{
   <div class="small" style="margin-top:10px; opacity:.85;">
     Last claim: <span id="swampLastClaim">—</span>
   </div>
+    <div id="rewardsBox" class="card">
+  <h3>🐊 Swamp Rewards</h3>
+
+  <div>
+    Points: <span id="pointsValue">0</span>
+  </div>
+
+  <div>
+    Correct Picks: <span id="correctValue">0</span>
+  </div>
+
+  <button onclick="claimRewards()">
+    Claim Rewards
+  </button>
+
+</div>
 </div>
   <!-- 🔒 Admin Toggle Button (hidden until your wallet connects) -->
   <button id="adminBtn" class="btn" style="display:none;">Admin</button>
@@ -1024,6 +1040,42 @@ window.testLoss = function () {
   localStorage.setItem("swampStreak", streak);
   updateStreakUI();
 };
+  /* 🐊 SWAMP REWARDS SYSTEM */
+
+let swampPoints = 0;
+let correctPicks = 0;
+
+function updateRewardsUI() {
+
+  const p = document.getElementById("pointsValue");
+  const c = document.getElementById("correctValue");
+
+  if (p) p.textContent = swampPoints;
+  if (c) c.textContent = correctPicks;
+
+}
+
+/* simulate earning points */
+function addCorrectPick() {
+
+  correctPicks += 1;
+  swampPoints += 10;
+
+  updateRewardsUI();
+
+}
+
+/* claim rewards */
+function claimRewards() {
+
+  alert("🐊 Rewards Claimed: " + swampPoints + " SWAMP");
+
+  swampPoints = 0;
+  correctPicks = 0;
+
+  updateRewardsUI();
+
+}
 </script>
 </body>
 </html>
