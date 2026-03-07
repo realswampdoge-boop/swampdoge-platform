@@ -468,22 +468,37 @@ function openInPhantomIfNeeded() {
         debug("VIP ERROR ❌");
       }
     }
+document.getElementById("connectBtn").addEventListener("click", async () => {
+  try {
+    debug("CONNECT TAP...");
 
-    document.getElementById("connectBtn").addEventListener("click", async () => {
-      if (openInPhantomIfNeeded()) {
-        debug("OPENING PHANTOM...");
-        return;
-      }
+    const provider = getProvider();
 
-      try {
-        debug("CONNECT TAP...");
-        const provider = getProvider();
+    if (!provider) {
+      debug("OPENING PHANTOM...");
+      openInPhantomIfNeeded();
+      return;
+    }
 
-        if (!provider) {
-          alert("Phantom not found");
-          debug("NO PHANTOM ❌");
-          return;
-        }
+    const resp = await provider.connect();
+    const walletAddress = resp.publicKey.toString();
+    window.currentWallet = walletAddress;
+
+    setWallet(walletAddress);
+    debug("CONNECTED ✅");
+
+    const adminBtn = document.getElementById("adminBtn");
+    if (adminBtn) {
+      adminBtn.classList.toggle("hidden", walletAddress !== ADMIN_WALLET);
+    }
+
+    await refreshVipForWallet(walletAddress);
+  } catch (e) {
+    console.log(e);
+    debug("CONNECT ERROR ❌ " + (e?.message || e));
+  }
+});
+    
 
         const resp = await provider.connect();
         const walletAddress = resp.publicKey.toString();
