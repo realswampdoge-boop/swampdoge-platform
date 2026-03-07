@@ -443,7 +443,7 @@ body::after {
   <script>
     const ADMIN_PIN = "7777";
     const ADMIN_WALLET = "AumagmtFTNer1QYcCmpG3AyqbLKMD9ByDg4okB3wtiBy";
-    const VIP_MIN = 1000000;
+    const VIP_MIN = 10000000;
     const BUY_URL = "https://pump.fun/coin/GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
     window.currentWallet = window.currentWallet || "";
@@ -526,10 +526,11 @@ function hideVipUnlockPopup() {
   if (popup) popup.classList.add("hidden");
 }
 
-const closeVipPopupBtn = document.getElementById("closeVipPopup");
-if (closeVipPopupBtn) {
-  closeVipPopupBtn.onclick = hideVipUnlockPopup;
-}
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "closeVipPopup") {
+    hideVipUnlockPopup();
+  }
+});
     
     async function refreshVipForWallet(walletAddress) {
       try {
@@ -538,9 +539,9 @@ if (closeVipPopupBtn) {
         if (swampBalEl) swampBalEl.textContent = bal.toLocaleString(undefined, { maximumFractionDigits: 3 });
 
         let tier = "—";
-        if (bal >= 1000000) tier = "👑 KING GATOR";
-        else if (bal >= 100000) tier = "🐊 GATOR";
-        else if (bal >= 10000) tier = "🐸 FROG";
+        if (bal >= 10000000) tier = "👑 KING GATOR";
+        else if (bal >= 10000000) tier = "🐊 GATOR";
+        else if (bal >= 1000000) tier = "🐸 FROG";
 
         const tierEl = document.getElementById("swampTier");
         if (tierEl) tierEl.textContent = tier;
