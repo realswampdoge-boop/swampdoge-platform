@@ -6,6 +6,35 @@
   <title>SwampDoge</title>
 
   <style>
+    button,
+.btn,
+.mainBtn,
+.leagueBtn,
+#connectBtn,
+#disconnectBtn,
+#buySwampBtn,
+#makePredictionBtn,
+#claimDailyBtn,
+#adminBtn,
+#publishBtn,
+#resetBtn {
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
+
+.card,
+.innerCard,
+.wrap {
+  position: relative;
+  z-index: 1;
+}
+
+body::before,
+body::after {
+  pointer-events: none !important;
+}
     :root{
       --bg:#083247;
       --card:#31498c;
@@ -862,6 +891,29 @@ document.getElementById("connectBtn").addEventListener("click", async () => {
     updateRewardsUI();
     updatePredictionUI();
     updateStreakUI();
+    document.addEventListener("DOMContentLoaded", () => {
+  [
+    "connectBtn",
+    "disconnectBtn",
+    "buySwampBtn",
+    "makePredictionBtn",
+    "claimDailyBtn",
+    "adminBtn",
+    "publishBtn",
+    "resetBtn"
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.style.pointerEvents = "auto";
+    el.style.zIndex = "9999";
+    el.style.position = "relative";
+
+    el.addEventListener("touchstart", () => {
+      debug("TAP " + id + " ✅");
+    }, { passive: true });
+  });
+});
   </script>
 </body>
 </html>
