@@ -508,27 +508,6 @@ document.getElementById("connectBtn").addEventListener("click", async () => {
       openInPhantomIfNeeded();
       return;
     }
-
-    const resp = await provider.connect();
-    const walletAddress = resp.publicKey.toString();
-    window.currentWallet = walletAddress;
-
-    setWallet(walletAddress);
-    debug("CONNECTED ✅");
-
-    const adminBtn = document.getElementById("adminBtn");
-    if (adminBtn) {
-      adminBtn.classList.toggle("hidden", walletAddress !== ADMIN_WALLET);
-    }
-
-    await refreshVipForWallet(walletAddress);
-  } catch (e) {
-    console.log(e);
-    debug("CONNECT ERROR ❌ " + (e?.message || e));
-  }
-});
-    
-
         const resp = await provider.connect();
         const walletAddress = resp.publicKey.toString();
         window.currentWallet = walletAddress;
