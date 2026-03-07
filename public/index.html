@@ -641,9 +641,7 @@ function showPicks(league, picks) {
   "<div style='font-weight:800;margin-bottom:8px'>" +
   league +
   " Picks</div>" +
-  picks.map((p) =>
-    "<div onclick=\"makePrediction('" + p + "')\">• " + p + "</div>"
-  ).join("");
+  picks.map((p) => "<div>• " + p + "</div>").join("");
   
 
 // LIVE PICKS GENERATOR
@@ -784,9 +782,6 @@ async function loadAiPicks() {
   note.textContent =
     `Selected: ${l.key} — ${picks.length ? "ready ✅" : "no picks today"}`;
 };
-          
-       
-
         wrap.appendChild(b);
       });
     }
@@ -929,7 +924,6 @@ if (publishBtn) {
     } catch (e) {
       console.log(e);
       alert("Publish error: " + (e?.message || e));
-    }
   };
 }
   loadVipPicks();
@@ -979,8 +973,6 @@ function updateRewardsUI(){
       lastClaimEl.textContent = "—";
     }
   }
-
-}
 
 const claimBtn = document.getElementById("claimDailyBtn");
 
