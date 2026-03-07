@@ -552,7 +552,7 @@ const isVip = bal >= VIP_MIN;
 setVip(isVip);
 updateVipProgress(bal);
 
-if (isVip && !wasVip) {
+if (isVip) {
   showVipUnlockPopup();
   localStorage.setItem("wasVipUnlocked", "yes");
 }
