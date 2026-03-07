@@ -396,15 +396,20 @@
     }
 
     function getProvider() {
-      if ("solana" in window && window.solana?.isPhantom) return window.solana;
-      return null;
-    }
+  if (window.phantom?.solana?.isPhantom) return window.phantom.solana;
+  if (window.solana?.isPhantom) return window.solana;
+  return null;
+}
+function openInPhantomIfNeeded() {
+  if (getProvider()) return false;
 
-    function openInPhantomIfNeeded() {
-      if (getProvider()) return false;
-      return false;
-    }
+  const currentUrl = window.location.href;
+  const phantomBrowseUrl =
+    "https://phantom.app/ul/browse/" + encodeURIComponent(currentUrl);
 
+  window.location.href = phantomBrowseUrl;
+  return true;
+}
     function setVip(isOn) {
       const vipStatus = document.getElementById("vipStatus");
       const vipCard = document.getElementById("vipCard");
