@@ -401,8 +401,10 @@ body::after {
       ></textarea>
       <div id="adminMsg" class="small" style="margin-top:10px;"></div>
       <div class="btnRow" style="margin-top:14px;">
-        <button id="publishBtn" class="btn">Publish Picks</button>
-        <button id="resetBtn" class="btn">Reset VIP</button>
+  <button id="publishBtn" class="btn">Publish Picks</button>
+  <button id="resetBtn" class="btn">Reset VIP</button>
+  <button id="testWinBtn" class="btn">Test Win + Queue</button>
+</div>
       </div>
       <div class="small">(Admin-only tools)</div>
 </div>
@@ -1183,6 +1185,13 @@ function showAdminSections() {
     window.testWinAndQueue = function () {
   rewardCorrectPrediction();
 };
+    const testWinBtn = document.getElementById("testWinBtn");
+if (testWinBtn) {
+  testWinBtn.onclick = () => {
+    rewardCorrectPrediction();
+    alert("Test win added ✅ Payout queued.");
+  };
+}
   </script>
   <div id="vipUnlockPopup" class="vip-popup hidden">
   <div class="vip-popup-card">
