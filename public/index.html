@@ -332,9 +332,7 @@ body::after {
     Correct Picks: <span id="correctValue">0</span>
   </div>
 
-  <button onclick="claimRewards()">
-    Claim Rewards
-  </button>
+  <button id="claimBtn" class="btn">
 
 
 </div>
@@ -1082,6 +1080,10 @@ async function loadSwampDashboard() {
 loadSwampDashboard();
 setInterval(loadSwampDashboard, 30000);
 
+  function claimRewards() {
+  const claimBtn = document.getElementById("claimBtn");
+  if (claimBtn) claimBtn.click();
+}
 /* SWAMP REWARDS SYSTEM */
 
 let swampPoints = Number(localStorage.getItem("swampPoints") || 0);
