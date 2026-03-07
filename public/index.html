@@ -385,9 +385,7 @@ body::after {
 <div class="card" style="margin-top:16px;">
   <div style="font-weight:800; font-size:22px;">🤖 AI Picks</div>
   <div id="aiPicksLive" style="margin-top:10px;">
-    <button class="swampBtn" onclick="makePrediction('Warriors +3')">
-  Make Prediction
-</button>
+    <button id="makePredictionBtn" class="btn">Make Prediction</button>
 
   <div style="font-weight:800;margin-bottom:8px;">
     🔥 TODAY'S PICKS
@@ -1132,8 +1130,6 @@ if(claimBtn){
   };
 
 }
-
-updateRewardsUI();
 // 🔥 STREAK SYSTEM
 
 let streak = Number(localStorage.getItem("swampStreak") || 0);
@@ -1157,6 +1153,40 @@ window.testLoss = function () {
   localStorage.setItem("swampStreak", streak);
   updateStreakUI();
 };
+
+/* BIG NEW PREDICTION CODE GOES HERE */
+
+const makePredictionBtn = document.getElementById("makePredictionBtn");
+
+if (makePredictionBtn) {
+  makePredictionBtn.onclick = () => {
+    const connectedWallet = window.currentWallet || "";
+
+    if (!connectedWallet) {
+      alert("Connect Phantom first.");
+      return;
+    }
+
+    const pick = prompt("Enter your prediction (example: Lakers ML)");
+
+    if (!pick || !pick.trim()) return;
+
+    savePredictionResult(pick.trim());
+    alert("Prediction saved ✅");
+  };
+}
+
+updatePredictionUI();
+
+window.markPredictionWin = function () {
+  rewardCorrectPrediction();
+  alert("+250 SWAMP points ✅");
+};
+
+window.markPredictionLoss = function () {
+  alert("Prediction marked as loss.");
+};
+
 </script>
 </body>
 </html>
