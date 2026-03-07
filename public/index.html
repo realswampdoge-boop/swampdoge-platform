@@ -249,6 +249,48 @@ body::after {
     }
 
     .spacer{height:6px}
+    .vip-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 20000;
+}
+
+.vip-popup.hidden {
+  display: none;
+}
+
+.vip-popup-card {
+  width: 100%;
+  max-width: 360px;
+  background: rgba(5, 18, 11, 0.96);
+  border: 1px solid rgba(0,255,140,0.45);
+  border-radius: 24px;
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow:
+    0 0 20px rgba(0,255,140,0.25),
+    0 0 50px rgba(0,255,140,0.18);
+}
+
+.vip-popup-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #b8ffdb;
+  text-shadow:
+    0 0 8px #00ff8c,
+    0 0 18px rgba(0,255,140,0.7);
+}
+
+.vip-popup-text {
+  margin-top: 10px;
+  font-size: 18px;
+  color: #eafff3;
+}
   </style>
 </head>
 <body>
@@ -474,7 +516,21 @@ function openInPhantomIfNeeded() {
         return 0;
       }
     }
+function showVipUnlockPopup() {
+  const popup = document.getElementById("vipUnlockPopup");
+  if (popup) popup.classList.remove("hidden");
+}
 
+function hideVipUnlockPopup() {
+  const popup = document.getElementById("vipUnlockPopup");
+  if (popup) popup.classList.add("hidden");
+}
+
+const closeVipPopupBtn = document.getElementById("closeVipPopup");
+if (closeVipPopupBtn) {
+  closeVipPopupBtn.onclick = hideVipUnlockPopup;
+}
+    
     async function refreshVipForWallet(walletAddress) {
       try {
         const bal = await getSwampBalance(walletAddress);
@@ -489,8 +545,20 @@ function openInPhantomIfNeeded() {
         const tierEl = document.getElementById("swampTier");
         if (tierEl) tierEl.textContent = tier;
 
-        setVip(bal >= VIP_MIN);
-        updateVipProgress(bal);
+     const wasVip = localStorage.getItem("wasVipUnlocked") === "yes";
+const isVip = bal >= VIP_MIN;
+
+setVip(isVip);
+updateVipProgress(bal);
+
+if (isVip && !wasVip) {
+  showVipUnlockPopup();
+  localStorage.setItem("wasVipUnlocked", "yes");
+}
+
+if (!isVip) {
+  localStorage.setItem("wasVipUnlocked", "no");
+}
         debug("SWAMP READY ✅");
       } catch (e) {
         console.log(e);
@@ -894,5 +962,12 @@ document.getElementById("connectBtn").addEventListener("click", async () => {
   });
 });
   </script>
+  <div id="vipUnlockPopup" class="vip-popup hidden">
+  <div class="vip-popup-card">
+    <div class="vip-popup-title">🐊 VIP UNLOCKED ✅</div>
+    <div class="vip-popup-text">Welcome to SwampDoge VIP</div>
+    <button id="closeVipPopup" class="btn" style="margin-top:16px;">Let’s Go</button>
+  </div>
+</div>
 </body>
 </html>
