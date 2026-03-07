@@ -1099,13 +1099,13 @@ function updateRewardsUI(){
   }
 
   if(lastClaimEl){
-    if(swampLastClaim){
-      const date = new Date(swampLastClaim);
-      lastClaimEl.textContent = date.toLocaleDateString();
-    }else{
-      lastClaimEl.textContent = "—";
-    }
+  if(swampLastClaim){
+    const date = new Date(swampLastClaim);
+    lastClaimEl.textContent = date.toLocaleString();
+  } else {
+    lastClaimEl.textContent = "--";
   }
+}
 
 const claimBtn = document.getElementById("claimDailyBtn");
 
