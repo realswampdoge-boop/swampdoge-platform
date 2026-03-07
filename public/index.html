@@ -2,7 +2,6 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<h1 class="glow-green">🐊 SwampDoge</h1>
 <style>
   /* ============================= /
 / SWAMPDOGE SECTION CARD STYLE /
@@ -273,10 +272,21 @@ a {
     0 0 0 1px rgba(0,255,140,0.08) inset,
     0 0 24px rgba(0,255,140,0.30) !important;
 }
+  /* allow buttons to receive taps */
+button {
+  position: relative;
+  z-index: 10;
+}
+
+/* prevent glow layers blocking touches */
+body::before,
+body::after {
+  pointer-events: none;
+}
 </style>
 </head>
 <body>
-<h1>SwampDoge</h1>
+<h1 class="glow-green">🐊 SwampDoge</h1>
 <div>Wallet Test (Reset)</div>
   <button id="connectBtn" class="btn">Connect Phantom</button>
   <button id="disconnectBtn" class="btn">Disconnect</button>
