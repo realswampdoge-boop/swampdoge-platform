@@ -291,6 +291,64 @@ body::after {
   font-size: 18px;
   color: #eafff3;
 }
+    .payout-row {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(0,255,140,0.16);
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.payout-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.payout-wallet {
+  font-weight: 800;
+  color: #cffff0;
+  word-break: break-all;
+}
+
+.payout-status {
+  font-size: 13px;
+  font-weight: 800;
+  color: #9dffcb;
+}
+
+.payout-line {
+  font-size: 14px;
+  color: #eafff3;
+  margin: 4px 0;
+}
+
+.payout-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.payout-btn {
+  width: auto;
+  min-width: 96px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 800;
+  background: rgba(0,255,140,0.10);
+  border: 1px solid rgba(0,255,140,0.30);
+  color: #b8ffdb;
+}
+
+.payout-empty {
+  color: #9fd7b7;
+  font-size: 14px;
+  opacity: 0.9;
+}
   </style>
 </head>
 <body>
@@ -347,7 +405,18 @@ body::after {
         <button id="resetBtn" class="btn">Reset VIP</button>
       </div>
       <div class="small">(Admin-only tools)</div>
-    </div>
+</div>
+    <div id="payoutQueueCard" class="card hidden">
+  <div class="title">💸 PAYOUT QUEUE</div>
+  <div class="small" style="margin-bottom:12px;">Admin payout tracker (manual for now)</div>
+
+  <div id="payoutQueueList"></div>
+
+  <div class="btnRow" style="margin-top:14px;">
+    <button id="seedPayoutsBtn" class="btn">Load Demo Payouts</button>
+    <button id="clearPayoutsBtn" class="btn ghost">Clear Queue</button>
+  </div>
+</div>
 
     <div class="card">
       <div class="stat">Status: <span id="status">...</span></div>
@@ -962,6 +1031,128 @@ document.getElementById("connectBtn").addEventListener("click", async () => {
     }, { passive: true });
   });
 });
+    const PAYOUTS_KEY = "swampPayoutQueue";
+
+function getPayoutQueue() {
+  try {
+    return JSON.parse(localStorage.getItem(PAYOUTS_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function savePayoutQueue(queue) {
+  localStorage.setItem(PAYOUTS_KEY, JSON.stringify(queue));
+}
+
+function shortAddr(addr) {
+  if (!addr || addr.length < 10) return addr || "—";
+  return addr.slice(0, 4) + "..." + addr.slice(-4);
+}
+
+function renderPayoutQueue() {
+  const wrap = document.getElementById("payoutQueueList");
+  if (!wrap) return;
+
+  const queue = getPayoutQueue();
+
+  if (!queue.length) {
+    wrap.innerHTML = `<div class="payout-empty">No payouts queued yet.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = queue.map((item) => `
+    <div class="payout-row">
+      <div class="payout-top">
+        <div class="payout-wallet">${shortAddr(item.wallet)}</div>
+        <div class="payout-status">${item.status.toUpperCase()}</div>
+      </div>
+
+      <div class="payout-line"><b>Pick:</b> ${item.pick}</div>
+      <div class="payout-line"><b>Amount:</b> ${item.amount} SWAMP</div>
+      <div class="payout-line"><b>Reason:</b> ${item.reason}</div>
+      <div class="payout-line"><b>TX:</b> ${item.tx || "—"}</div>
+
+      <div class="payout-actions">
+        <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','approved')">Approve</button>
+        <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','rejected')">Reject</button>
+        <button class="payout-btn" onclick="markPayoutSent('${item.id}')">Mark Sent</button>
+        <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','confirmed')">Confirm</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function updatePayoutStatus(id, status) {
+  const queue = getPayoutQueue().map(item =>
+    item.id === id ? { ...item, status } : item
+  );
+  savePayoutQueue(queue);
+  renderPayoutQueue();
+  debug("PAYOUT " + status.toUpperCase() + " ✅");
+}
+
+function markPayoutSent(id) {
+  const tx = prompt("Paste TX signature (or type SENT if manual):", "");
+  if (tx === null) return;
+
+  const queue = getPayoutQueue().map(item =>
+    item.id === id
+      ? { ...item, status: "sent", tx: tx.trim() || "SENT" }
+      : item
+  );
+
+  savePayoutQueue(queue);
+  renderPayoutQueue();
+  debug("PAYOUT SENT ✅");
+}
+
+function seedDemoPayouts() {
+  const demo = [
+    {
+      id: "p1",
+      wallet: window.currentWallet || "DemoWallet111111111111111111111111111111",
+      pick: "Lakers ML",
+      amount: 250,
+      reason: "Correct prediction",
+      status: "queued",
+      tx: ""
+    },
+    {
+      id: "p2",
+      wallet: "BayouWallet22222222222222222222222222222",
+      pick: "Celtics -4.5",
+      amount: 500,
+      reason: "2-win streak bonus",
+      status: "queued",
+      tx: ""
+    }
+  ];
+
+  savePayoutQueue(demo);
+  renderPayoutQueue();
+  debug("DEMO PAYOUTS LOADED ✅");
+}
+
+const seedPayoutsBtn = document.getElementById("seedPayoutsBtn");
+if (seedPayoutsBtn) {
+  seedPayoutsBtn.onclick = seedDemoPayouts;
+}
+
+const clearPayoutsBtn = document.getElementById("clearPayoutsBtn");
+if (clearPayoutsBtn) {
+  clearPayoutsBtn.onclick = () => {
+    savePayoutQueue([]);
+    renderPayoutQueue();
+    debug("PAYOUT QUEUE CLEARED ✅");
+  };
+}
+
+function showAdminSections() {
+  const payoutCard = document.getElementById("payoutQueueCard");
+  if (payoutCard) payoutCard.classList.remove("hidden");
+  renderPayoutQueue();
+}
   </script>
   <div id="vipUnlockPopup" class="vip-popup hidden">
   <div class="vip-popup-card">
