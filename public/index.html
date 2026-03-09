@@ -1101,16 +1101,24 @@ if (claimBtn) {
 });
     const PAYOUTS_KEY = "swampPayoutQueue";
 
+let payoutQueueCache = [];
+
 function getPayoutQueue() {
-  try {
-    return JSON.parse(localStorage.getItem(PAYOUTS_KEY) || "[]");
-  } catch {
-    return [];
-  }
+  return payoutQueueCache;
 }
 
 function savePayoutQueue(queue) {
-  localStorage.setItem(PAYOUTS_KEY, JSON.stringify(queue));
+  payoutQueueCache = queue;
+}
+
+async function loadPayoutQueueFromServer() {
+  try {
+    payoutQueueCache = await fetchClaimsFromServer();
+    renderPayoutQueue();
+  } catch (e) {
+    console.error(e);
+    debug("CLAIMS LOAD ERROR ❌");
+  }
 }
 
 function shortAddr(addr) {
