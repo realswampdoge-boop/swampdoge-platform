@@ -983,7 +983,7 @@ document.getElementById("connectBtn").addEventListener("click", async () => {
     }
 
     const CLAIM_COST = 500;
-const CLAIM_REASON = "Manual rewards claim";
+const CLAIM_REASON = "Rewards Claim"
 
 const claimBtn = document.getElementById("claimBtn");
 if (claimBtn) {
@@ -1142,11 +1142,25 @@ function renderPayoutQueue() {
       <div class="payout-line"><b>TX:</b> ${item.tx || "—"}</div>
 
       <div class="payout-actions">
-  <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','approved')">Approve</button>
-  <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','rejected')">Reject</button>
-  <button class="payout-btn" onclick="markPayoutSent('${item.id}')">Mark Sent</button>
-  <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','confirmed')">Confirm</button>
-</div>
+        ${item.status === "queued" ? `
+          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','approved')">Approve</button>
+          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','rejected')">Reject</button>
+          <button class="payout-btn" onclick="markPayoutSent('${item.id}')">Mark Sent</button>
+          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','confirmed')">Confirm</button>
+        ` : ""}
+
+        ${item.status === "approved" ? `
+          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','rejected')">Reject</button>
+          <button class="payout-btn" onclick="markPayoutSent('${item.id}')">Mark Sent</button>
+          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','confirmed')">Confirm</button>
+        ` : ""}
+
+        ${item.status === "sent" ? `
+          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','confirmed')">Confirm</button>
+        ` : ""}
+      </div>
+    </div>
+  `).join("");
 }
 
 function updatePayoutStatus(id, status) {
