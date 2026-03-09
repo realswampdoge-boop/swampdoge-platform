@@ -1142,13 +1142,11 @@ function renderPayoutQueue() {
       <div class="payout-line"><b>TX:</b> ${item.tx || "—"}</div>
 
       <div class="payout-actions">
-        <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','approved')">Approve</button>
-        <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','rejected')">Reject</button>
-        <button class="payout-btn" onclick="markPayoutSent('${item.id}')">Mark Sent</button>
-        <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','confirmed')">Confirm</button>
-      </div>
-    </div>
-  `).join("");
+  <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','approved')">Approve</button>
+  <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','rejected')">Reject</button>
+  <button class="payout-btn" onclick="markPayoutSent('${item.id}')">Mark Sent</button>
+  <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','confirmed')">Confirm</button>
+</div>
 }
 
 function updatePayoutStatus(id, status) {
