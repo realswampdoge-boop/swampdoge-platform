@@ -982,12 +982,51 @@ document.getElementById("connectBtn").addEventListener("click", async () => {
       };
     }
 
-    const claimBtn = document.getElementById("claimBtn");
-    if (claimBtn) {
-      claimBtn.onclick = () => {
-        alert("Use Claim Daily Bonus for now ✅");
-      };
+    const CLAIM_COST = 500;
+const CLAIM_REASON = "Manual rewards claim";
+
+const claimBtn = document.getElementById("claimBtn");
+if (claimBtn) {
+  claimBtn.onclick = () => {
+    const connectedWallet = window.currentWallet || "";
+
+    if (!connectedWallet) {
+      alert("Connect Phantom first.");
+      return;
     }
+
+    if (swampPoints < CLAIM_COST) {
+      alert("You need at least " + CLAIM_COST + " points to claim rewards.");
+      return;
+    }
+
+    const queue = getPayoutQueue();
+    const hasOpenClaim = queue.some(item =>
+      item.wallet === connectedWallet &&
+      item.reason === CLAIM_REASON &&
+      ["queued", "approved", "sent", "confirmed"].includes(item.status)
+    );
+
+    if (hasOpenClaim) {
+      alert("You already have a reward claim in progress.");
+      return;
+    }
+
+    swampPoints -= CLAIM_COST;
+    localStorage.setItem("swampPoints", swampPoints);
+
+    queuePayout({
+      wallet: connectedWallet,
+      pick: "Rewards Claim",
+      amount: CLAIM_COST,
+      reason: CLAIM_REASON
+    });
+
+    updateRewardsUI();
+    debug("REWARD CLAIM QUEUED ✅");
+    alert("Reward claim submitted ✅");
+  };
+}
 
     const makePredictionBtn = document.getElementById("makePredictionBtn");
     if (makePredictionBtn) {
