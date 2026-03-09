@@ -1227,6 +1227,45 @@ if (clearPayoutsBtn) {
     debug("PAYOUT QUEUE CLEARED ✅");
   };
 }
+    async function fetchClaimsFromServer() {
+  const res = await fetch("/api/claims");
+  const data = await res.json();
+  return data.claims || [];
+}
+
+async function createClaimOnServer(payload) {
+  const res = await fetch("/api/claims", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  if (!data.ok) {
+    throw new Error(data.error || "Failed to create claim");
+  }
+
+  return data.claim;
+}
+
+async function updateClaimOnServer(payload) {
+  const res = await fetch("/api/claims", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  if (!data.ok) {
+    throw new Error(data.error || "Failed to update claim");
+  }
+
+  return data.claims || [];
+}
 
 function showAdminSections() {
   const payoutCard = document.getElementById("payoutQueueCard");
