@@ -798,55 +798,85 @@ document.getElementById("connectBtn").addEventListener("click", async () => {
       }
     }
 
-    const LEAGUES = [
-      { key: "nba", label: "NBA", count: 6, picks: ["Lakers ML", "Celtics -4.5", "Warriors over 226.5"] },
-      { key: "nhl", label: "NHL", count: 11, picks: ["Rangers ML", "Oilers over 6.0", "Bruins +1.5"] },
-      { key: "ncaab", label: "NCAAB", count: 15, picks: ["Duke ML", "Kansas -3.5", "UConn over 145.5"] },
-      { key: "mlb", label: "MLB", count: 17, picks: ["Yankees ML", "Dodgers -1.5", "Braves over 8.5"] }
-    ];
-
     function showPicks(league, picks) {
-      const out = document.getElementById("picksOutput");
-      if (!out) return;
+  const out = document.getElementById("picksOutput");
+  if (!out) return;
 
-      out.style.display = "block";
-      out.classList.remove("hidden");
-      out.innerHTML =
-        "<div style='font-weight:800;margin-bottom:8px'>" +
-        league +
-        " Picks</div>" +
-        picks.map((p) => "<div>• " + p + "</div>").join("");
+  out.style.display = "block";
+  out.classList.remove("hidden");
+  out.innerHTML =
+    "<div style='font-weight:800;margin-bottom:8px'>" +
+    league +
+    " Picks</div>" +
+    picks.map((p) => "<div>• " + p + "</div>").join("");
+}
+
+async function loadAiPicks() {
+  try {
+    const leagueButtons = document.getElementById("leagueButtons");
+    const noGamesMsg = document.getElementById("noGamesMsg");
+    const leagueNote = document.getElementById("leagueNote");
+    const aiUpdated = document.getElementById("aiUpdated");
+    const picksOutput = document.getElementById("picksOutput");
+
+    if (!leagueButtons) return;
+
+    const res = await fetch("/api/picks");
+    const data = await res.json();
+
+    const leagues = Array.isArray(data?.leagues) ? data.leagues : [];
+    const note = data?.note || "";
+    const updated = data?.updated || "—";
+
+    leagueButtons.innerHTML = "";
+
+    if (picksOutput) {
+      picksOutput.innerHTML = "";
+      picksOutput.classList.add("hidden");
+      picksOutput.style.display = "none";
     }
 
-    async function loadAiPicks() {
-      try {
-        const leagueButtons = document.getElementById("leagueButtons");
-        const noGamesMsg = document.getElementById("noGamesMsg");
-        const leagueNote = document.getElementById("leagueNote");
-        const aiUpdated = document.getElementById("aiUpdated");
-
-        if (!leagueButtons) return;
-        leagueButtons.innerHTML = "";
-
-        LEAGUES.forEach((lg) => {
-          const btn = document.createElement("button");
-          btn.className = "leagueBtn";
-          btn.textContent = lg.label + " (" + lg.count + ")";
-          btn.onclick = () => showPicks(lg.label, lg.picks);
-          leagueButtons.appendChild(btn);
-        });
-
-        if (noGamesMsg) noGamesMsg.style.display = "none";
-        if (leagueNote) {
-          leagueNote.textContent = "🏈 NFL is currently in offseason — no games today.";
-        }
-        if (aiUpdated) {
-          aiUpdated.textContent = "Updated: " + new Date().toLocaleString();
-        }
-      } catch (e) {
-        console.log(e);
+    if (!leagues.length) {
+      if (noGamesMsg) {
+        noGamesMsg.classList.remove("hidden");
+        noGamesMsg.style.display = "block";
       }
+      if (leagueNote) leagueNote.textContent = note || "No games today — check back later ✅";
+      if (aiUpdated) aiUpdated.textContent = "Updated: " + updated;
+      return;
     }
+
+    if (noGamesMsg) noGamesMsg.style.display = "none";
+
+    leagues.forEach((lg) => {
+      const btn = document.createElement("button");
+      btn.className = "leagueBtn";
+
+      const picks = Array.isArray(lg.picks) ? lg.picks : [];
+      const count = Number(lg.count || picks.length || 0);
+
+      btn.textContent = (lg.label || lg.key || "League") + " (" + count + ")";
+      btn.onclick = () => showPicks(lg.label || lg.key || "League", picks);
+      leagueButtons.appendChild(btn);
+    });
+
+    if (leagueNote) leagueNote.textContent = note;
+    if (aiUpdated) aiUpdated.textContent = "Updated: " + updated;
+  } catch (e) {
+    console.log(e);
+
+    const noGamesMsg = document.getElementById("noGamesMsg");
+    const leagueNote = document.getElementById("leagueNote");
+    const aiUpdated = document.getElementById("aiUpdated");
+
+    if (noGamesMsg) {
+      noGamesMsg.classList.remove("hidden");
+      noGamesMsg.style.display = "block";
+    }
+    if (leagueNote) leagueNote.textContent = "AI picks unavailable right now.";
+    if (aiUpdated) aiUpdated.textContent = "Updated: —";
+  }
+}
 
     async function loadSwampDashboard() {
       document.getElementById("price").textContent = "Pump.fun only";
