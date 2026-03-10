@@ -1,11 +1,5 @@
 {
-  "updated": "2026-02-25",
-  "free": [
-    { "league": "NBA", "pick": "Lakers ML" },
-    { "league": "NHL", "pick": "Rangers Over 6" }
-  ],
-  "vip": [
-    { "league": "NBA", "pick": "Player Props Parlay" },
-    { "league": "Soccer", "pick": "2-leg safe parlay" }
-  ]
+  "updated": "2026-03-10",
+  "free": [],
+  "vip": []
 }
