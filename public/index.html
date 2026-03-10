@@ -824,10 +824,22 @@ async function loadAiPicks() {
 
     const res = await fetch("/api/ai-picks");
     const data = await res.json();
-
-    const picks = Array.isArray(data?.picks) ? data.picks : [];
+    const picks = Array.isArray(data?.picks)
+  ? data.picks.filter((p) => !isPlaceholderPick(p))
+  : [];
     const updatedAt = data?.updatedAt || "—";
-
+function isPlaceholderPick(text) {
+  const s = String(text || "").toLowerCase().trim();
+  return (
+    s.includes("no nba picks posted yet") ||
+    s.includes("no nhl picks posted yet") ||
+    s.includes("no ncaab picks posted yet") ||
+    s.includes("no mlb picks posted yet") ||
+    s.includes("no picks posted yet") ||
+    s.includes("nfl is currently in offseason") ||
+    s.includes("no games today")
+  );
+}
     leagueButtons.innerHTML = "";
 
     if (picksOutput) {
@@ -861,7 +873,9 @@ const leagues = [
 for (const league of leagues) {
   const r = await fetch(`/api/ai-picks?league=${encodeURIComponent(league.key)}`);
   const j = await r.json();
-  const leaguePicks = Array.isArray(j?.picks) ? j.picks : [];
+  const leaguePicks = Array.isArray(j?.picks)
+  ? j.picks.filter((p) => !isPlaceholderPick(p))
+  : [];
 
   if (!leaguePicks.length) continue;
 
