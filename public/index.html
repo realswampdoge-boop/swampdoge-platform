@@ -797,18 +797,19 @@ document.getElementById("connectBtn").addEventListener("click", async () => {
         document.getElementById("recUpdated").textContent = "—";
       }
     }
-
-    function showPicks(league, picks) {
+function showPicks(title, picks) {
   const out = document.getElementById("picksOutput");
   if (!out) return;
+
+  const safePicks = Array.isArray(picks) ? picks : [];
 
   out.style.display = "block";
   out.classList.remove("hidden");
   out.innerHTML =
     "<div style='font-weight:800;margin-bottom:8px'>" +
-    league +
-    " Picks</div>" +
-    picks.map((p) => "<div>• " + p + "</div>").join("");
+    title +
+    "</div>" +
+    safePicks.map((p) => "<div>• " + p + "</div>").join("");
 }
 
 async function loadAiPicks() {
@@ -821,12 +822,11 @@ async function loadAiPicks() {
 
     if (!leagueButtons) return;
 
-    const res = await fetch("/api/picks");
+    const res = await fetch("/api/ai-picks");
     const data = await res.json();
 
-    const leagues = Array.isArray(data?.leagues) ? data.leagues : [];
-    const note = data?.note || "";
-    const updated = data?.updated || "—";
+    const picks = Array.isArray(data?.picks) ? data.picks : [];
+    const updatedAt = data?.updatedAt || "—";
 
     leagueButtons.innerHTML = "";
 
@@ -836,32 +836,29 @@ async function loadAiPicks() {
       picksOutput.style.display = "none";
     }
 
-    if (!leagues.length) {
+    if (!picks.length) {
       if (noGamesMsg) {
         noGamesMsg.classList.remove("hidden");
         noGamesMsg.style.display = "block";
       }
-      if (leagueNote) leagueNote.textContent = note || "No games today — check back later ✅";
-      if (aiUpdated) aiUpdated.textContent = "Updated: " + updated;
+      if (leagueNote) leagueNote.textContent = "No AI picks published yet.";
+      if (aiUpdated) aiUpdated.textContent = "Updated: " + updatedAt;
       return;
     }
 
-    if (noGamesMsg) noGamesMsg.style.display = "none";
+    if (noGamesMsg) {
+      noGamesMsg.classList.add("hidden");
+      noGamesMsg.style.display = "none";
+    }
 
-    leagues.forEach((lg) => {
-      const btn = document.createElement("button");
-      btn.className = "leagueBtn";
+    const btn = document.createElement("button");
+    btn.className = "leagueBtn";
+    btn.textContent = "AI PICKS (" + picks.length + ")";
+    btn.onclick = () => showPicks("🔥 TODAY'S AI PICKS", picks);
+    leagueButtons.appendChild(btn);
 
-      const picks = Array.isArray(lg.picks) ? lg.picks : [];
-      const count = Number(lg.count || picks.length || 0);
-
-      btn.textContent = (lg.label || lg.key || "League") + " (" + count + ")";
-      btn.onclick = () => showPicks(lg.label || lg.key || "League", picks);
-      leagueButtons.appendChild(btn);
-    });
-
-    if (leagueNote) leagueNote.textContent = note;
-    if (aiUpdated) aiUpdated.textContent = "Updated: " + updated;
+    if (leagueNote) leagueNote.textContent = "Live published AI picks ✅";
+    if (aiUpdated) aiUpdated.textContent = "Updated: " + updatedAt;
   } catch (e) {
     console.log(e);
 
