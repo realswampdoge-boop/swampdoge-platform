@@ -408,6 +408,19 @@ body::after {
       </div>
       <div class="small">(Admin-only tools)</div>
 </div>
+  <div class="card" style="margin-top:16px;">
+  <h3>Token Payout</h3>
+
+  <input id="payoutWallet" type="text" placeholder="Winner wallet address" />
+  <input id="payoutAmount" type="number" placeholder="Amount of SWAMP" step="0.01" />
+
+  <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+    <button id="testPayoutBtn">Test 1 SWAMP</button>
+    <button id="sendPayoutBtn">Send Payout</button>
+  </div>
+
+  <p id="payoutStatus" style="margin-top:10px;">Payout idle.</p>
+</div>
     <div id="payoutQueueCard" class="card hidden">
   <div class="title">💸 PAYOUT QUEUE</div>
   <div class="small" style="margin-bottom:12px;">Admin payout tracker (manual for now)</div>
@@ -1309,6 +1322,9 @@ if (clearPayoutsBtn) {
     debug("PAYOUT QUEUE CLEARED ✅");
   };
 }
+    const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
+const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
     async function fetchClaimsFromServer() {
   const res = await fetch("/api/claims");
   const data = await res.json();
@@ -1364,24 +1380,83 @@ if (testWinBtn) {
     alert("Test win added ✅ Payout queued.");
   };
 }
-    async function sendTokenPayout(toWallet, amount) {
-  const adminPin = prompt("Enter admin PIN");
-  if (!adminPin) return;
+    <script>
+async function sendTokenPayout(toWallet, amount) {
+  try {
+    if (!window.solana || !window.solana.isPhantom) {
+      alert("Phantom wallet not found");
+      return;
+    }
 
-  const r = await fetch("/api/picks", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      action: "payout",
-      adminPin,
-      toWallet,
-      amount
-    })
-  });
+    const provider = window.solana;
 
-  const data = await r.json();
-  alert(data.message || data.error || "Done");
+    if (!provider.publicKey) {
+      await provider.connect();
+    }
+
+    const adminPubkey = provider.publicKey;
+    const mintPubkey = new solanaWeb3.PublicKey(SWAMP_MINT);
+    const destOwner = new solanaWeb3.PublicKey(toWallet);
+
+    const decimals = await getMintDecimals(mintPubkey);
+
+    const adminAta = getAtaAddress(adminPubkey, mintPubkey);
+    const destAta = getAtaAddress(destOwner, mintPubkey);
+
+    const tx = new solanaWeb3.Transaction();
+
+    const destAtaInfo = await connection.getAccountInfo(destAta);
+    if (!destAtaInfo) {
+      tx.add(
+        createAtaInstruction(
+          adminPubkey,
+          destAta,
+          destOwner,
+          mintPubkey
+        )
+      );
+    }
+
+    const rawAmount = amountToRaw(amount, decimals);
+
+    tx.add(
+      createTransferCheckedInstruction(
+        adminAta,
+        mintPubkey,
+        destAta,
+        adminPubkey,
+        rawAmount,
+        decimals
+      )
+    );
+
+    const { blockhash, lastValidBlockHeight } =
+      await connection.getLatestBlockhash("finalized");
+
+    tx.feePayer = adminPubkey;
+    tx.recentBlockhash = blockhash;
+
+    const signedTx = await provider.signTransaction(tx);
+    const sig = await connection.sendRawTransaction(signedTx.serialize());
+
+    await connection.confirmTransaction(
+      {
+        blockhash,
+        lastValidBlockHeight,
+        signature: sig
+      },
+      "confirmed"
+    );
+
+    alert("PAYOUT SENT ✅ " + sig);
+    return sig;
+
+  } catch (err) {
+    console.error(err);
+    alert("PAYOUT ERROR ❌ " + (err.message || err));
+  }
 }
+</script>
   </script>
   <div id="vipUnlockPopup" class="vip-popup hidden">
   <div class="vip-popup-card">
