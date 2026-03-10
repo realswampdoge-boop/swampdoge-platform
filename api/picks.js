@@ -1,6 +1,5 @@
 import OpenAI from "openai";
 
-// Map your UI league keys to the league codes coming from /api/games
 const LEAGUE_MAP = {
   NBA: "nba",
   NHL: "nhl",
@@ -11,24 +10,22 @@ const LEAGUE_MAP = {
   NFL: "nfl",
 };
 
-function demoPicks(leagueKey) {
+function emptyPicks(leagueKey) {
   const map = {
-    NBA: ["Warriors ML", "Over 231.5", "Knicks +4"],
-    NHL: ["Rangers ML", "Under 6.5", "Bruins +1.5"],
-    MLB: ["Yankees ML", "Over 8.5", "Dodgers -1.5"],
-    NCAAB: ["Gonzaga -5", "Duke -3", "Over 145.5"],
-    EPL: ["Arsenal ML", "Over 2.5", "Both teams score"],
-    UCL: ["Home or Draw", "Over 2.5", "Both teams score"],
-    NFL: ["Home +3.5", "Under 47.5", "Moneyline (home)"],
+    NBA: ["No NBA picks posted yet"],
+    NHL: ["No NHL picks posted yet"],
+    MLB: ["No MLB picks posted yet"],
+    NCAAB: ["No NCAAB picks posted yet"],
+    EPL: ["No EPL picks posted yet"],
+    UCL: ["No UCL picks posted yet"],
+    NFL: ["NFL is currently in offseason — no games today"],
   };
-  return map[leagueKey] || ["Demo picks loaded"];
+  return map[leagueKey] || ["No picks posted yet"];
 }
 
-// Tries to parse JSON from the model; falls back to line-splitting.
 function parsePicksFromModel(text) {
   const t = (text || "").trim();
 
-  // Try JSON first
   try {
     const j = JSON.parse(t);
     if (j && Array.isArray(j.picks)) {
@@ -36,14 +33,11 @@ function parsePicksFromModel(text) {
     }
   } catch (_) {}
 
-  // Fallback: lines
   const lines = t
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean)
-    // remove bullets / numbering
     .map((s) => s.replace(/^[-*•]\s*/, "").replace(/^\d+\.\s*/, "").trim())
-    // remove obvious "intro" sentences if any slipped in
     .filter((s) => !/^sure/i.test(s) && !/^here are/i.test(s));
 
   return lines.slice(0, 3);
@@ -54,19 +48,16 @@ export default async function handler(req, res) {
     const leagueKey = String(req.query.league || "NBA").toUpperCase();
     const leagueCode = LEAGUE_MAP[leagueKey] || "nba";
 
-    // Build absolute URL to call our own /api/games on Vercel
     const proto = req.headers["x-forwarded-proto"] || "https";
     const host = req.headers["x-forwarded-host"] || req.headers.host;
     const base = `${proto}://${host}`;
 
-    // Pull today’s games from your working endpoint
     const gr = await fetch(`${base}/api/games`, { cache: "no-store" });
     const gj = await gr.json();
     const allGames = Array.isArray(gj.games) ? gj.games : [];
 
-    // Filter games for the requested league
     const leagueGames = allGames.filter((g) => {
-      const code = g?.league?.league; // e.g. "nba", "nhl", "mlb"
+      const code = g?.league?.league;
       return code === leagueCode;
     });
 
@@ -75,13 +66,23 @@ export default async function handler(req, res) {
       .filter(Boolean)
       .slice(0, 12);
 
-    // If no games, return demo picks so your UI doesn’t break
     if (matchups.length === 0) {
       res.setHeader("Cache-Control", "no-store");
       return res.status(200).json({
         league: leagueKey,
-        picks: demoPicks(leagueKey),
-        source: "demo_no_games",
+        picks: emptyPicks(leagueKey),
+        source: "no_games_today",
+        gamesUsed: [],
+      });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      res.setHeader("Cache-Control", "no-store");
+      return res.status(200).json({
+        league: leagueKey,
+        picks: emptyPicks(leagueKey),
+        source: "missing_openai_key",
+        gamesUsed: matchups.slice(0, 6),
       });
     }
 
@@ -89,7 +90,6 @@ export default async function handler(req, res) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // IMPORTANT: force clean output (no intro sentences)
     const prompt = `
 You are SwampDoge Picks Engine.
 
@@ -98,13 +98,15 @@ League: ${leagueKey}
 Today's games (use ONLY these teams):
 ${matchups.map((m) => `- ${m}`).join("\n")}
 
-Return EXACTLY 3 picks based on those games.
+Return EXACTLY 3 picks.
 Rules:
-- NO intro text, NO explanations
-- NO numbering, NO bullets
-- Each pick should be a short betting-style line (e.g. "Celtics ML", "Over 220.5", "Knicks +4")
-- Only choose teams that appear in the games list above
-- Output MUST be valid JSON only in this format:
+- NO intro text
+- NO explanations
+- NO numbering
+- NO bullets
+- Each pick must be short
+- Only use teams from the games above
+- Output valid JSON only:
 {"picks":["PICK1","PICK2","PICK3"]}
 `.trim();
 
@@ -121,22 +123,29 @@ Rules:
     const text = completion?.choices?.[0]?.message?.content || "";
     const picks = parsePicksFromModel(text);
 
-    // If the model messed up, fall back to demo
-    const finalPicks = picks.length === 3 ? picks : demoPicks(leagueKey);
-
     res.setHeader("Cache-Control", "no-store");
+
+    if (picks.length !== 3) {
+      return res.status(200).json({
+        league: leagueKey,
+        picks: emptyPicks(leagueKey),
+        source: "ai_parse_failed",
+        gamesUsed: matchups.slice(0, 6),
+      });
+    }
+
     return res.status(200).json({
       league: leagueKey,
-      picks: finalPicks,
-      source: picks.length === 3 ? "ai_games" : "demo_parse_fallback",
+      picks,
+      source: "ai_games",
       gamesUsed: matchups.slice(0, 6),
     });
   } catch (e) {
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).json({
       league: String(req.query.league || "NBA").toUpperCase(),
-      picks: demoPicks(String(req.query.league || "NBA").toUpperCase()),
-      source: "demo_error",
+      picks: ["Picks temporarily unavailable"],
+      source: "api_error",
       error: String(e?.message || e),
     });
   }
