@@ -45,6 +45,46 @@ function parsePicksFromModel(text) {
 
 export default async function handler(req, res) {
   try {
+    // =========================
+    // 1) TOKEN PAYOUT BRANCH
+    // =========================
+    if (req.method === "POST") {
+      const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
+      const action = String(body.action || "");
+
+      if (action === "payout") {
+        const adminPin = String(body.adminPin || "");
+        const toWallet = String(body.toWallet || "").trim();
+        const amount = Number(body.amount || 0);
+
+        if (adminPin !== process.env.ADMIN_PIN) {
+          return res.status(401).json({ ok: false, error: "Wrong admin pin" });
+        }
+
+        if (!toWallet) {
+          return res.status(400).json({ ok: false, error: "Missing destination wallet" });
+        }
+
+        if (!amount || amount <= 0) {
+          return res.status(400).json({ ok: false, error: "Invalid amount" });
+        }
+
+        // SAFE SKELETON ONLY
+        // Real transfer code goes here later.
+        return res.status(200).json({
+          ok: true,
+          message: "Payout request accepted",
+          toWallet,
+          amount,
+        });
+      }
+
+      return res.status(400).json({ ok: false, error: "Unknown POST action" });
+    }
+
+    // =========================
+    // 2) EXISTING PICKS LOGIC
+    // =========================
     const leagueKey = String(req.query.league || "NBA").toUpperCase();
     const leagueCode = LEAGUE_MAP[leagueKey] || "nba";
 
