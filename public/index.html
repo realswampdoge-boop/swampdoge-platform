@@ -1364,6 +1364,24 @@ if (testWinBtn) {
     alert("Test win added ✅ Payout queued.");
   };
 }
+    async function sendTokenPayout(toWallet, amount) {
+  const adminPin = prompt("Enter admin PIN");
+  if (!adminPin) return;
+
+  const r = await fetch("/api/picks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "payout",
+      adminPin,
+      toWallet,
+      amount
+    })
+  });
+
+  const data = await r.json();
+  alert(data.message || data.error || "Done");
+}
   </script>
   <div id="vipUnlockPopup" class="vip-popup hidden">
   <div class="vip-popup-card">
