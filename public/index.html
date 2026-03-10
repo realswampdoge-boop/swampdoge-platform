@@ -850,16 +850,49 @@ async function loadAiPicks() {
       noGamesMsg.classList.add("hidden");
       noGamesMsg.style.display = "none";
     }
+const leagues = [
+  { key: "NBA", title: "NBA Picks" },
+  { key: "NHL", title: "NHL Picks" },
+  { key: "NCAAB", title: "NCAAB Picks" },
+  { key: "MLB", title: "MLB Picks" },
+  { key: "NFL", title: "NFL Picks" }
+];
 
-    const btn = document.createElement("button");
-    btn.className = "leagueBtn";
-    btn.textContent = "AI PICKS (" + picks.length + ")";
-    btn.onclick = () => showPicks("🔥 TODAY'S AI PICKS", picks);
-    leagueButtons.appendChild(btn);
+for (const league of leagues) {
+  const r = await fetch(`/api/ai-picks?league=${encodeURIComponent(league.key)}`);
+  const j = await r.json();
+  const leaguePicks = Array.isArray(j?.picks) ? j.picks : [];
 
-    if (leagueNote) leagueNote.textContent = "Live published AI picks ✅";
-    if (aiUpdated) aiUpdated.textContent = "Updated: " + updatedAt;
-  } catch (e) {
+  if (!leaguePicks.length) continue;
+
+  const btn = document.createElement("button");
+  btn.className = "leagueBtn";
+  btn.textContent = `${league.key} (${leaguePicks.length})`;
+  btn.onclick = () => showPicks(`🔥 ${league.title}`, leaguePicks);
+  leagueButtons.appendChild(btn);
+}
+
+if (leagueButtons.children.length > 0) {
+  const firstBtn = leagueButtons.querySelector("button");
+  if (firstBtn) firstBtn.click();
+
+  if (leagueNote) leagueNote.textContent = "Live league AI picks ✅";
+  if (aiUpdated) aiUpdated.textContent = "Updated: " + updatedAt;
+
+  if (noGamesMsg) {
+    noGamesMsg.classList.add("hidden");
+    noGamesMsg.style.display = "none";
+  }
+} else {
+  if (noGamesMsg) {
+    noGamesMsg.classList.remove("hidden");
+    noGamesMsg.style.display = "block";
+  }
+
+  if (leagueNote) leagueNote.textContent = "No AI picks available right now.";
+  if (aiUpdated) aiUpdated.textContent = "Updated: " + updatedAt;
+}
+      } catch (e) {
     console.log(e);
 
     const noGamesMsg = document.getElementById("noGamesMsg");
