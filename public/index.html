@@ -1455,6 +1455,38 @@ async function sendTokenPayout(toWallet, amount) {
     alert("PAYOUT ERROR ❌ " + (err.message || err));
   }
 }
+    const payoutStatus = document.getElementById("payoutStatus");
+
+document.getElementById("testPayoutBtn").onclick = async () => {
+
+  const wallet = walletAddress;
+
+  if (!wallet) {
+    alert("Connect wallet first");
+    return;
+  }
+
+  payoutStatus.textContent = "Testing payout (1 SWAMP)...";
+
+  console.log("Test payout to:", wallet);
+
+};
+
+document.getElementById("sendPayoutBtn").onclick = async () => {
+
+  const wallet = document.getElementById("payoutWallet").value;
+  const amount = document.getElementById("payoutAmount").value;
+
+  if (!wallet || !amount) {
+    alert("Enter wallet and amount");
+    return;
+  }
+
+  payoutStatus.textContent = "Preparing payout...";
+
+  console.log("Send payout:", wallet, amount);
+
+};
 </script>
   </script>
   <div id="vipUnlockPopup" class="vip-popup hidden">
