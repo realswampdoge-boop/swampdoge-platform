@@ -1455,39 +1455,61 @@ async function sendTokenPayout(toWallet, amount) {
     alert("PAYOUT ERROR ❌ " + (err.message || err));
   }
 }
-    const payoutStatus = document.getElementById("payoutStatus");
+    <script>
+const payoutStatus = document.getElementById("payoutStatus");
+const testPayoutBtn = document.getElementById("testPayoutBtn");
+const sendPayoutBtn = document.getElementById("sendPayoutBtn");
 
-document.getElementById("testPayoutBtn").onclick = async () => {
+if (testPayoutBtn) {
+  testPayoutBtn.onclick = async () => {
 
-  const wallet = walletAddress;
+    const wallet = window.currentWallet;
 
-  if (!wallet) {
-    alert("Connect wallet first");
-    return;
-  }
+    if (!wallet) {
+      alert("Connect wallet first");
+      return;
+    }
 
-  payoutStatus.textContent = "Testing payout (1 SWAMP)...";
+    payoutStatus.textContent = "Sending test payout...";
 
-  console.log("Test payout to:", wallet);
+    try {
+      const sig = await sendTokenPayout(wallet, 1);
+      payoutStatus.textContent = "Test payout sent ✅";
+      console.log("Test payout success:", sig);
+    } catch (err) {
+      console.error(err);
+      payoutStatus.textContent = "Test payout failed ❌";
+    }
 
-};
+  };
+}
 
-document.getElementById("sendPayoutBtn").onclick = async () => {
+if (sendPayoutBtn) {
+  sendPayoutBtn.onclick = async () => {
 
-  const wallet = document.getElementById("payoutWallet").value;
-  const amount = document.getElementById("payoutAmount").value;
+    const wallet = document.getElementById("payoutWallet").value.trim();
+    const amount = document.getElementById("payoutAmount").value.trim();
 
-  if (!wallet || !amount) {
-    alert("Enter wallet and amount");
-    return;
-  }
+    if (!wallet || !amount) {
+      alert("Enter wallet and amount");
+      return;
+    }
 
-  payoutStatus.textContent = "Preparing payout...";
+    payoutStatus.textContent = "Sending payout...";
 
-  console.log("Send payout:", wallet, amount);
-};
+    try {
+      const sig = await sendTokenPayout(wallet, amount);
+      payoutStatus.textContent = "Payout sent ✅";
+      console.log("Manual payout success:", sig);
+    } catch (err) {
+      console.error(err);
+      payoutStatus.textContent = "Payout failed ❌";
+    }
+
+  };
+}
 </script>
-  </script>
+  
   <div id="vipUnlockPopup" class="vip-popup hidden">
   <div class="vip-popup-card">
     <div class="vip-popup-title">🐊 VIP UNLOCKED ✅</div>
