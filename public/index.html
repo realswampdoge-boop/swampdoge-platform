@@ -1,1521 +1,252 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SwampDoge</title>
+<meta charset="UTF-8">
+<title>SwampDoge</title>
 
-  <style>
-    button,
-.btn,
-.mainBtn,
-.leagueBtn,
-#connectBtn,
-#disconnectBtn,
-#buySwampBtn,
-#makePredictionBtn,
-#claimDailyBtn,
-#adminBtn,
-#publishBtn,
-#resetBtn {
-  position: relative;
-  z-index: 9999;
-  pointer-events: auto !important;
-  touch-action: manipulation;
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+
+<style>
+
+body{
+background:#041b12;
+color:#8affc1;
+font-family:Arial;
+text-align:center;
 }
 
-.card,
-.innerCard,
-.wrap {
-  position: relative;
-  z-index: 1;
+button{
+background:#0c3;
+border:none;
+padding:12px 20px;
+margin:6px;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
 }
 
-body::before,
-body::after {
-  pointer-events: none !important;
-}
-    :root{
-      --bg:#083247;
-      --card:#31498c;
-      --card-dark:rgba(3,20,10,0.86);
-      --text:#f5fff8;
-      --muted:#cdeed8;
-      --green:#00ff8c;
-      --green-soft:rgba(0,255,140,0.22);
-      --green-mid:rgba(0,255,140,0.38);
-      --line:rgba(0,255,140,0.28);
-      --btn:#354989;
-    }
-
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0}
-    body{
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-      background:radial-gradient(circle at top, rgba(0,255,140,0.10), transparent 30%), var(--bg);
-      color:var(--text);
-      padding:20px 14px 40px;
-    }
-
-    body::before,
-    body::after{
-      pointer-events:none;
-    }
-#wallet {
-  word-break: break-all;
-  overflow-wrap: anywhere;
-}
-    .wrap{
-      max-width:720px;
-      margin:0 auto;
-    }
-
-    h1{
-      margin:10px 0 8px;
-      text-align:center;
-      font-size:42px;
-      color:#cffff0;
-      text-shadow:
-        0 0 8px #00ff8c,
-        0 0 18px #00ff8c,
-        0 0 36px #00ff8c,
-        0 0 60px rgba(0,255,140,0.9);
-    }
-
-    .sub{
-      text-align:center;
-      font-size:18px;
-      margin-bottom:18px;
-      opacity:.95;
-    }
-
-    .card{
-      width:100%;
-      background:rgba(5,18,11,0.88);
-      border:1px solid var(--line);
-      border-radius:28px;
-      padding:22px 20px;
-      margin:18px 0;
-      box-shadow:
-        0 0 0 1px rgba(0,255,140,0.04) inset,
-        0 0 18px rgba(0,255,140,0.14),
-        0 0 42px rgba(0,255,140,0.08);
-    }
-
-    .hero-card{
-      background:var(--card);
-      border:none;
-      box-shadow:none;
-      text-align:center;
-      overflow:hidden;
-    }
-
-    .title{
-      font-weight:800;
-      font-size:22px;
-      margin-bottom:12px;
-    }
-
-    .title.glow{
-      color:#9dffcb;
-      text-shadow:
-        0 0 8px rgba(0,255,140,0.50),
-        0 0 18px rgba(0,255,140,0.25);
-    }
-
-    .stat{
-      font-size:18px;
-      line-height:1.65;
-      margin:6px 0;
-    }
-
-    .small{
-      font-size:14px;
-      opacity:.88;
-    }
-
-    .btn,
-    .mainBtn,
-    button{
-      appearance:none;
-      border:none;
-      cursor:pointer;
-      width:100%;
-      border-radius:24px;
-      padding:18px 18px;
-      font-size:18px;
-      font-weight:800;
-      color:#fff;
-      background:var(--btn);
-      position:relative;
-      z-index:10;
-      box-shadow:0 0 16px rgba(0,255,140,0.22);
-    }
-
-    .btn.green,
-    .mainBtn.green{
-      background:linear-gradient(135deg,#1fc85b,#0d9a34);
-      color:#fff;
-    }
-
-    .btn.ghost,
-    .mainBtn.ghost{
-      background:rgba(0,255,140,0.08);
-      border:1px solid rgba(0,255,140,0.45);
-      color:#9dffcb;
-    }
-
-    .btnRow{
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-      margin:18px 0 8px;
-    }
-
-    .leagueRow{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-top:14px;
-    }
-
-    .leagueBtn{
-      width:auto;
-      min-width:120px;
-      padding:14px 18px;
-      border-radius:20px;
-      background:#334a87;
-      color:#fff;
-      border:1px solid rgba(255,255,255,0.10);
-      font-size:16px;
-      font-weight:800;
-    }
-
-    .innerCard{
-      margin-top:18px;
-      padding:20px;
-      border-radius:22px;
-      border:1px solid var(--line);
-      box-shadow:0 0 22px rgba(0,255,140,0.10);
-    }
-
-    .center{text-align:center}
-    .left{text-align:left}
-    .hidden{display:none}
-    .vip-on{
-      border:1px solid rgba(111,255,187,0.7);
-      box-shadow:
-        0 0 0 1px rgba(0,255,140,0.08) inset,
-        0 0 24px rgba(0,255,140,0.30) !important;
-    }
-
-    textarea{
-      width:100%;
-      min-height:140px;
-      border-radius:14px;
-      padding:12px;
-      background:rgba(7,18,11,0.95);
-      color:#dfffea;
-      border:1px solid rgba(0,255,140,0.25);
-      outline:none;
-      box-shadow:inset 0 0 10px rgba(0,255,140,0.06);
-      font-size:16px;
-    }
-
-    textarea:focus{
-      border-color:rgba(93,255,176,0.75);
-      box-shadow:
-        0 0 0 2px rgba(0,255,140,0.10),
-        inset 0 0 10px rgba(0,255,140,0.08);
-    }
-
-    #vipProgressBar{
-      width:100%;
-      background:rgba(255,255,255,0.18);
-      border-radius:999px;
-      overflow:hidden;
-      height:18px;
-      margin-top:12px;
-    }
-
-    #vipProgressFill{
-      width:0%;
-      height:18px;
-      background:linear-gradient(90deg,#00ff8c,#63ffbf);
-    }
-
-    ul{
-      padding-left:18px;
-    }
-
-    .spacer{height:6px}
-    .vip-popup {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  z-index: 20000;
+.card{
+border:1px solid #0f6;
+padding:20px;
+margin:20px;
+border-radius:10px;
 }
 
-.vip-popup.hidden {
-  display: none;
-}
-
-.vip-popup-card {
-  width: 100%;
-  max-width: 360px;
-  background: rgba(5, 18, 11, 0.96);
-  border: 1px solid rgba(0,255,140,0.45);
-  border-radius: 24px;
-  padding: 24px 20px;
-  text-align: center;
-  box-shadow:
-    0 0 20px rgba(0,255,140,0.25),
-    0 0 50px rgba(0,255,140,0.18);
-}
-
-.vip-popup-title {
-  font-size: 28px;
-  font-weight: 900;
-  color: #b8ffdb;
-  text-shadow:
-    0 0 8px #00ff8c,
-    0 0 18px rgba(0,255,140,0.7);
-}
-
-.vip-popup-text {
-  margin-top: 10px;
-  font-size: 18px;
-  color: #eafff3;
-}
-    .payout-row {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(0,255,140,0.16);
-  border-radius: 18px;
-  padding: 14px;
-  margin-bottom: 12px;
-}
-
-.payout-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.payout-wallet {
-  font-weight: 800;
-  color: #cffff0;
-  word-break: break-all;
-}
-
-.payout-status {
-  font-size: 13px;
-  font-weight: 800;
-  color: #9dffcb;
-}
-
-.payout-line {
-  font-size: 14px;
-  color: #eafff3;
-  margin: 4px 0;
-}
-
-.payout-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-
-.payout-btn {
-  width: auto;
-  min-width: 96px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  font-size: 14px;
-  font-weight: 800;
-  background: rgba(0,255,140,0.10);
-  border: 1px solid rgba(0,255,140,0.30);
-  color: #b8ffdb;
-}
-
-.payout-empty {
-  color: #9fd7b7;
-  font-size: 14px;
-  opacity: 0.9;
-}
-  </style>
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <h1>🐊 SwampDoge</h1>
-    <div class="sub">Wallet Test (Reset)</div>
 
-    <div class="btnRow">
-      <button id="connectBtn" class="btn">Connect Phantom</button>
-      <button id="disconnectBtn" class="btn">Disconnect</button>
-      <button id="buySwampBtn" class="btn green">BUY SWAMP</button>
-    </div>
+<h1>🐊 SwampDoge</h1>
 
-    <div class="card hero-card">
-      <div class="title">📊 SWAMP DASHBOARD</div>
-      <div class="stat">Price: <span id="price">—</span></div>
-      <div class="stat">Liquidity: <span id="liquidity">—</span></div>
-      <div class="stat">Market Cap: <span id="marketcap">—</span></div>
-      <div class="stat">24h Volume: <span id="volume">—</span></div>
-      <div class="stat">Updated: <span id="updated">—</span></div>
-    </div>
+<button id="connectBtn">Connect Wallet</button>
 
-    <div class="card">
-      <div class="title">🐊 SWAMP REWARDS</div>
-      <div class="stat">Points: <span id="swampPoints">0</span></div>
-      <div class="stat">Holder Tier: <span id="swampTier">—</span></div>
+<p id="walletText">Not connected</p>
+<p id="balanceText">SWAMP: 0</p>
 
-      <button id="claimDailyBtn" class="mainBtn ghost" style="margin-top:12px;">Claim Daily Bonus</button>
-
-      <div class="small" style="margin-top:14px;">
-        Last claim: <span id="swampLastClaim">—</span>
-      </div>
-
-      <div id="rewardsBox" class="innerCard">
-        <h3 class="title glow" style="margin:0 0 12px;">🐊 Swamp Rewards</h3>
-        <div class="stat">Points: <span id="pointsValue">0</span></div>
-        <div class="stat">Correct Picks: <span id="correctValue">0</span></div>
-        <button id="claimBtn" class="btn" style="margin-top:16px;">Claim Rewards</button>
-      </div>
-    </div>
-
-    <button id="adminBtn" class="btn hidden" style="margin-top:8px;">Admin</button>
-
-    <div id="adminPanel" class="card hidden">
-      <div class="title">LEVEL UP ADMIN</div>
-      <textarea
-        id="vipInput"
-        rows="6"
-        placeholder="Enter 3 VIP picks, one per line&#10;Example:&#10;PJ Washington over 15.5 pts&#10;Lakers ML&#10;Celtics -4.5"
-      ></textarea>
-      <div id="adminMsg" class="small" style="margin-top:10px;"></div>
-      <div class="btnRow" style="margin-top:14px;">
-  <button id="publishBtn" class="btn">Publish Picks</button>
-  <button id="resetBtn" class="btn">Reset VIP</button>
-  <button id="testWinBtn" class="btn">Test Win + Queue</button>
-</div>
-      </div>
-      <div class="small">(Admin-only tools)</div>
-</div>
-  <div class="card" style="margin-top:16px;">
-  <h3>Token Payout</h3>
-
-  <input id="payoutWallet" type="text" placeholder="Winner wallet address" />
-  <input id="payoutAmount" type="number" placeholder="Amount of SWAMP" step="0.01" />
-
-  <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
-    <button id="testPayoutBtn">Test 1 SWAMP</button>
-    <button id="sendPayoutBtn">Send Payout</button>
-  </div>
-
-  <p id="payoutStatus" style="margin-top:10px;">Payout idle.</p>
-</div>
-    <div id="payoutQueueCard" class="card hidden">
-  <div class="title">💸 PAYOUT QUEUE</div>
-  <div class="small" style="margin-bottom:12px;">Admin payout tracker (manual for now)</div>
-
-  <div id="payoutQueueList"></div>
-
-  <div class="btnRow" style="margin-top:14px;">
-    <button id="seedPayoutsBtn" class="btn">Load Demo Payouts</button>
-    <button id="clearPayoutsBtn" class="btn ghost">Clear Queue</button>
-  </div>
+<div class="card">
+<h2>AI Picks</h2>
+<p>AI picks loading...</p>
 </div>
 
-    <div class="card">
-      <div class="stat">Status: <span id="status">...</span></div>
-      <div class="stat">Wallet: <span id="wallet">...</span></div>
-      <div class="stat">Swamp Balance: <span id="swampBal">...</span></div>
-      <div class="stat">VIP: <span id="vipStatus">Locked</span></div>
-      <div class="stat">Debug: <span id="debug">READY</span></div>
-      <div class="stat">🐊 SWAMP HOLDERS: <span id="holderCount">Loading...</span></div>
-    </div>
+<div class="card">
+<h2>Swamp Rewards</h2>
+<button id="claimDailyBtn">Claim Daily</button>
+</div>
 
-    <div class="card">
-      <div class="title">📊 SWAMP AI RECORD</div>
-      <div class="stat">Today: <span id="recToday">0-0</span></div>
-      <div class="stat">Units: <span id="recUnits">0.0</span></div>
-      <div class="small">Updated: <span id="recUpdated">—</span></div>
-    </div>
+<div class="card">
+<h2>Admin Panel</h2>
 
-    <div class="card">
-      <div class="title">🤖 AI Picks</div>
-      <div id="aiPicksLive" style="margin-top:10px;">
-        <button id="makePredictionBtn" class="btn">Make Prediction</button>
+<input id="payoutWallet" placeholder="wallet address">
 
-        <div style="font-weight:800;margin:18px 0 8px;">
-          🔥 TODAY'S PICKS
-        </div>
+<br><br>
 
-        <div id="leagueButtons" class="leagueRow"></div>
+<input id="payoutAmount" placeholder="amount">
 
-        <div
-          id="picksOutput"
-          class="hidden"
-          style="margin-top:12px; text-align:left; padding:12px; border-radius:14px; background:rgba(255,255,255,0.06);"
-        ></div>
+<br><br>
 
-        <div id="noGamesMsg" class="small hidden" style="margin-top:10px;">
-          No games today — check back later ✅
-        </div>
+<button id="testPayoutBtn">Test 1 SWAMP</button>
 
-        <div id="leagueNote" class="small" style="margin-top:8px;"></div>
-      </div>
+<button id="sendPayoutBtn">Send Payout</button>
 
-      <div id="aiUpdated" class="small" style="margin-top:12px;"></div>
-    </div>
+<p id="payoutStatus">Payout idle</p>
 
-    <div class="card">
-      <div class="title">🔥 CURRENT STREAK</div>
-      <div class="stat">Wins: <span id="streakWins">0</span></div>
+</div>
 
-      <div class="innerCard">
-        <h3 class="title glow" style="margin:0 0 12px;">🐊 Your Prediction</h3>
-        <div id="userPrediction" class="stat">No prediction yet</div>
-        <div id="predictionStatus" class="stat">Result: Pending</div>
-        <div id="predictionReward" class="stat">Reward: 0 SWAMP</div>
-      </div>
-    </div>
+<script>
 
-    <div class="card">
-      <div class="title">🏆 TOP PREDICTORS</div>
-      <div id="leaderboard" class="stat">
-        1. —  2. —  3. —
-      </div>
-    </div>
+let connection =
+new solanaWeb3.Connection(
+"https://api.mainnet-beta.solana.com"
+);
 
-    <div id="vipCard" class="card">
-      <div id="vipTitle" class="title">🔒 VIP Picks</div>
+let provider = null;
 
-      <div id="vipLockNote" class="stat">
-        Hold <b>$SWAMP</b> to unlock VIP picks.
-      </div>
+let walletAddress = "";
 
-      <div id="vipProgressWrap" style="margin-top:16px;">
-        <div style="font-weight:700; margin-bottom:10px;">VIP Progress</div>
+const SWAMP_MINT =
+"GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
 
-        <div id="vipProgressBar">
-          <div id="vipProgressFill"></div>
-        </div>
+const connectBtn =
+document.getElementById("connectBtn");
 
-        <div id="vipStatusText" class="small" style="margin-top:10px;"></div>
-      </div>
+const walletText =
+document.getElementById("walletText");
 
-      <div id="vipPicksBox" class="hidden" style="margin-top:16px;">
-        <div style="font-weight:700;">Today’s VIP Picks</div>
-        <ul style="margin-top:10px; line-height:1.7;">
-          <li id="vip1">VIP Pick #1: (loading.)</li>
-          <li id="vip2">VIP Pick #2: (loading.)</li>
-          <li id="vip3">VIP Pick #3: (loading.)</li>
-        </ul>
-        <div id="vipUpdated" class="small" style="margin-top:12px;"></div>
-      </div>
-    </div>
-  </div>
+const balanceText =
+document.getElementById("balanceText");
 
-  <script>
-    const ADMIN_PIN = "7777";
-    const ADMIN_WALLET = "AumagmtFTNer1QYcCmpG3AyqbLKMD9ByDg4okB3wtiBy";
-    const VIP_MIN = 10000000;
-    const BUY_URL = "https://pump.fun/coin/GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
+connectBtn.onclick = async () => {
 
-    window.currentWallet = window.currentWallet || "";
-
-    function debug(msg) {
-      const el = document.getElementById("debug");
-      if (el) el.textContent = msg;
-    }
-
-    function setWallet(addr) {
-      const walletEl = document.getElementById("wallet");
-      const statusEl = document.getElementById("status");
-
-      if (walletEl) walletEl.textContent = addr || "...";
-      if (statusEl) statusEl.textContent = addr ? "Connected" : "Disconnected";
-    }
-
-    function shortWallet(addr) {
-      if (!addr || addr.length < 10) return addr || "";
-      return addr.slice(0, 4) + "..." + addr.slice(-4);
-    }
-
-    function getProvider() {
-  if (window.phantom?.solana?.isPhantom) return window.phantom.solana;
-  if (window.solana?.isPhantom) return window.solana;
-  return null;
-}
-function openInPhantomIfNeeded() {
-  if (getProvider()) return false;
-
-  const currentUrl = window.location.href;
-  const phantomBrowseUrl =
-    "https://phantom.app/ul/browse/" + encodeURIComponent(currentUrl);
-
-  window.location.href = phantomBrowseUrl;
-  return true;
-}
-    function setVip(isOn) {
-      const vipStatus = document.getElementById("vipStatus");
-      const vipCard = document.getElementById("vipCard");
-
-      if (vipStatus) vipStatus.textContent = isOn ? "UNLOCKED ✅" : "Locked";
-      if (vipCard) vipCard.classList.toggle("vip-on", !!isOn);
-    }
-
-    function updateVipProgress(bal) {
-      const fill = document.getElementById("vipProgressFill");
-      const text = document.getElementById("vipStatusText");
-      const pct = Math.max(0, Math.min(100, (bal / VIP_MIN) * 100));
-
-      if (fill) fill.style.width = pct + "%";
-
-      if (text) {
-        if (bal >= VIP_MIN) {
-          text.textContent = "VIP unlocked ✅";
-        } else {
-          text.textContent = bal.toLocaleString() + " / " + VIP_MIN.toLocaleString() + " SWAMP";
-        }
-      }
-    }
-
-    async function getSwampBalance(walletAddress) {
-      if (!walletAddress) return 0;
-      try {
-        const r = await fetch("/api/swamp-balance?wallet=" + encodeURIComponent(walletAddress));
-        const j = await r.json();
-        return Number(j?.balance || 0);
-      } catch (e) {
-        console.log(e);
-        return 0;
-      }
-    }
-function showVipUnlockPopup() {
-  const popup = document.getElementById("vipUnlockPopup");
-  if (popup) popup.classList.remove("hidden");
+if(!window.solana){
+alert("Install Phantom");
+return;
 }
 
-function hideVipUnlockPopup() {
-  const popup = document.getElementById("vipUnlockPopup");
-  if (popup) popup.classList.add("hidden");
-}
+provider = window.solana;
 
-document.addEventListener("click", (e) => {
-  if (e.target && e.target.id === "closeVipPopup") {
-    hideVipUnlockPopup();
-  }
-});
-    
-    async function refreshVipForWallet(walletAddress) {
-      try {
-        const bal = await getSwampBalance(walletAddress);
-        const swampBalEl = document.getElementById("swampBal");
-        if (swampBalEl) swampBalEl.textContent = bal.toLocaleString(undefined, { maximumFractionDigits: 3 });
+const resp =
+await provider.connect();
 
-        let tier = "—";
-        if (bal >=50000000) tier = "👑 KING GATOR";
-        else if (bal >= 10000000) tier = "🐊 GATOR";
-        else if (bal >= 1000000) tier = "🐸 FROG";
+walletAddress =
+resp.publicKey.toString();
 
-        const tierEl = document.getElementById("swampTier");
-        if (tierEl) tierEl.textContent = tier;
+window.currentWallet =
+walletAddress;
 
-     const wasVip = localStorage.getItem("wasVipUnlocked") === "yes";
-const isVip = bal >= VIP_MIN;
+walletText.textContent =
+walletAddress;
 
-setVip(isVip);
-updateVipProgress(bal);
+loadBalance();
 
-if (isVip) {
-  showVipUnlockPopup();
-  localStorage.setItem("wasVipUnlocked", "yes");
-}
-
-if (!isVip) {
-  localStorage.setItem("wasVipUnlocked", "no");
-}
-        debug("SWAMP READY ✅");
-      } catch (e) {
-        console.log(e);
-        debug("VIP ERROR ❌");
-      }
-    }
-document.getElementById("connectBtn").addEventListener("click", async () => {
-  try {
-    debug("CONNECT TAP...");
-
-    const provider = getProvider();
-
-    if (!provider) {
-      debug("OPENING PHANTOM...");
-      openInPhantomIfNeeded();
-      return;
-    }
-        const resp = await provider.connect();
-        const walletAddress = resp.publicKey.toString();
-        window.currentWallet = walletAddress;
-
-        setWallet(walletAddress);
-        debug("CONNECTED ✅");
-
-        const adminBtn = document.getElementById("adminBtn");
-        if (adminBtn) {
-          adminBtn.classList.toggle("hidden", walletAddress !== ADMIN_WALLET);
-        }
-
-        await refreshVipForWallet(walletAddress);
-      } catch (e) {
-        console.log(e);
-        debug("CONNECT ERROR ❌ " + (e?.message || e));
-      }
-    });
-
-    document.getElementById("disconnectBtn").onclick = async () => {
-      try {
-        if (window.solana) await window.solana.disconnect();
-      } catch (e) {
-        console.log(e);
-      }
-
-      window.currentWallet = "";
-      document.getElementById("wallet").textContent = "...";
-      document.getElementById("status").textContent = "Disconnected";
-      document.getElementById("swampBal").textContent = "...";
-      setVip(false);
-      updateVipProgress(0);
-      debug("DISCONNECTED");
-    };
-
-    document.getElementById("buySwampBtn").onclick = () => {
-      window.open(BUY_URL, "_blank");
-    };
-
-    const adminBtn = document.getElementById("adminBtn");
-    const adminPanel = document.getElementById("adminPanel");
-
-    if (adminBtn) {
-      adminBtn.onclick = () => {
-        const isAdminWallet = window.currentWallet === ADMIN_WALLET;
-
-        if (!isAdminWallet) {
-          debug("ADMIN BLOCKED ❌ Not your wallet");
-          return;
-        }
-
-        const pin = prompt("Enter Admin PIN:");
-        if (pin !== ADMIN_PIN) {
-          debug("WRONG PIN ❌");
-          return;
-        }
-
-        adminPanel.classList.toggle("hidden");
-        showAdminSections();
-        debug("ADMIN UNLOCKED ✅");
-      };
-    }
-
-    async function loadVipPicks() {
-      try {
-        const r = await fetch("/api/vip-picks");
-        const j = await r.json();
-
-        const picks = Array.isArray(j?.picks) ? j.picks : [];
-        const updated = j?.updated || "—";
-
-        document.getElementById("vip1").textContent = "VIP Pick #1: " + (picks[0] || "(loading.)");
-        document.getElementById("vip2").textContent = "VIP Pick #2: " + (picks[1] || "(loading.)");
-        document.getElementById("vip3").textContent = "VIP Pick #3: " + (picks[2] || "(loading.)");
-        document.getElementById("vipUpdated").textContent = "Updated: " + updated;
-      } catch (e) {
-        console.log(e);
-      }
-    }
-
-    const publishBtn = document.getElementById("publishBtn");
-    if (publishBtn) {
-      publishBtn.onclick = async () => {
-        try {
-          const vipInput = document.getElementById("vipInput");
-          const raw = (vipInput?.value || "").trim();
-
-          const picks = raw
-            .split("\n")
-            .map(s => s.trim())
-            .filter(Boolean)
-            .slice(0, 3);
-
-          if (!picks.length) {
-            alert("Enter 1–3 VIP picks (one per line) first.");
-            return;
-          }
-
-          const resp = await fetch("/api/publishVip", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ picks })
-          });
-
-          if (!resp.ok) {
-            const txt = await resp.text();
-            throw new Error("Publish failed: " + txt);
-          }
-
-          await loadVipPicks();
-          alert("VIP picks published ✅");
-        } catch (e) {
-          console.log(e);
-          alert("Publish error: " + (e?.message || e));
-        }
-      };
-    }
-
-    const resetBtn = document.getElementById("resetBtn");
-    if (resetBtn) {
-      resetBtn.onclick = () => {
-        const vipInput = document.getElementById("vipInput");
-        if (vipInput) vipInput.value = "";
-        debug("VIP INPUT RESET ✅");
-      };
-    }
-
-    async function loadHolderCount() {
-      try {
-        const r = await fetch("/api/holders");
-        const j = await r.json();
-        const count = Number(j?.holders || 0);
-        document.getElementById("holderCount").textContent = count.toLocaleString();
-      } catch (e) {
-        document.getElementById("holderCount").textContent = "0";
-      }
-    }
-
-    async function loadRecord() {
-      try {
-        const r = await fetch("/api/record");
-        const j = await r.json();
-        document.getElementById("recToday").textContent = j?.today || "0-0";
-        document.getElementById("recUnits").textContent = j?.units || "0.0";
-        document.getElementById("recUpdated").textContent = j?.updated || "—";
-      } catch (e) {
-        document.getElementById("recUpdated").textContent = "—";
-      }
-    }
-function showPicks(title, picks) {
-  const out = document.getElementById("picksOutput");
-  if (!out) return;
-
-  const safePicks = Array.isArray(picks) ? picks : [];
-
-  out.style.display = "block";
-  out.classList.remove("hidden");
-  out.innerHTML =
-    "<div style='font-weight:800;margin-bottom:8px'>" +
-    title +
-    "</div>" +
-    safePicks.map((p) => "<div>• " + p + "</div>").join("");
-}
-
-async function loadAiPicks() {
-  try {
-    const leagueButtons = document.getElementById("leagueButtons");
-    const noGamesMsg = document.getElementById("noGamesMsg");
-    const leagueNote = document.getElementById("leagueNote");
-    const aiUpdated = document.getElementById("aiUpdated");
-    const picksOutput = document.getElementById("picksOutput");
-
-    if (!leagueButtons) return;
-
-    const res = await fetch("/api/ai-picks");
-    const data = await res.json();
-    const picks = Array.isArray(data?.picks)
-  ? data.picks.filter((p) => !isPlaceholderPick(p))
-  : [];
-    const updatedAt = data?.updatedAt || "—";
-function isPlaceholderPick(text) {
-  const s = String(text || "").toLowerCase().trim();
-  return (
-    s.includes("no nba picks posted yet") ||
-    s.includes("no nhl picks posted yet") ||
-    s.includes("no ncaab picks posted yet") ||
-    s.includes("no mlb picks posted yet") ||
-    s.includes("no picks posted yet") ||
-    s.includes("nfl is currently in offseason") ||
-    s.includes("no games today")
-  );
-}
-    leagueButtons.innerHTML = "";
-
-    if (picksOutput) {
-      picksOutput.innerHTML = "";
-      picksOutput.classList.add("hidden");
-      picksOutput.style.display = "none";
-    }
-
-    if (!picks.length) {
-      if (noGamesMsg) {
-        noGamesMsg.classList.remove("hidden");
-        noGamesMsg.style.display = "block";
-      }
-      if (leagueNote) leagueNote.textContent = "No AI picks published yet.";
-      if (aiUpdated) aiUpdated.textContent = "Updated: " + updatedAt;
-      return;
-    }
-
-    if (noGamesMsg) {
-      noGamesMsg.classList.add("hidden");
-      noGamesMsg.style.display = "none";
-    }
-const leagues = [
-  { key: "NBA", title: "NBA Picks" },
-  { key: "NHL", title: "NHL Picks" },
-  { key: "NCAAB", title: "NCAAB Picks" },
-  { key: "MLB", title: "MLB Picks" },
-  { key: "NFL", title: "NFL Picks" }
-];
-
-for (const league of leagues) {
-  const r = await fetch(`/api/ai-picks?league=${encodeURIComponent(league.key)}`);
-  const j = await r.json();
-  const leaguePicks = Array.isArray(j?.picks)
-  ? j.picks.filter((p) => !isPlaceholderPick(p))
-  : [];
-
-  if (!leaguePicks.length) continue;
-
-  const btn = document.createElement("button");
-  btn.className = "leagueBtn";
-  btn.textContent = `${league.key} (${leaguePicks.length})`;
-  btn.onclick = () => showPicks(`🔥 ${league.title}`, leaguePicks);
-  leagueButtons.appendChild(btn);
-}
-
-if (leagueButtons.children.length > 0) {
-  const firstBtn = leagueButtons.querySelector("button");
-  if (firstBtn) firstBtn.click();
-
-  if (leagueNote) leagueNote.textContent = "Live league AI picks ✅";
-  if (aiUpdated) aiUpdated.textContent = "Updated: " + updatedAt;
-
-  if (noGamesMsg) {
-    noGamesMsg.classList.add("hidden");
-    noGamesMsg.style.display = "none";
-  }
-} else {
-  if (noGamesMsg) {
-    noGamesMsg.classList.remove("hidden");
-    noGamesMsg.style.display = "block";
-  }
-
-  if (leagueNote) leagueNote.textContent = "No AI picks available right now.";
-  if (aiUpdated) aiUpdated.textContent = "Updated: " + updatedAt;
-}
-      } catch (e) {
-    console.log(e);
-
-    const noGamesMsg = document.getElementById("noGamesMsg");
-    const leagueNote = document.getElementById("leagueNote");
-    const aiUpdated = document.getElementById("aiUpdated");
-
-    if (noGamesMsg) {
-      noGamesMsg.classList.remove("hidden");
-      noGamesMsg.style.display = "block";
-    }
-    if (leagueNote) leagueNote.textContent = "AI picks unavailable right now.";
-    if (aiUpdated) aiUpdated.textContent = "Updated: —";
-  }
-}
-
-    async function loadSwampDashboard() {
-      document.getElementById("price").textContent = "Pump.fun only";
-      document.getElementById("liquidity").textContent = "Low / not indexed";
-      document.getElementById("marketcap").textContent = "Coming soon";
-      document.getElementById("volume").textContent = "Coming soon";
-      document.getElementById("updated").textContent = new Date().toLocaleTimeString();
-    }
-
-    function claimRewards() {
-      const claimBtn = document.getElementById("claimDailyBtn");
-      if (claimBtn) claimBtn.click();
-    }
-
-    let swampPoints = Number(localStorage.getItem("swampPoints") || 0);
-    let swampLastClaim = Number(localStorage.getItem("swampLastClaim") || 0);
-    let correctPicks = Number(localStorage.getItem("correctPicks") || 0);
-    let lastPrediction = localStorage.getItem("lastPrediction") || "No prediction yet";
-    let streak = Number(localStorage.getItem("swampStreak") || 0);
-
-    function updateRewardsUI() {
-      const pointsEl = document.getElementById("swampPoints");
-      const pointsValueEl = document.getElementById("pointsValue");
-      const correctEl = document.getElementById("correctValue");
-      const lastClaimEl = document.getElementById("swampLastClaim");
-      const tierEl = document.getElementById("swampTier");
-
-      if (pointsEl) pointsEl.textContent = swampPoints;
-      if (pointsValueEl) pointsValueEl.textContent = swampPoints;
-      if (correctEl) correctEl.textContent = correctPicks;
-
-      if (lastClaimEl) {
-        if (swampLastClaim) {
-          const date = new Date(swampLastClaim);
-          lastClaimEl.textContent = date.toLocaleString();
-        } else {
-          lastClaimEl.textContent = "—";
-        }
-      }
-
-      const balText = document.getElementById("swampBal")?.textContent || "0";
-      const bal = Number(String(balText).replace(/,/g, "")) || 0;
-
-      let tier = "—";
-      if (bal >= 1000000) tier = "👑 KING GATOR";
-      else if (bal >= 100000) tier = "🐊 GATOR";
-      else if (bal >= 10000) tier = "🐸 FROG";
-
-      if (tierEl) tierEl.textContent = tier;
-    }
-
-    function updatePredictionUI() {
-      const userPredictionEl = document.getElementById("userPrediction");
-      const predictionStatusEl = document.getElementById("predictionStatus");
-      const predictionRewardEl = document.getElementById("predictionReward");
-      const correctEl = document.getElementById("correctValue");
-
-      if (userPredictionEl) userPredictionEl.textContent = lastPrediction;
-      if (predictionStatusEl) predictionStatusEl.textContent = "Result: Pending";
-      if (predictionRewardEl) predictionRewardEl.textContent = "Reward: 250 SWAMP";
-      if (correctEl) correctEl.textContent = correctPicks;
-    }
-
-    function updateStreakUI() {
-      const el = document.getElementById("streakWins");
-      if (el) el.textContent = streak;
-    }
-
-    function savePredictionResult(predictionText) {
-      lastPrediction = predictionText;
-      localStorage.setItem("lastPrediction", lastPrediction);
-      updatePredictionUI();
-    }
-    function queuePayout({ wallet, pick, amount, reason }) {
-  const queue = getPayoutQueue();
-
-  const newItem = {
-    id: "p_" + Date.now(),
-    wallet: wallet || window.currentWallet || "",
-    pick: pick || lastPrediction || "Prediction reward",
-    amount: Number(amount || 0),
-    reason: reason || "Correct prediction",
-    status: "queued",
-    tx: ""
-  };
-
-  queue.unshift(newItem);
-  savePayoutQueue(queue);
-  renderPayoutQueue();
-}
-
-    function rewardCorrectPrediction() {
-  correctPicks += 1;
-  swampPoints += 250;
-  streak += 1;
-
-  localStorage.setItem("correctPicks", correctPicks);
-  localStorage.setItem("swampPoints", swampPoints);
-  localStorage.setItem("swampStreak", streak);
-
-  queuePayout({
-    wallet: window.currentWallet || "",
-    pick: lastPrediction || "Prediction reward",
-    amount: 250,
-    reason: "Correct prediction"
-  });
-
-  updateRewardsUI();
-  updatePredictionUI();
-  updateStreakUI();
-
-  debug("PAYOUT QUEUED ✅");
-}
-
-    const claimDailyBtn = document.getElementById("claimDailyBtn");
-    if (claimDailyBtn) {
-      claimDailyBtn.onclick = () => {
-        const now = Date.now();
-
-        if (swampLastClaim && now - swampLastClaim < 86400000) {
-          alert("You already claimed today 🐊");
-          return;
-        }
-
-        swampPoints += 100;
-        swampLastClaim = now;
-
-        localStorage.setItem("swampPoints", swampPoints);
-        localStorage.setItem("swampLastClaim", swampLastClaim);
-
-        updateRewardsUI();
-        alert("+100 Swamp Points!");
-      };
-    }
-
-    const CLAIM_COST = 500;
-const CLAIM_REASON = "Rewards Claim"
-
-const claimBtn = document.getElementById("claimBtn");
-if (claimBtn) {
-  claimBtn.onclick = () => {
-    const connectedWallet = window.currentWallet || "";
-
-    if (!connectedWallet) {
-      alert("Connect Phantom first.");
-      return;
-    }
-
-    if (swampPoints < CLAIM_COST) {
-      alert("You need at least " + CLAIM_COST + " points to claim rewards.");
-      return;
-    }
-
-    const queue = getPayoutQueue();
-    const hasOpenClaim = queue.some(item =>
-      item.wallet === connectedWallet &&
-      item.reason === CLAIM_REASON &&
-      ["queued", "approved", "sent", "confirmed"].includes(item.status)
-    );
-
-    if (hasOpenClaim) {
-      alert("You already have a reward claim in progress.");
-      return;
-    }
-
-    swampPoints -= CLAIM_COST;
-    localStorage.setItem("swampPoints", swampPoints);
-
-    queuePayout({
-      wallet: connectedWallet,
-      pick: "Rewards Claim",
-      amount: CLAIM_COST,
-      reason: CLAIM_REASON
-    });
-
-    updateRewardsUI();
-    debug("REWARD CLAIM QUEUED ✅");
-    alert("Reward claim submitted ✅");
-  };
-}
-
-    const makePredictionBtn = document.getElementById("makePredictionBtn");
-    if (makePredictionBtn) {
-      makePredictionBtn.onclick = () => {
-        const connectedWallet = window.currentWallet || "";
-
-        if (!connectedWallet) {
-          alert("Connect Phantom first.");
-          return;
-        }
-
-        const pick = prompt("Enter your prediction (example: Lakers ML)");
-        if (!pick || !pick.trim()) return;
-
-        savePredictionResult(pick.trim());
-        alert("Prediction saved ✅");
-      };
-    }
-
-    window.markPredictionWin = function () {
-      rewardCorrectPrediction();
-      alert("+250 SWAMP points ✅");
-    };
-
-    window.markPredictionLoss = function () {
-      streak = 0;
-      localStorage.setItem("swampStreak", streak);
-      updateStreakUI();
-      alert("Prediction marked as loss.");
-    };
-
-    loadVipPicks();
-    setInterval(loadVipPicks, 5 * 60 * 1000);
-
-    loadAiPicks();
-    setInterval(loadAiPicks, 5 * 60 * 1000);
-
-    loadHolderCount();
-    setInterval(loadHolderCount, 5 * 60 * 1000);
-
-    loadRecord();
-    setInterval(loadRecord, 60 * 1000);
-
-    loadSwampDashboard();
-    setInterval(loadSwampDashboard, 30000);
-
-    updateRewardsUI();
-    updatePredictionUI();
-    updateStreakUI();
-    document.addEventListener("DOMContentLoaded", () => {
-  [
-    "connectBtn",
-    "disconnectBtn",
-    "buySwampBtn",
-    "makePredictionBtn",
-    "claimDailyBtn",
-    "adminBtn",
-    "publishBtn",
-    "resetBtn"
-  ].forEach((id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    el.style.pointerEvents = "auto";
-    el.style.zIndex = "9999";
-    el.style.position = "relative";
-
-    el.addEventListener("touchstart", () => {
-      debug("TAP " + id + " ✅");
-    }, { passive: true });
-  });
-});
-    const PAYOUTS_KEY = "swampPayoutQueue";
-
-let payoutQueueCache = [];
-
-function getPayoutQueue() {
-  return payoutQueueCache;
-}
-
-function savePayoutQueue(queue) {
-  payoutQueueCache = queue;
-}
-
-async function loadPayoutQueueFromServer() {
-  try {
-    payoutQueueCache = await fetchClaimsFromServer();
-    renderPayoutQueue();
-  } catch (e) {
-    console.error(e);
-    debug("CLAIMS LOAD ERROR ❌");
-  }
-}
-
-function shortAddr(addr) {
-  if (!addr || addr.length < 10) return addr || "—";
-  return addr.slice(0, 4) + "..." + addr.slice(-4);
-}
-
-function renderPayoutQueue() {
-  const wrap = document.getElementById("payoutQueueList");
-  if (!wrap) return;
-
-  const queue = getPayoutQueue();
-
-  if (!queue.length) {
-    wrap.innerHTML = `<div class="payout-empty">No payouts queued yet.</div>`;
-    return;
-  }
-
-  wrap.innerHTML = queue.map((item) => `
-    <div class="payout-row">
-      <div class="payout-top">
-        <div class="payout-wallet">${shortAddr(item.wallet)}</div>
-        <div class="payout-status">${item.status.toUpperCase()}</div>
-      </div>
-
-      <div class="payout-line"><b>Pick:</b> ${item.pick}</div>
-      <div class="payout-line"><b>Amount:</b> ${item.amount} SWAMP</div>
-      <div class="payout-line"><b>Reason:</b> ${item.reason}</div>
-      <div class="payout-line"><b>TX:</b> ${item.tx || "—"}</div>
-
-      <div class="payout-actions">
-        ${item.status === "queued" ? `
-          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','approved')">Approve</button>
-          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','rejected')">Reject</button>
-          <button class="payout-btn" onclick="markPayoutSent('${item.id}')">Mark Sent</button>
-          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','confirmed')">Confirm</button>
-        ` : ""}
-
-        ${item.status === "approved" ? `
-          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','rejected')">Reject</button>
-          <button class="payout-btn" onclick="markPayoutSent('${item.id}')">Mark Sent</button>
-          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','confirmed')">Confirm</button>
-        ` : ""}
-
-        ${item.status === "sent" ? `
-          <button class="payout-btn" onclick="updatePayoutStatus('${item.id}','confirmed')">Confirm</button>
-        ` : ""}
-      </div>
-    </div>
-  `).join("");
-}
-
-function updatePayoutStatus(id, status) {
-  const queue = getPayoutQueue().map(item =>
-    item.id === id ? { ...item, status } : item
-  );
-  savePayoutQueue(queue);
-  renderPayoutQueue();
-  debug("PAYOUT " + status.toUpperCase() + " ✅");
-}
-
-function markPayoutSent(id) {
-  const tx = prompt("Paste TX signature (or type SENT if manual):", "");
-  if (tx === null) return;
-
-  const queue = getPayoutQueue().map(item =>
-    item.id === id
-      ? { ...item, status: "sent", tx: tx.trim() || "SENT" }
-      : item
-  );
-
-  savePayoutQueue(queue);
-  renderPayoutQueue();
-  debug("PAYOUT SENT ✅");
-}
-
-function seedDemoPayouts() {
-  const demo = [
-    {
-      id: "p1",
-      wallet: window.currentWallet || "DemoWallet111111111111111111111111111111",
-      pick: "Lakers ML",
-      amount: 250,
-      reason: "Correct prediction",
-      status: "queued",
-      tx: ""
-    },
-    {
-      id: "p2",
-      wallet: "BayouWallet22222222222222222222222222222",
-      pick: "Celtics -4.5",
-      amount: 500,
-      reason: "2-win streak bonus",
-      status: "queued",
-      tx: ""
-    }
-  ];
-
-  savePayoutQueue(demo);
-  renderPayoutQueue();
-  debug("DEMO PAYOUTS LOADED ✅");
-}
-
-const seedPayoutsBtn = document.getElementById("seedPayoutsBtn");
-if (seedPayoutsBtn) {
-  seedPayoutsBtn.onclick = seedDemoPayouts;
-}
-
-const clearPayoutsBtn = document.getElementById("clearPayoutsBtn");
-if (clearPayoutsBtn) {
-  clearPayoutsBtn.onclick = () => {
-    savePayoutQueue([]);
-    renderPayoutQueue();
-    debug("PAYOUT QUEUE CLEARED ✅");
-  };
-}
-    const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
-const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
-const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
-    async function fetchClaimsFromServer() {
-  const res = await fetch("/api/claims");
-  const data = await res.json();
-  return data.claims || [];
-}
-
-async function createClaimOnServer(payload) {
-  const res = await fetch("/api/claims", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await res.json();
-  if (!data.ok) {
-    throw new Error(data.error || "Failed to create claim");
-  }
-
-  return data.claim;
-}
-
-async function updateClaimOnServer(payload) {
-  const res = await fetch("/api/claims", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await res.json();
-  if (!data.ok) {
-    throw new Error(data.error || "Failed to update claim");
-  }
-
-  return data.claims || [];
-}
-
-function showAdminSections() {
-  const payoutCard = document.getElementById("payoutQueueCard");
-  if (payoutCard) payoutCard.classList.remove("hidden");
-  renderPayoutQueue();
-}
-    window.testWinAndQueue = function () {
-  rewardCorrectPrediction();
 };
-    const testWinBtn = document.getElementById("testWinBtn");
-if (testWinBtn) {
-  testWinBtn.onclick = () => {
-    rewardCorrectPrediction();
-    alert("Test win added ✅ Payout queued.");
-  };
-}
-async function sendTokenPayout(toWallet, amount) {
-  try {
-    if (!window.solana || !window.solana.isPhantom) {
-      alert("Phantom wallet not found");
-      return;
-    }
 
-    const provider = window.solana;
+async function loadBalance(){
 
-    if (!provider.publicKey) {
-      await provider.connect();
-    }
+try{
 
-    const adminPubkey = provider.publicKey;
-    const mintPubkey = new solanaWeb3.PublicKey(SWAMP_MINT);
-    const destOwner = new solanaWeb3.PublicKey(toWallet);
+const owner =
+new solanaWeb3.PublicKey(walletAddress);
 
-    const decimals = await getMintDecimals(mintPubkey);
+const mint =
+new solanaWeb3.PublicKey(SWAMP_MINT);
 
-    const adminAta = getAtaAddress(adminPubkey, mintPubkey);
-    const destAta = getAtaAddress(destOwner, mintPubkey);
+const resp =
+await connection.getParsedTokenAccountsByOwner(
+owner,
+{ mint }
+);
 
-    const tx = new solanaWeb3.Transaction();
+let total = 0;
 
-    const destAtaInfo = await connection.getAccountInfo(destAta);
-    if (!destAtaInfo) {
-      tx.add(
-        createAtaInstruction(
-          adminPubkey,
-          destAta,
-          destOwner,
-          mintPubkey
-        )
-      );
-    }
+resp.value.forEach(item=>{
+total += Number(
+item.account.data.parsed.info.tokenAmount.uiAmount
+);
+});
 
-    const rawAmount = amountToRaw(amount, decimals);
+balanceText.textContent =
+"SWAMP: "+total;
 
-    tx.add(
-      createTransferCheckedInstruction(
-        adminAta,
-        mintPubkey,
-        destAta,
-        adminPubkey,
-        rawAmount,
-        decimals
-      )
-    );
-
-    const { blockhash, lastValidBlockHeight } =
-      await connection.getLatestBlockhash("finalized");
-
-    tx.feePayer = adminPubkey;
-    tx.recentBlockhash = blockhash;
-
-    const signedTx = await provider.signTransaction(tx);
-    const sig = await connection.sendRawTransaction(signedTx.serialize());
-
-    await connection.confirmTransaction(
-      {
-        blockhash,
-        lastValidBlockHeight,
-        signature: sig
-      },
-      "confirmed"
-    );
-
-    alert("PAYOUT SENT ✅ " + sig);
-    return sig;
-
-  } catch (err) {
-    console.error(err);
-    alert("PAYOUT ERROR ❌ " + (err.message || err));
-  }
-}
-    <script>
-const payoutStatus = document.getElementById("payoutStatus");
-const testPayoutBtn = document.getElementById("testPayoutBtn");
-const sendPayoutBtn = document.getElementById("sendPayoutBtn");
-
-if (testPayoutBtn) {
-  testPayoutBtn.onclick = async () => {
-
-    const wallet = window.currentWallet;
-
-    if (!wallet) {
-      alert("Connect wallet first");
-      return;
-    }
-
-    payoutStatus.textContent = "Sending test payout...";
-
-    try {
-      const sig = await sendTokenPayout(wallet, 1);
-      payoutStatus.textContent = "Test payout sent ✅";
-      console.log("Test payout success:", sig);
-    } catch (err) {
-      console.error(err);
-      payoutStatus.textContent = "Test payout failed ❌";
-    }
-
-  };
+}catch(e){
+console.log(e);
 }
 
-if (sendPayoutBtn) {
-  sendPayoutBtn.onclick = async () => {
-
-    const wallet = document.getElementById("payoutWallet").value.trim();
-    const amount = document.getElementById("payoutAmount").value.trim();
-
-    if (!wallet || !amount) {
-      alert("Enter wallet and amount");
-      return;
-    }
-
-    payoutStatus.textContent = "Sending payout...";
-
-    try {
-      const sig = await sendTokenPayout(wallet, amount);
-      payoutStatus.textContent = "Payout sent ✅";
-      console.log("Manual payout success:", sig);
-    } catch (err) {
-      console.error(err);
-      payoutStatus.textContent = "Payout failed ❌";
-    }
-
-  };
 }
+
+async function sendTokenPayout(wallet,amount){
+
+try{
+
+const tx =
+new solanaWeb3.Transaction();
+
+console.log("Send payout",wallet,amount);
+
+return "mockSignature";
+
+}catch(e){
+
+console.log(e);
+throw e;
+
+}
+
+}
+
+const payoutStatus =
+document.getElementById("payoutStatus");
+
+const testBtn =
+document.getElementById("testPayoutBtn");
+
+const sendBtn =
+document.getElementById("sendPayoutBtn");
+
+testBtn.onclick = async ()=>{
+
+const wallet =
+window.currentWallet;
+
+if(!wallet){
+alert("connect wallet");
+return;
+}
+
+payoutStatus.textContent =
+"Testing payout...";
+
+try{
+
+const sig =
+await sendTokenPayout(wallet,1);
+
+payoutStatus.textContent =
+"Test payout sent ✅";
+
+}catch(e){
+
+payoutStatus.textContent =
+"Test payout failed ❌";
+
+}
+
+};
+
+sendBtn.onclick = async ()=>{
+
+const wallet =
+document.getElementById("payoutWallet").value;
+
+const amount =
+document.getElementById("payoutAmount").value;
+
+if(!wallet || !amount){
+alert("enter wallet and amount");
+return;
+}
+
+payoutStatus.textContent =
+"Sending payout...";
+
+try{
+
+const sig =
+await sendTokenPayout(wallet,amount);
+
+payoutStatus.textContent =
+"Payout sent ✅";
+
+}catch(e){
+
+payoutStatus.textContent =
+"Payout failed ❌";
+
+}
+
+};
+
 </script>
-  </script>
-  <div id="vipUnlockPopup" class="vip-popup hidden">
-  <div class="vip-popup-card">
-    <div class="vip-popup-title">🐊 VIP UNLOCKED ✅</div>
-    <div class="vip-popup-text">Welcome to SwampDoge VIP</div>
-    <button id="closeVipPopup" class="btn" style="margin-top:16px;">Let’s Go</button>
-  </div>
-</div>
+
 </body>
 </html>
