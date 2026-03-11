@@ -677,22 +677,34 @@
     }
 
     async function testPayout() {
-      const wallet = window.currentWallet || "";
-      if (!wallet) {
-        alert("Connect wallet first");
-        return;
-      }
 
-      els.payoutStatus.textContent = "Sending test payout...";
-      try {
-        const sig = await sendTokenPayout(wallet, 1);
-        els.payoutStatus.textContent = sig ? "Test payout sent ✅" : "Test payout cancelled";
-        setDebug("TEST PAYOUT ✅");
-      } catch (e) {
-        console.error(e);
-        els.payoutStatus.textContent = "Test payout failed ❌";
-      }
-    }
+  const wallet = window.currentWallet || "";
+
+  if (!wallet) {
+    alert("Connect wallet first");
+    return;
+  }
+
+  els.payoutStatus.textContent = "Sending test payout...";
+
+  try {
+
+    const sig = await sendTokenPayout(wallet, 1);
+
+    els.payoutStatus.textContent =
+      sig ? "Test payout sent ✅" : "Test payout cancelled";
+
+    setDebug("TEST PAYOUT ✅");
+
+  } catch (e) {
+
+    console.error(e);
+
+    els.payoutStatus.textContent =
+      "Test payout failed ❌";
+
+  }
+}
 
     async function sendManualPayout() {
       const wallet = els.payoutWallet.value.trim();
