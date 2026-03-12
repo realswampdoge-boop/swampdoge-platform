@@ -329,7 +329,7 @@
     const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
     const ADMIN_PIN = "7777";
     const VIP_MIN_BALANCE = 1000;
-
+<script src="https://unpkg.com/@solana/spl-token@0.4.8/lib/index.iife.min.js"></script>
     const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
 
     let provider = null;
@@ -650,7 +650,6 @@
       els.queueAmount.value = "";
       setDebug("PAYOUT QUEUED ✅");
     }
-
     async function sendTokenPayout(toWallet, amount) {
       if (!provider || !window.currentWallet) {
         alert("Connect Phantom first");
@@ -676,55 +675,141 @@
       }
     }
 
-    async function testPayout() {
-
-  const wallet = window.currentWallet || "";
-
-  if (!wallet) {
-    alert("Connect wallet first");
-    return;
-  }
-
-  els.payoutStatus.textContent = "Sending test payout...";
-
-  try {
-
-    const sig = await sendTokenPayout(wallet, 1);
-
-    els.payoutStatus.textContent =
-      sig ? "Test payout sent ✅" : "Test payout cancelled";
-
-    setDebug("TEST PAYOUT ✅");
-
-  } catch (e) {
-
-    console.error(e);
-
-    els.payoutStatus.textContent =
-      "Test payout failed ❌";
-
-  }
-}
-
-    async function sendManualPayout() {
-      const wallet = els.payoutWallet.value.trim();
-      const amount = els.payoutAmount.value.trim();
-
-      if (!wallet || !amount) {
-        alert("Enter wallet and amount");
-        return;
-      }
-
-      els.payoutStatus.textContent = "Sending payout...";
-      try {
-        const sig = await sendTokenPayout(wallet, amount);
-        els.payoutStatus.textContent = sig ? "Payout sent ✅" : "Payout cancelled";
-        setDebug("MANUAL PAYOUT ✅");
-      } catch (e) {
-        console.error(e);
-        els.payoutStatus.textContent = "Payout failed ❌";
-      }
+<script>
+  async function sendTokenPayout(toWallet, amount) {
+    if (!provider || !window.currentWallet) {
+      alert("Connect Phantom first");
+      return null;
     }
+
+    if (!window.splToken) {
+      els.payoutStatus.textContent = "SPL library missing ❌";
+      setDebug("splToken missing");
+      return null;
+    }
+
+    try {
+      els.payoutStatus.textContent = "Preparing payout...";
+
+      const fromPubkey = new solanaWeb3.PublicKey(window.currentWallet);
+      const toPubkey = new solanaWeb3.PublicKey(toWallet);
+      const mintPubkey = new solanaWeb3.PublicKey(SWAMP_MINT);
+
+      const amountNum = Number(amount);
+      if (!Number.isFinite(amountNum) || amountNum <= 0) {
+        throw new Error("Invalid amount");
+      }
+
+      const fromTokenAccount = await splToken.getAssociatedTokenAddress(
+        mintPubkey,
+        fromPubkey
+      );
+
+      const toTokenAccount = await splToken.getAssociatedTokenAddress(
+        mintPubkey,
+        toPubkey
+      );
+
+      const tx = new solanaWeb3.Transaction();
+
+      const toInfo = await connection.getAccountInfo(toTokenAccount);
+      if (!toInfo) {
+        tx.add(
+          splToken.createAssociatedTokenAccountInstruction(
+            fromPubkey,
+            toTokenAccount,
+            toPubkey,
+            mintPubkey
+          )
+        );
+      }
+
+      const decimals = 6;
+      const rawAmount = BigInt(Math.round(amountNum * (10 ** decimals)));
+
+      tx.add(
+        splToken.createTransferInstruction(
+          fromTokenAccount,
+          toTokenAccount,
+          fromPubkey,
+          rawAmount
+        )
+      );
+
+      tx.feePayer = fromPubkey;
+      const { blockhash } = await connection.getLatestBlockhash("finalized");
+      tx.recentBlockhash = blockhash;
+
+      els.payoutStatus.textContent = "Waiting for wallet approval...";
+
+      const signed = await provider.signTransaction(tx);
+      const sig = await connection.sendRawTransaction(signed.serialize());
+
+      els.payoutStatus.textContent = "Confirming payout...";
+
+      await connection.confirmTransaction(sig, "confirmed");
+
+      console.log("PAYOUT SENT", {
+        from: fromPubkey.toString(),
+        to: toPubkey.toString(),
+        amount: String(amountNum),
+        sig
+      });
+
+      return sig;
+    } catch (e) {
+      console.error("sendTokenPayout error:", e);
+      throw e;
+    }
+  }
+
+  async function testPayout() {
+    const wallet = window.currentWallet || "";
+
+    if (!wallet) {
+      alert("Connect wallet first");
+      return;
+    }
+
+    els.payoutStatus.textContent = "Sending test payout...";
+
+    try {
+      const sig = await sendTokenPayout(wallet, 1);
+      els.payoutStatus.textContent = sig
+        ? `Test payout sent ✅ ${sig}`
+        : "Test payout cancelled";
+      setDebug("TEST PAYOUT ✅");
+    } catch (e) {
+      console.error(e);
+      els.payoutStatus.textContent = "Test payout failed ❌";
+      setDebug("TEST PAYOUT FAILED ❌");
+    }
+  }
+
+  async function sendManualPayout() {
+    const wallet = els.payoutWallet.value.trim();
+    const amount = els.payoutAmount.value.trim();
+
+    if (!wallet || !amount) {
+      alert("Enter wallet and amount");
+      return;
+    }
+
+    els.payoutStatus.textContent = "Sending payout...";
+
+    try {
+      const sig = await sendTokenPayout(wallet, amount);
+      els.payoutStatus.textContent = sig
+        ? `Payout sent ✅ ${sig}`
+        : "Payout cancelled";
+      setDebug("MANUAL PAYOUT ✅");
+    } catch (e) {
+      console.error(e);
+      els.payoutStatus.textContent = "Payout failed ❌";
+      setDebug("MANUAL PAYOUT FAILED ❌");
+    }
+  }
+</script>
 
     function boot() {
       renderWallet("");
