@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SwampDoge</title>
-  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+<script src="https://unpkg.com/@solana/spl-token@0.4.8/lib/index.iife.min.js"></script>
   <style>
     :root{
       --bg:#05140e;
@@ -329,7 +330,7 @@
     const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
     const ADMIN_PIN = "7777";
     const VIP_MIN_BALANCE = 1000;
-<script src="https://unpkg.com/@solana/spl-token@0.4.8/lib/index.iife.min.js"></script>
+
     const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
 
     let provider = null;
