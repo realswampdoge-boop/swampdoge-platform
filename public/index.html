@@ -2,845 +2,976 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
   <title>SwampDoge</title>
-  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-<script src="https://unpkg.com/@solana/spl-token@0.4.8/lib/index.iife.min.js"></script>
+
   <style>
-    :root{
-      --bg:#05140e;
-      --bg2:#0a2218;
-      --card:#0d2b1f;
-      --line:#1fd46a;
-      --text:#d7ffe8;
-      --muted:#88cda7;
-      --accent:#32ff84;
-      --accent2:#00c853;
-      --danger:#ff6b6b;
-      --gold:#ffd54f;
+    :root {
+      --bg: #07110c;
+      --panel: #0d1f17;
+      --panel-2: #10271d;
+      --line: rgba(0, 255, 136, 0.22);
+      --text: #eafff3;
+      --muted: #8ec7a8;
+      --green: #00ff88;
+      --green-dim: #00c96c;
+      --danger: #ff6b6b;
+      --warning: #ffd166;
+      --shadow: 0 0 18px rgba(0, 255, 136, 0.18);
+      --radius: 18px;
+      --radius-sm: 12px;
     }
 
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Arial, Helvetica, sans-serif;
-      background:linear-gradient(180deg,var(--bg),#03100b 60%, #020a06);
-      color:var(--text);
-      text-align:center;
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .wrap{
-      max-width:980px;
-      margin:0 auto;
-      padding:20px 14px 60px;
+    html, body {
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at top, rgba(0, 255, 136, 0.08), transparent 30%),
+        linear-gradient(180deg, #06100b 0%, #07110c 100%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+      min-height: 100%;
     }
 
-    h1{
-      margin:10px 0 6px;
-      font-size:34px;
-      color:var(--accent);
-      text-shadow:0 0 12px rgba(50,255,132,.35);
+    body {
+      padding: 16px;
     }
 
-    .sub{
-      color:var(--muted);
-      margin-bottom:18px;
+    .app {
+      max-width: 760px;
+      margin: 0 auto;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:14px;
+    .hero {
+      background: linear-gradient(180deg, rgba(0,255,136,0.08), rgba(0,255,136,0.02));
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 24px 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
     }
 
-    .card{
-      background:linear-gradient(180deg,var(--card),var(--bg2));
-      border:1px solid rgba(50,255,132,.35);
-      border-radius:18px;
-      padding:16px;
-      box-shadow:0 0 16px rgba(0,0,0,.25), 0 0 18px rgba(31,212,106,.08);
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
     }
 
-    .card h2{
-      margin:0 0 10px;
-      color:var(--accent);
-      font-size:22px;
+    .brand-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid var(--line);
+      font-size: 26px;
+      box-shadow: var(--shadow);
     }
 
-    .row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:center;
-      align-items:center;
+    .hero h1 {
+      margin: 0;
+      font-size: 34px;
+      line-height: 1;
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 12px rgba(0, 255, 136, 0.55);
     }
 
-    .btn{
-      border:none;
-      border-radius:12px;
-      padding:12px 16px;
-      font-weight:700;
-      cursor:pointer;
-      background:linear-gradient(180deg,var(--accent),var(--accent2));
-      color:#04140c;
-      box-shadow:0 0 12px rgba(50,255,132,.3);
+    .tagline {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
     }
 
-    .btn.secondary{
-      background:#133525;
-      color:var(--text);
-      border:1px solid rgba(50,255,132,.25);
-      box-shadow:none;
+    .cta-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
     }
 
-    .btn.warn{
-      background:linear-gradient(180deg,#ffe082,#ffca28);
-      color:#2c2200;
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
     }
 
-    .btn.danger{
-      background:linear-gradient(180deg,#ff8a80,#ff5252);
-      color:#2a0909;
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      margin: 0 0 14px;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
     }
 
-    input, textarea, select{
-      width:100%;
-      max-width:620px;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(50,255,132,.22);
-      background:#0b1f17;
-      color:var(--text);
-      outline:none;
+    .subtle {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
     }
 
-    textarea{
-      min-height:100px;
-      resize:vertical;
+    .button,
+    button {
+      width: 100%;
+      border: 1px solid rgba(0, 255, 136, 0.35);
+      background: linear-gradient(180deg, rgba(0,255,136,0.16), rgba(0,255,136,0.08));
+      color: var(--text);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 0 14px rgba(0, 255, 136, 0.14);
+      transition: transform 0.08s ease, opacity 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .small{
-      font-size:13px;
-      color:var(--muted);
+    .button:active,
+    button:active {
+      transform: scale(0.985);
     }
 
-    .mono{
-      font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
-      word-break:break-all;
+    .button.secondary,
+    button.secondary {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: none;
     }
 
-    .status{
-      margin-top:8px;
-      color:var(--muted);
-      font-size:14px;
+    .button.warn,
+    button.warn {
+      border-color: rgba(255, 209, 102, 0.28);
+      background: linear-gradient(180deg, rgba(255,209,102,0.16), rgba(255,209,102,0.06));
+      color: #fff6da;
     }
 
-    .pill{
-      display:inline-block;
-      padding:8px 12px;
-      border-radius:999px;
-      background:#133525;
-      border:1px solid rgba(50,255,132,.2);
-      color:var(--text);
-      font-size:13px;
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
     }
 
-    .metric{
-      font-size:28px;
-      color:var(--accent);
-      font-weight:800;
-      margin:4px 0;
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
 
-    .list{
-      text-align:left;
-      max-width:760px;
-      margin:10px auto 0;
-      display:grid;
-      gap:10px;
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
 
-    .item{
-      border:1px solid rgba(50,255,132,.16);
-      background:#0b1f17;
-      border-radius:14px;
-      padding:12px;
+    .stat {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 88px;
     }
 
-    .hidden{display:none}
-
-    .vip-popup{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.65);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      z-index:9999;
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
     }
 
-    .vip-popup.hidden{display:none}
-
-    .vip-popup-card{
-      width:min(420px, 100%);
-      border-radius:18px;
-      background:linear-gradient(180deg,#143822,#0b1d13);
-      border:1px solid rgba(255,213,79,.45);
-      box-shadow:0 0 24px rgba(255,213,79,.14);
-      padding:22px;
+    .stat-value {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.25;
+      word-break: break-word;
     }
 
-    .vip-popup-title{
-      font-size:28px;
-      font-weight:900;
-      color:var(--gold);
-      margin-bottom:10px;
+    .status-box {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      font-weight: 700;
+      line-height: 1.45;
     }
 
-    .vip-popup-text{
-      color:#fff4c7;
-      margin-bottom:10px;
+    .status-ok {
+      border-color: rgba(0,255,136,0.28);
+      color: #cffff0;
     }
 
-    .split{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:14px;
+    .status-warn {
+      border-color: rgba(255,209,102,0.28);
+      color: #fff4cc;
     }
 
-    @media (min-width: 840px){
-      .split{
-        grid-template-columns:1fr 1fr;
+    .status-bad {
+      border-color: rgba(255,107,107,0.28);
+      color: #ffd7d7;
+    }
+
+    .progress-wrap {
+      margin-top: 12px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00c96c, #00ff88);
+      box-shadow: 0 0 14px rgba(0,255,136,0.4);
+      transition: width 0.35s ease;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .pick-item {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 13px;
+    }
+
+    .pick-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .pick-game {
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .pick-badge {
+      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,255,136,0.25);
+      background: rgba(0,255,136,0.08);
+      color: #d2ffea;
+    }
+
+    .pick-meta {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(0,255,136,0.08);
+      border: 1px solid rgba(0,255,136,0.18);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,255,136,0.28), transparent);
+      margin: 10px 0 16px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    a {
+      color: #98ffd0;
+    }
+
+    @media (max-width: 640px) {
+      .cta-row,
+      .two-col,
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 30px;
+      }
+
+      body {
+        padding: 12px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>🐊 SwampDoge</h1>
-    <div class="sub">Crypto picks. VIP unlock. Rewards. Token payouts.</div>
-
-    <div class="grid">
-      <div class="card">
-        <h2>Wallet</h2>
-        <div class="row">
-          <button id="connectBtn" class="btn">Connect Phantom</button>
-          <button id="disconnectBtn" class="btn secondary">Disconnect</button>
-        </div>
-        <div style="margin-top:12px" class="small">Connected Wallet</div>
-        <div id="walletText" class="mono">Not connected</div>
-        <div style="margin-top:12px" class="row">
-          <div class="pill">SWAMP Balance: <span id="swampBalance">0</span></div>
-          <div class="pill">VIP: <span id="vipStatus">LOCKED</span></div>
-        </div>
-        <div id="debugText" class="status">Debug: idle</div>
-      </div>
-
-      <div class="split">
-        <div class="card">
-          <h2>AI Picks</h2>
-          <div class="small">Today’s picks</div>
-          <div id="aiPicksList" class="list">
-            <div class="item">Loading AI picks...</div>
-          </div>
-          <div class="row" style="margin-top:12px">
-            <button id="refreshPicksBtn" class="btn secondary">Refresh Picks</button>
-          </div>
-          <div id="picksStatus" class="status">Picks idle.</div>
-        </div>
-
-        <div class="card">
-          <h2>Swamp Rewards</h2>
-          <div class="metric" id="rewardPoints">0</div>
-          <div class="small">Reward Points</div>
-          <div class="row" style="margin-top:12px">
-            <button id="claimDailyBtn" class="btn">Claim Daily</button>
-            <button id="testWinBtn" class="btn warn">Test Win</button>
-          </div>
-          <div id="rewardStatus" class="status">Rewards idle.</div>
+  <div class="app">
+    <section class="hero">
+      <div class="brand">
+        <div class="brand-badge">🐊</div>
+        <div>
+          <h1>SwampDoge</h1>
+          <div class="subtle">Crypto-powered picks. VIP access. Reward-ready launch build.</div>
         </div>
       </div>
 
-      <div class="card">
-        <h2>VIP Zone</h2>
-        <div id="vipCardText" class="small">Hold enough SWAMP to unlock VIP content.</div>
-        <div id="vipContent" class="list hidden">
-          <div class="item">🔥 VIP Pick 1: Premium alpha unlocked</div>
-          <div class="item">🐊 VIP Pick 2: Swamp signal unlocked</div>
-          <div class="item">💰 VIP Pick 3: High conviction unlocked</div>
+      <p class="tagline">
+        Connect Phantom, load your SWAMP balance, unlock VIP access, view AI picks,
+        and claim rewards through the Swamp dashboard.
+      </p>
+
+      <div class="cta-row">
+        <button id="connectBtn">Connect Wallet</button>
+        <button id="disconnectBtn" class="secondary">Disconnect</button>
+      </div>
+
+      <div id="topStatus" class="status-box status-warn" style="margin-top:14px;">
+        Waiting for wallet connection...
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Swamp Dashboard</h2>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-label">Wallet</div>
+          <div id="walletText" class="stat-value">Not connected</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">SWAMP Balance</div>
+          <div id="balanceText" class="stat-value">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">VIP Status</div>
+          <div id="vipText" class="stat-value">Locked</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Wallet State</div>
+          <div id="debugText" class="stat-value">DISCONNECTED</div>
         </div>
       </div>
 
-      <div class="card">
-        <h2>Admin Panel</h2>
-        <div class="row">
-          <input id="adminPinInput" placeholder="Enter Admin PIN" />
-          <button id="adminUnlockBtn" class="btn">Unlock Admin</button>
-        </div>
-        <div id="adminStatus" class="status">Admin locked.</div>
-
-        <div id="adminPanel" class="hidden" style="margin-top:14px">
-          <div class="split">
-            <div class="item">
-              <div style="font-weight:700; margin-bottom:10px;">Publish AI Picks</div>
-              <textarea id="adminPicksInput" placeholder="One pick per line&#10;Example: Lakers ML&#10;Example: Celtics -4.5"></textarea>
-              <div class="row" style="margin-top:10px">
-                <button id="publishPicksBtn" class="btn">Publish Picks</button>
-                <button id="clearPicksBtn" class="btn secondary">Clear Picks</button>
-              </div>
-            </div>
-
-            <div class="item">
-              <div style="font-weight:700; margin-bottom:10px;">Token Payout</div>
-              <input id="payoutWallet" placeholder="Destination wallet" />
-              <div style="height:8px"></div>
-              <input id="payoutAmount" placeholder="Amount of SWAMP" />
-              <div class="row" style="margin-top:10px">
-                <button id="testPayoutBtn" class="btn warn">Test 1 SWAMP</button>
-                <button id="sendPayoutBtn" class="btn">Send Payout</button>
-              </div>
-              <div id="payoutStatus" class="status">Payout idle.</div>
-            </div>
-          </div>
-
-          <div class="item" style="margin-top:14px;">
-            <div style="font-weight:700; margin-bottom:10px;">Payout Queue</div>
-            <div class="row">
-              <input id="queueWallet" placeholder="Queue wallet" />
-              <input id="queueAmount" placeholder="Queue amount" />
-              <button id="addQueueBtn" class="btn secondary">Add To Queue</button>
-            </div>
-            <div id="queueList" class="list" style="margin-top:10px;"></div>
-          </div>
+      <div class="progress-wrap">
+        <div class="subtle" id="vipProgressLabel">VIP progress: 0 / 1000 SWAMP</div>
+        <div class="progress-bar">
+          <div id="vipProgressFill" class="progress-fill"></div>
         </div>
       </div>
-    </div>
+
+      <div id="dashboardStatus" class="status-box status-warn">
+        Connect your wallet to load balance and VIP access.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">AI Picks</h2>
+      <div class="two-col" style="margin-bottom:12px;">
+        <button id="refreshPicksBtn">Refresh AI Picks</button>
+        <button id="viewVipBtn" class="warn">Check VIP Access</button>
+      </div>
+
+      <div class="subtle">
+        This section can pull from your existing <span class="mono">/api/picks</span> endpoint.
+        If no live picks are returned, it falls back to a safe placeholder list.
+      </div>
+
+      <div id="picksStatus" class="status-box status-warn">
+        AI picks have not loaded yet.
+      </div>
+
+      <div id="picksList" class="list"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">VIP Picks</h2>
+      <div class="pill">Hold enough SWAMP to unlock</div>
+      <div id="vipPicksStatus" class="status-box status-warn">
+        VIP picks locked. Connect wallet and meet the SWAMP requirement.
+      </div>
+      <div id="vipPicksList" class="list"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Swamp Rewards</h2>
+
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-label">Wins</div>
+          <div id="winsText" class="stat-value">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Points</div>
+          <div id="pointsText" class="stat-value">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Claim Status</div>
+          <div id="claimStateText" class="stat-value">Not ready</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Launch Mode</div>
+          <div class="stat-value">Payout API</div>
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-top:12px;">
+        <button id="claimBtn" disabled>Claim Reward</button>
+        <button id="testWinBtn" class="secondary">Add Test Win</button>
+      </div>
+
+      <div id="rewardStatus" class="status-box status-warn" style="margin-top:12px;">
+        Connect wallet before claiming rewards.
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="footer-note">
+        Claims are sent through your backend payout route. The frontend never holds your payout wallet secret.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">How SwampDoge Works</h2>
+      <p class="subtle">
+        SwampDoge combines crypto and sports picks. Hold SWAMP to unlock VIP access,
+        track rewards in the dashboard, and claim through the Swamp payout flow.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Reward Disclaimer</h2>
+      <p class="subtle">
+        Rewards are distributed based on app logic, eligibility rules, and available payout balance.
+        This launch build should only approve claims that pass your backend verification.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Privacy + Support</h2>
+      <p class="subtle">
+        SwampDoge does not need traditional sign-up data for wallet access.
+        Wallet connections are handled through Phantom.
+      </p>
+      <p class="subtle" style="margin-bottom:0;">
+        Support: <a href="mailto:support@swampdoge.com">support@swampdoge.com</a>
+      </p>
+    </section>
   </div>
 
-  <div id="vipUnlockPopup" class="vip-popup hidden">
-    <div class="vip-popup-card">
-      <div class="vip-popup-title">🐊 VIP UNLOCKED ✅</div>
-      <div class="vip-popup-text">Welcome to SwampDoge VIP</div>
-      <button id="closeVipPopup" class="btn" style="margin-top:16px;">Let’s Go</button>
-    </div>
-  </div>
+  <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
 
   <script>
+    /***********************
+     * SWAMPDOGE CONFIG
+     ***********************/
     const SWAMP_MINT = "GXnNG5q32mmcpVmNAKKUf1WTSqNxoVKJyho6jQT4pump";
-    const ADMIN_PIN = "7777";
-    const VIP_MIN_BALANCE = 1000;
+    const VIP_MIN_SWAMP = 1000;
+    const RPC_URL = "https://api.mainnet-beta.solana.com";
 
-    const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+    // Your payout endpoint.
+    // This is where real token payouts must happen.
+    const PAYOUT_API = "/api/payout";
+    const PICKS_API = "/api/picks";
 
+    const connection = new solanaWeb3.Connection(RPC_URL, "confirmed");
+
+    /***********************
+     * APP STATE
+     ***********************/
     let provider = null;
     let walletAddress = "";
     let swampBalance = 0;
+    let vipUnlocked = false;
+    let claimBusy = false;
+    let wins = 0;
+    let points = 0;
 
-    const els = {
-      connectBtn: document.getElementById("connectBtn"),
-      disconnectBtn: document.getElementById("disconnectBtn"),
-      walletText: document.getElementById("walletText"),
-      swampBalance: document.getElementById("swampBalance"),
-      vipStatus: document.getElementById("vipStatus"),
-      debugText: document.getElementById("debugText"),
-      vipCardText: document.getElementById("vipCardText"),
-      vipContent: document.getElementById("vipContent"),
-      aiPicksList: document.getElementById("aiPicksList"),
-      picksStatus: document.getElementById("picksStatus"),
-      refreshPicksBtn: document.getElementById("refreshPicksBtn"),
-      rewardPoints: document.getElementById("rewardPoints"),
-      rewardStatus: document.getElementById("rewardStatus"),
-      claimDailyBtn: document.getElementById("claimDailyBtn"),
-      testWinBtn: document.getElementById("testWinBtn"),
-      adminPinInput: document.getElementById("adminPinInput"),
-      adminUnlockBtn: document.getElementById("adminUnlockBtn"),
-      adminStatus: document.getElementById("adminStatus"),
-      adminPanel: document.getElementById("adminPanel"),
-      adminPicksInput: document.getElementById("adminPicksInput"),
-      publishPicksBtn: document.getElementById("publishPicksBtn"),
-      clearPicksBtn: document.getElementById("clearPicksBtn"),
-      payoutWallet: document.getElementById("payoutWallet"),
-      payoutAmount: document.getElementById("payoutAmount"),
-      payoutStatus: document.getElementById("payoutStatus"),
-      testPayoutBtn: document.getElementById("testPayoutBtn"),
-      sendPayoutBtn: document.getElementById("sendPayoutBtn"),
-      queueWallet: document.getElementById("queueWallet"),
-      queueAmount: document.getElementById("queueAmount"),
-      addQueueBtn: document.getElementById("addQueueBtn"),
-      queueList: document.getElementById("queueList"),
-      vipUnlockPopup: document.getElementById("vipUnlockPopup"),
-      closeVipPopup: document.getElementById("closeVipPopup")
-    };
+    /***********************
+     * DOM
+     ***********************/
+    const connectBtn = document.getElementById("connectBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
+    const refreshPicksBtn = document.getElementById("refreshPicksBtn");
+    const viewVipBtn = document.getElementById("viewVipBtn");
+    const claimBtn = document.getElementById("claimBtn");
+    const testWinBtn = document.getElementById("testWinBtn");
 
-    function setDebug(text) {
-      els.debugText.textContent = "Debug: " + text;
-      console.log(text);
+    const topStatus = document.getElementById("topStatus");
+    const walletText = document.getElementById("walletText");
+    const balanceText = document.getElementById("balanceText");
+    const vipText = document.getElementById("vipText");
+    const debugText = document.getElementById("debugText");
+    const dashboardStatus = document.getElementById("dashboardStatus");
+    const vipProgressLabel = document.getElementById("vipProgressLabel");
+    const vipProgressFill = document.getElementById("vipProgressFill");
+
+    const picksStatus = document.getElementById("picksStatus");
+    const picksList = document.getElementById("picksList");
+    const vipPicksStatus = document.getElementById("vipPicksStatus");
+    const vipPicksList = document.getElementById("vipPicksList");
+
+    const winsText = document.getElementById("winsText");
+    const pointsText = document.getElementById("pointsText");
+    const claimStateText = document.getElementById("claimStateText");
+    const rewardStatus = document.getElementById("rewardStatus");
+
+    /***********************
+     * HELPERS
+     ***********************/
+    function shortAddress(addr) {
+      if (!addr) return "Not connected";
+      return addr.slice(0, 4) + "..." + addr.slice(-4);
     }
 
-    function saveJSON(key, value) {
-      localStorage.setItem(key, JSON.stringify(value));
+    function setStatus(el, text, type = "warn") {
+      el.textContent = text;
+      el.className = "status-box " + (
+        type === "ok" ? "status-ok" :
+        type === "bad" ? "status-bad" :
+        "status-warn"
+      );
     }
 
-    function loadJSON(key, fallback) {
-      try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-      } catch {
-        return fallback;
+    function setWallet(addr) {
+      walletAddress = addr || "";
+      walletText.textContent = addr ? shortAddress(addr) : "Not connected";
+      debugText.textContent = addr ? "CONNECTED ✅" : "DISCONNECTED";
+      connectBtn.textContent = addr ? "Wallet Connected" : "Connect Wallet";
+    }
+
+    function updateVipUI(balance) {
+      swampBalance = Number(balance || 0);
+      balanceText.textContent = formatNumber(swampBalance);
+
+      vipUnlocked = swampBalance >= VIP_MIN_SWAMP;
+      vipText.textContent = vipUnlocked ? "UNLOCKED 🐊" : "Locked";
+
+      const progress = Math.min((swampBalance / VIP_MIN_SWAMP) * 100, 100);
+      vipProgressFill.style.width = progress + "%";
+      vipProgressLabel.textContent = `VIP progress: ${formatNumber(swampBalance)} / ${VIP_MIN_SWAMP} SWAMP`;
+
+      if (vipUnlocked) {
+        setStatus(dashboardStatus, "VIP unlocked. Holder requirement met.", "ok");
+        setStatus(vipPicksStatus, "VIP picks unlocked.", "ok");
+      } else {
+        setStatus(
+          dashboardStatus,
+          `Hold ${VIP_MIN_SWAMP} SWAMP to unlock VIP picks.`,
+          "warn"
+        );
+        setStatus(
+          vipPicksStatus,
+          `VIP locked. Need ${VIP_MIN_SWAMP - Math.floor(swampBalance)} more SWAMP.`,
+          "warn"
+        );
       }
     }
 
-    function renderWallet(addr) {
-      els.walletText.textContent = addr || "Not connected";
+    function formatNumber(num) {
+      return new Intl.NumberFormat().format(
+        Number.isFinite(Number(num)) ? Number(num) : 0
+      );
     }
 
-    function renderBalance(amount) {
-      els.swampBalance.textContent = Number(amount || 0).toLocaleString();
-    }
-
-    function isVip(balance) {
-      return Number(balance || 0) >= VIP_MIN_BALANCE;
-    }
-
-    function showVipUnlockedOnce() {
-      const seen = localStorage.getItem("swampdoge_vip_seen");
-      if (!seen) {
-        els.vipUnlockPopup.classList.remove("hidden");
-        localStorage.setItem("swampdoge_vip_seen", "1");
-      }
-    }
-
-    function updateVipUI() {
-      const vip = isVip(swampBalance);
-      els.vipStatus.textContent = vip ? "UNLOCKED" : "LOCKED";
-      els.vipCardText.textContent = vip
-        ? "VIP active. Premium picks unlocked."
-        : `Hold at least ${VIP_MIN_BALANCE.toLocaleString()} SWAMP to unlock VIP.`;
-      els.vipContent.classList.toggle("hidden", !vip);
-      if (vip) showVipUnlockedOnce();
-    }
-
-    async function connectWallet() {
+    function loadLocalRewardState() {
       try {
-        if (!window.solana || !window.solana.isPhantom) {
-          alert("Install Phantom Wallet first");
-          return;
-        }
-
-        provider = window.solana;
-        const resp = await provider.connect();
-        walletAddress = resp.publicKey.toString();
-        window.currentWallet = walletAddress;
-
-        renderWallet(walletAddress);
-        setDebug("CONNECTED ✅");
-        await loadSwampBalance();
+        wins = Number(localStorage.getItem("swampWins") || 0);
+        points = Number(localStorage.getItem("swampPoints") || 0);
       } catch (e) {
-        console.error(e);
-        setDebug("CONNECT ERROR ❌");
+        wins = 0;
+        points = 0;
+      }
+      renderRewardStats();
+    }
+
+    function saveLocalRewardState() {
+      try {
+        localStorage.setItem("swampWins", String(wins));
+        localStorage.setItem("swampPoints", String(points));
+      } catch (e) {}
+    }
+
+    function renderRewardStats() {
+      winsText.textContent = formatNumber(wins);
+      pointsText.textContent = formatNumber(points);
+
+      const eligible = walletAddress && points > 0;
+      claimBtn.disabled = !eligible || claimBusy;
+
+      if (claimBusy) {
+        claimStateText.textContent = "Processing...";
+      } else if (!walletAddress) {
+        claimStateText.textContent = "Connect wallet";
+      } else if (points <= 0) {
+        claimStateText.textContent = "No reward yet";
+      } else {
+        claimStateText.textContent = "Ready to claim";
       }
     }
 
-    async function disconnectWallet() {
-      try {
-        if (provider && provider.disconnect) {
-          await provider.disconnect();
-        }
-      } catch (e) {
-        console.error(e);
+    function renderPicks(items, targetEl, type = "ai") {
+      targetEl.innerHTML = "";
+
+      if (!Array.isArray(items) || !items.length) {
+        targetEl.innerHTML = `
+          <div class="pick-item">
+            <div class="pick-game">No picks available</div>
+            <div class="pick-meta">Nothing to show right now.</div>
+          </div>
+        `;
+        return;
       }
 
-      provider = null;
-      walletAddress = "";
-      swampBalance = 0;
-      window.currentWallet = "";
+      items.forEach((item) => {
+        const game = item.game || item.matchup || "Game";
+        const pick = item.pick || item.selection || "Pick";
+        const meta = item.league || item.time || item.note || (type === "vip" ? "VIP pick" : "AI pick");
 
-      renderWallet("");
-      renderBalance(0);
-      updateVipUI();
-      setDebug("DISCONNECTED");
+        const div = document.createElement("div");
+        div.className = "pick-item";
+        div.innerHTML = `
+          <div class="pick-top">
+            <div class="pick-game">${escapeHtml(game)}</div>
+            <div class="pick-badge">${escapeHtml(pick)}</div>
+          </div>
+          <div class="pick-meta">${escapeHtml(meta)}</div>
+        `;
+        targetEl.appendChild(div);
+      });
     }
 
-    async function loadSwampBalance() {
-      try {
-        if (!walletAddress) {
-          renderBalance(0);
-          updateVipUI();
-          return;
-        }
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-        const owner = new solanaWeb3.PublicKey(walletAddress);
+    function getProvider() {
+      if ("phantom" in window && window.phantom?.solana?.isPhantom) {
+        return window.phantom.solana;
+      }
+      if (window.solana?.isPhantom) {
+        return window.solana;
+      }
+      return null;
+    }
+
+    /***********************
+     * SOLANA BALANCE CHECK
+     ***********************/
+    async function getSwampBalance(ownerAddress) {
+      try {
+        const owner = new solanaWeb3.PublicKey(ownerAddress);
         const mint = new solanaWeb3.PublicKey(SWAMP_MINT);
 
-        const resp = await connection.getParsedTokenAccountsByOwner(owner, { mint });
+        const resp = await connection.getParsedTokenAccountsByOwner(
+          owner,
+          { mint }
+        );
 
         let total = 0;
+
         for (const item of resp.value) {
           const amt = item.account?.data?.parsed?.info?.tokenAmount;
           total += Number(amt?.uiAmountString || amt?.uiAmount || 0);
         }
 
-        swampBalance = total;
-        renderBalance(swampBalance);
-        updateVipUI();
-        setDebug("BALANCE LOADED ✅");
-      } catch (e) {
-        console.error(e);
-        swampBalance = 0;
-        renderBalance(0);
-        updateVipUI();
-        setDebug("TOKEN ERROR ❌");
+        return total;
+      } catch (err) {
+        console.error("SWAMP BALANCE ERROR:", err);
+        setStatus(dashboardStatus, "Token balance check failed.", "bad");
+        return 0;
       }
     }
 
-    function renderPicks(picks) {
-      if (!Array.isArray(picks) || picks.length === 0) {
-        els.aiPicksList.innerHTML = `<div class="item">No picks yet.</div>`;
-        return;
-      }
-
-      els.aiPicksList.innerHTML = picks
-        .map((pick, i) => `<div class="item"><strong>#${i + 1}</strong> — ${String(pick)}</div>`)
-        .join("");
-    }
-
-    async function loadAiPicks() {
-      els.picksStatus.textContent = "Loading picks...";
+    /***********************
+     * WALLET FLOW
+     ***********************/
+    async function connectWallet() {
       try {
-        const local = loadJSON("swampdoge_picks", []);
-        if (local.length) {
-          renderPicks(local);
-          els.picksStatus.textContent = "Loaded local picks ✅";
-        } else {
-          renderPicks([
-            "Swamp Signal loading...",
-            "Premium line check pending...",
-            "Watch list building..."
-          ]);
-          els.picksStatus.textContent = "Using fallback picks";
+        provider = getProvider();
+
+        if (!provider) {
+          setStatus(topStatus, "Phantom not found. Open in Phantom browser or install Phantom.", "bad");
+          return;
         }
 
+        setStatus(topStatus, "Connecting wallet...", "warn");
+        const res = await provider.connect();
+        const pubkey = res?.publicKey?.toString();
+
+        if (!pubkey) {
+          throw new Error("Wallet connection failed.");
+        }
+
+        setWallet(pubkey);
+        setStatus(topStatus, "Wallet connected.", "ok");
+
+        await refreshWalletState();
+      } catch (err) {
+        console.error("CONNECT ERROR:", err);
+        setWallet("");
+        setStatus(topStatus, "Wallet connection failed.", "bad");
+        renderRewardStats();
+      }
+    }
+
+    async function disconnectWallet() {
+      try {
+        provider = getProvider();
+        if (provider?.disconnect) {
+          await provider.disconnect();
+        }
+      } catch (err) {
+        console.error("DISCONNECT ERROR:", err);
+      }
+
+      setWallet("");
+      updateVipUI(0);
+      setStatus(topStatus, "Wallet disconnected.", "warn");
+      setStatus(dashboardStatus, "Connect your wallet to load balance and VIP access.", "warn");
+      setStatus(rewardStatus, "Connect wallet before claiming rewards.", "warn");
+      renderVipPicks([]);
+      renderRewardStats();
+    }
+
+    async function autoReconnect() {
+      try {
+        provider = getProvider();
+        if (!provider) return;
+
+        const res = await provider.connect({ onlyIfTrusted: true });
+        const pubkey = res?.publicKey?.toString();
+
+        if (pubkey) {
+          setWallet(pubkey);
+          setStatus(topStatus, "Wallet reconnected.", "ok");
+          await refreshWalletState();
+        }
+      } catch (err) {
+        console.log("Auto reconnect skipped.");
+      }
+    }
+
+    async function refreshWalletState() {
+      if (!walletAddress) return;
+
+      setStatus(dashboardStatus, "Loading SWAMP balance...", "warn");
+      const bal = await getSwampBalance(walletAddress);
+      updateVipUI(bal);
+
+      if (walletAddress) {
+        claimBtn.disabled = points <= 0 || claimBusy;
+      }
+
+      renderRewardStats();
+      renderVipPicksDefault();
+    }
+
+    /***********************
+     * PICKS
+     ***********************/
+    async function loadAiPicks() {
+      try {
+        setStatus(picksStatus, "Loading AI picks...", "warn");
+
+        let live = [];
         try {
-          const res = await fetch("/api/picks?ts=" + Date.now());
+          const res = await fetch(PICKS_API, { cache: "no-store" });
           if (res.ok) {
             const data = await res.json();
-            const picks = Array.isArray(data?.picks) ? data.picks : [];
-            if (picks.length) {
-              saveJSON("swampdoge_picks", picks);
-              renderPicks(picks);
-              els.picksStatus.textContent = "Loaded live picks ✅";
+            if (Array.isArray(data)) {
+              live = data;
+            } else if (Array.isArray(data?.picks)) {
+              live = data.picks;
             }
           }
         } catch (e) {
-          console.log("Live picks fetch skipped:", e);
+          console.log("Live picks endpoint unavailable, using fallback.");
         }
-      } catch (e) {
-        console.error(e);
-        els.picksStatus.textContent = "Picks failed ❌";
+
+        if (!live.length) {
+          live = [
+            { game: "Swamp Sample Game 1", pick: "HOME ML", league: "Demo fallback pick" },
+            { game: "Swamp Sample Game 2", pick: "OVER 2.5", league: "Demo fallback pick" },
+            { game: "Swamp Sample Game 3", pick: "AWAY +1.5", league: "Demo fallback pick" }
+          ];
+          setStatus(picksStatus, "Loaded fallback AI picks.", "warn");
+        } else {
+          setStatus(picksStatus, "AI picks loaded.", "ok");
+        }
+
+        renderPicks(live, picksList, "ai");
+      } catch (err) {
+        console.error("PICKS ERROR:", err);
+        setStatus(picksStatus, "Failed to load AI picks.", "bad");
+        renderPicks([], picksList, "ai");
       }
     }
 
-    function getRewardPoints() {
-      return Number(localStorage.getItem("swampdoge_reward_points") || "0");
-    }
-
-    function setRewardPoints(points) {
-      localStorage.setItem("swampdoge_reward_points", String(points));
-      els.rewardPoints.textContent = String(points);
-    }
-
-    function claimDaily() {
-      const today = new Date().toISOString().slice(0, 10);
-      const last = localStorage.getItem("swampdoge_last_claim");
-
-      if (last === today) {
-        els.rewardStatus.textContent = "Daily already claimed today.";
+    function renderVipPicksDefault() {
+      if (!vipUnlocked) {
+        renderVipPicks([]);
         return;
       }
 
-      const current = getRewardPoints();
-      const next = current + 25;
+      const vip = [
+        { game: "VIP Matchup 1", pick: "VIP HOME ML", note: "Members-only pick" },
+        { game: "VIP Matchup 2", pick: "VIP OVER", note: "Members-only pick" }
+      ];
 
-      localStorage.setItem("swampdoge_last_claim", today);
-      setRewardPoints(next);
-      els.rewardStatus.textContent = "Daily claim success ✅ +25";
-      setDebug("TAP claimDailyBtn ✅");
+      renderVipPicks(vip);
     }
 
-    function testWinReward() {
-      const current = getRewardPoints();
-      const next = current + 100;
-      setRewardPoints(next);
-      els.rewardStatus.textContent = "Test win added ✅ +100";
-      setDebug("TEST WIN ✅");
-    }
-
-    function unlockAdmin() {
-      const pin = els.adminPinInput.value.trim();
-      if (pin !== ADMIN_PIN) {
-        els.adminStatus.textContent = "Wrong PIN ❌";
+    function renderVipPicks(items) {
+      if (!vipUnlocked) {
+        vipPicksList.innerHTML = `
+          <div class="pick-item">
+            <div class="pick-game">VIP Locked</div>
+            <div class="pick-meta">Hold at least ${VIP_MIN_SWAMP} SWAMP to unlock VIP picks.</div>
+          </div>
+        `;
         return;
       }
 
-      els.adminPanel.classList.remove("hidden");
-      els.adminStatus.textContent = "Admin unlocked ✅";
-      setDebug("ADMIN UNLOCKED ✅");
+      renderPicks(items, vipPicksList, "vip");
     }
 
-    function publishPicks() {
-      const raw = els.adminPicksInput.value.trim();
-      const picks = raw
-        .split("\n")
-        .map(x => x.trim())
-        .filter(Boolean);
+    /***********************
+     * REWARDS / PAYOUT
+     ***********************/
+    async function claimReward() {
+      if (claimBusy) return;
 
-      saveJSON("swampdoge_picks", picks);
-      renderPicks(picks);
-      els.picksStatus.textContent = "Picks published ✅";
-      setDebug("PICKS PUBLISHED ✅");
-    }
-
-    function clearPicks() {
-      saveJSON("swampdoge_picks", []);
-      els.adminPicksInput.value = "";
-      renderPicks([]);
-      els.picksStatus.textContent = "Picks cleared.";
-      setDebug("PICKS CLEARED");
-    }
-
-    function getQueue() {
-      return loadJSON("swampdoge_payout_queue", []);
-    }
-
-    function setQueue(queue) {
-      saveJSON("swampdoge_payout_queue", queue);
-      renderQueue();
-    }
-
-    function renderQueue() {
-      const queue = getQueue();
-      if (!queue.length) {
-        els.queueList.innerHTML = `<div class="item">No payouts queued.</div>`;
+      if (!walletAddress) {
+        setStatus(rewardStatus, "Connect wallet first.", "bad");
+        renderRewardStats();
         return;
       }
 
-      els.queueList.innerHTML = queue.map((q, i) => `
-        <div class="item">
-          <div><strong>#${i + 1}</strong></div>
-          <div class="mono">${q.wallet}</div>
-          <div>${q.amount} SWAMP</div>
-        </div>
-      `).join("");
-    }
-
-    function addToQueue() {
-      const wallet = els.queueWallet.value.trim();
-      const amount = els.queueAmount.value.trim();
-
-      if (!wallet || !amount) {
-        alert("Enter queue wallet and amount");
+      if (points <= 0) {
+        setStatus(rewardStatus, "No reward available yet.", "warn");
+        renderRewardStats();
         return;
       }
 
-      const queue = getQueue();
-      queue.push({ wallet, amount, createdAt: Date.now() });
-      setQueue(queue);
-
-      els.queueWallet.value = "";
-      els.queueAmount.value = "";
-      setDebug("PAYOUT QUEUED ✅");
-    }
-    async function sendTokenPayout(toWallet, amount) {
-      if (!provider || !window.currentWallet) {
-        alert("Connect Phantom first");
-        return null;
-      }
+      claimBusy = true;
+      claimBtn.disabled = true;
+      claimStateText.textContent = "Processing...";
+      setStatus(rewardStatus, "Processing payout...", "warn");
 
       try {
-        const fromPubkey = new solanaWeb3.PublicKey(window.currentWallet);
-        const toPubkey = new solanaWeb3.PublicKey(toWallet);
+        const payload = {
+          wallet: walletAddress,
+          points,
+          wins
+        };
 
-        const tx = new solanaWeb3.Transaction();
-
-        console.log("PAYOUT PREP", {
-          from: fromPubkey.toString(),
-          to: toPubkey.toString(),
-          amount: String(amount)
+        const res = await fetch(PAYOUT_API, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
         });
 
-        return "mockSignature";
-      } catch (e) {
-        console.error("sendTokenPayout error:", e);
-        throw e;
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(data?.error || "Payout request failed.");
+        }
+
+        // Expected backend response example:
+        // { success: true, signature: "xxxx", amount: 123 }
+        const sig = data?.signature ? ` Tx: ${data.signature}` : "";
+        const amt = data?.amount ? ` Amount: ${data.amount}` : "";
+
+        setStatus(rewardStatus, `Reward sent ✅${amt}${sig}`, "ok");
+
+        wins = 0;
+        points = 0;
+        saveLocalRewardState();
+        renderRewardStats();
+      } catch (err) {
+        console.error("CLAIM ERROR:", err);
+        setStatus(rewardStatus, err.message || "Payout failed.", "bad");
+      } finally {
+        claimBusy = false;
+        renderRewardStats();
       }
     }
 
-<script>
-  async function sendTokenPayout(toWallet, amount) {
-    if (!provider || !window.currentWallet) {
-      alert("Connect Phantom first");
-      return null;
+    function addTestWin() {
+      wins += 1;
+      points += 50;
+      saveLocalRewardState();
+      renderRewardStats();
+      setStatus(rewardStatus, "Test win added. Reward balance updated.", "ok");
     }
 
-    if (!window.splToken) {
-      els.payoutStatus.textContent = "SPL library missing ❌";
-      setDebug("splToken missing");
-      return null;
-    }
-
-    try {
-      els.payoutStatus.textContent = "Preparing payout...";
-
-      const fromPubkey = new solanaWeb3.PublicKey(window.currentWallet);
-      const toPubkey = new solanaWeb3.PublicKey(toWallet);
-      const mintPubkey = new solanaWeb3.PublicKey(SWAMP_MINT);
-
-      const amountNum = Number(amount);
-      if (!Number.isFinite(amountNum) || amountNum <= 0) {
-        throw new Error("Invalid amount");
+    /***********************
+     * EVENTS
+     ***********************/
+    connectBtn.addEventListener("click", connectWallet);
+    disconnectBtn.addEventListener("click", disconnectWallet);
+    refreshPicksBtn.addEventListener("click", loadAiPicks);
+    viewVipBtn.addEventListener("click", async () => {
+      if (!walletAddress) {
+        setStatus(topStatus, "Connect wallet first to check VIP.", "warn");
+        return;
       }
+      await refreshWalletState();
+    });
+    claimBtn.addEventListener("click", claimReward);
+    testWinBtn.addEventListener("click", addTestWin);
 
-      const fromTokenAccount = await splToken.getAssociatedTokenAddress(
-        mintPubkey,
-        fromPubkey
-      );
-
-      const toTokenAccount = await splToken.getAssociatedTokenAddress(
-        mintPubkey,
-        toPubkey
-      );
-
-      const tx = new solanaWeb3.Transaction();
-
-      const toInfo = await connection.getAccountInfo(toTokenAccount);
-      if (!toInfo) {
-        tx.add(
-          splToken.createAssociatedTokenAccountInstruction(
-            fromPubkey,
-            toTokenAccount,
-            toPubkey,
-            mintPubkey
-          )
-        );
-      }
-
-      const decimals = 6;
-      const rawAmount = BigInt(Math.round(amountNum * (10 ** decimals)));
-
-      tx.add(
-        splToken.createTransferInstruction(
-          fromTokenAccount,
-          toTokenAccount,
-          fromPubkey,
-          rawAmount
-        )
-      );
-
-      tx.feePayer = fromPubkey;
-      const { blockhash } = await connection.getLatestBlockhash("finalized");
-      tx.recentBlockhash = blockhash;
-
-      els.payoutStatus.textContent = "Waiting for wallet approval...";
-
-      const signed = await provider.signTransaction(tx);
-      const sig = await connection.sendRawTransaction(signed.serialize());
-
-      els.payoutStatus.textContent = "Confirming payout...";
-
-      await connection.confirmTransaction(sig, "confirmed");
-
-      console.log("PAYOUT SENT", {
-        from: fromPubkey.toString(),
-        to: toPubkey.toString(),
-        amount: String(amountNum),
-        sig
-      });
-
-      return sig;
-    } catch (e) {
-      console.error("sendTokenPayout error:", e);
-      throw e;
-    }
-  }
-
-  async function testPayout() {
-    const wallet = window.currentWallet || "";
-
-    if (!wallet) {
-      alert("Connect wallet first");
-      return;
-    }
-
-    els.payoutStatus.textContent = "Sending test payout...";
-
-    try {
-      const sig = await sendTokenPayout(wallet, 1);
-      els.payoutStatus.textContent = sig
-        ? `Test payout sent ✅ ${sig}`
-        : "Test payout cancelled";
-      setDebug("TEST PAYOUT ✅");
-    } catch (e) {
-      console.error(e);
-      els.payoutStatus.textContent = "Test payout failed ❌";
-      setDebug("TEST PAYOUT FAILED ❌");
-    }
-  }
-
-  async function sendManualPayout() {
-    const wallet = els.payoutWallet.value.trim();
-    const amount = els.payoutAmount.value.trim();
-
-    if (!wallet || !amount) {
-      alert("Enter wallet and amount");
-      return;
-    }
-
-    els.payoutStatus.textContent = "Sending payout...";
-
-    try {
-      const sig = await sendTokenPayout(wallet, amount);
-      els.payoutStatus.textContent = sig
-        ? `Payout sent ✅ ${sig}`
-        : "Payout cancelled";
-      setDebug("MANUAL PAYOUT ✅");
-    } catch (e) {
-      console.error(e);
-      els.payoutStatus.textContent = "Payout failed ❌";
-      setDebug("MANUAL PAYOUT FAILED ❌");
-    }
-  }
-</script>
-
-    function boot() {
-      renderWallet("");
-      renderBalance(0);
-      setRewardPoints(getRewardPoints());
-      updateVipUI();
-      renderQueue();
-      loadAiPicks();
-
-      els.connectBtn.onclick = connectWallet;
-      els.disconnectBtn.onclick = disconnectWallet;
-      els.refreshPicksBtn.onclick = loadAiPicks;
-      els.claimDailyBtn.onclick = claimDaily;
-      els.testWinBtn.onclick = testWinReward;
-      els.adminUnlockBtn.onclick = unlockAdmin;
-      els.publishPicksBtn.onclick = publishPicks;
-      els.clearPicksBtn.onclick = clearPicks;
-      els.addQueueBtn.onclick = addToQueue;
-      els.testPayoutBtn.onclick = testPayout;
-      els.sendPayoutBtn.onclick = sendManualPayout;
-      els.closeVipPopup.onclick = () => els.vipUnlockPopup.classList.add("hidden");
-
-      if (window.solana && window.solana.isPhantom) {
-        provider = window.solana;
-      }
-
-      setDebug("BOOT OK ✅");
-    }
-
-    boot();
+    window.addEventListener("load", async () => {
+      provider = getProvider();
+      loadLocalRewardState();
+      renderRewardStats();
+      await autoReconnect();
+      await loadAiPicks();
+    });
   </script>
 </body>
 </html>
