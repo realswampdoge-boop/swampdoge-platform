@@ -1137,6 +1137,47 @@
     adminWalletInput.addEventListener("input", updatePayoutReadyState);
 
     window.addEventListener("load", boot);
+ const testSwampBtn = document.getElementById("testSwampBtn");
+const sendPayoutBtn = document.getElementById("sendPayoutBtn");
+const payoutWalletInput = document.getElementById("payoutWallet");
+const payoutAmountInput = document.getElementById("payoutAmount");
+const payoutStatus = document.getElementById("payoutStatus");
+
+function setPayoutStatus(msg) {
+  if (payoutStatus) payoutStatus.textContent = msg;
+  console.log("PAYOUT:", msg);
+}
+
+async function handleTestSwamp() {
+  try {
+    setPayoutStatus("Testing 1 SWAMP...");
+    payoutAmountInput.value = "1";
+    await sendSwampPayout();
+  } catch (err) {
+    console.error(err);
+    setPayoutStatus("Test failed: " + (err?.message || err));
+  }
+}
+
+if (testSwampBtn) {
+  testSwampBtn.addEventListener("click", handleTestSwamp);
+} else {
+  console.log("Missing #testSwampBtn");
+}
+
+if (sendPayoutBtn) {
+  sendPayoutBtn.addEventListener("click", async () => {
+    try {
+      setPayoutStatus("Sending payout...");
+      await sendSwampPayout();
+    } catch (err) {
+      console.error(err);
+      setPayoutStatus("Payout failed: " + (err?.message || err));
+    }
+  });
+} else {
+  console.log("Missing #sendPayoutBtn");
+}
   </script>
 </body>
 </html>
