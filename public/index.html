@@ -1178,6 +1178,61 @@ if (sendPayoutBtn) {
 } else {
   console.log("Missing #sendPayoutBtn");
 }
+    <script>
+async function handleTokenPayout() {
+  const statusEl = document.getElementById("payoutStatus");
+  const recipientEl = document.getElementById("payoutWallet");
+  const amountEl = document.getElementById("payoutAmount");
+
+  try {
+    statusEl.textContent = "Preparing payout...";
+
+    if (!window.solana || !window.solana.isPhantom) {
+      statusEl.textContent = "Phantom wallet not found.";
+      return;
+    }
+
+    const provider = window.solana;
+
+    if (!provider.publicKey) {
+      statusEl.textContent = "Connect admin wallet first.";
+      return;
+    }
+
+    const recipient = recipientEl.value.trim();
+    const amount = parseFloat(amountEl.value);
+
+    if (!recipient) {
+      statusEl.textContent = "Enter recipient wallet.";
+      return;
+    }
+
+    if (!amount || amount <= 0) {
+      statusEl.textContent = "Enter valid token amount.";
+      return;
+    }
+
+    // TEST MODE ONLY
+    console.log("PAYOUT TEST", {
+      adminWallet: provider.publicKey.toString(),
+      recipient,
+      amount
+    });
+
+    statusEl.textContent = `Test mode OK: ${amount} tokens to ${recipient}`;
+  } catch (err) {
+    console.error("Payout failed:", err);
+    statusEl.textContent = "Payout failed. Check console.";
+  }
+}
+
+window.addEventListener("load", () => {
+  const payoutBtn = document.getElementById("payoutBtn");
+  if (payoutBtn) {
+    payoutBtn.addEventListener("click", handleTokenPayout);
+  }
+});
+</script>
   </script>
 </body>
 </html>
