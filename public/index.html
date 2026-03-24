@@ -984,16 +984,32 @@
           throw new Error("Amount too small after token decimals conversion.");
         }
 
-        const senderAta = getAssociatedTokenAddressSync(mintPubkey, adminPubkey);
-        const senderAtaInfo = await connection.getAccountInfo(senderAta, "confirmed");
-        if (!senderAtaInfo) {
-          throw new Error("Admin SWAMP token account not found. Make sure admin wallet holds SWAMP.");
-        }
+       const ownerTokenAccounts = await connection.getParsedTokenAccountsByOwner(
+  adminPubkey,
+  { mint: mintPubkey },
+  "confirmed"
+);
 
-        const senderBalance = await getSwampBalance(adminWallet);
-        if (senderBalance < amountUi) {
-          throw new Error(`Insufficient SWAMP balance. Wallet has ${senderBalance}.`);
-        }
+if (!ownerTokenAccounts.value.length) {
+  throw new Error("Admin SWAMP token account not found.");
+}
+
+const bestSource = ownerTokenAccounts.value
+  .map(({ pubkey, account }) => {
+    const info = account.data.parsed.info;
+    return {
+      pubkey,
+      rawAmount: BigInt(info.tokenAmount.amount || "0"),
+      uiAmount: Number(info.tokenAmount.uiAmount || 0)
+    };
+  })
+  .sort((a, b) => Number(b.rawAmount - a.rawAmount))[0];
+
+if (bestSource.rawAmount < rawAmount) {
+  throw new Error(`Insufficient SWAMP balance. Wallet has ${bestSource.uiAmount}.`);
+}
+
+const senderAta = bestSource.pubkey;
 
         const { ata: recipientAta, instructions: recipientAtaIx } =
           await ensureRecipientAtaInstructions(adminPubkey, recipientPubkey, mintPubkey);
